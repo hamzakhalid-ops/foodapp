@@ -1,130 +1,152 @@
-# QuickBite — Claude Code Development Rules
+# QUICKBITE — CLAUDE CODE PROJECT RULES
 
-## 1. Purpose
+## 1. PURPOSE
 
-QuickBite is a production-oriented food delivery marketplace consisting of:
+QuickBite is a production-oriented food delivery marketplace.
 
-* Customer App
-* Restaurant App
-* Rider App
-* Admin Panel
+The repository contains four products:
 
-The project is implemented as a **modular monolith** for V1.
+1. Customer App
+2. Restaurant App
+3. Rider App
+4. Admin Panel
 
-The architecture, product requirements, database design, API specifications, business rules, security model, notifications, payments, financial model, maps/location model, promotions, reviews, support, admin operations, observability, testing, infrastructure, CI/CD, and implementation plan are frozen unless an explicit architectural decision changes them.
+This file contains the permanent implementation rules for Claude Code.
 
-Claude Code must implement the approved specifications rather than redesigning the product during implementation.
+Treat this file together with the documents under `docs/` as the project's engineering source of truth.
+
+Do not restart the architecture.
+
+Do not redesign completed specifications without an explicit approved decision.
+
+Do not silently change frozen business rules.
 
 ---
 
-# 2. Authoritative Documentation
+# 2. AUTHORITATIVE DOCUMENT HIERARCHY
 
-Before implementing a feature, read the relevant authoritative documentation.
-
-Core documents:
+When implementing QuickBite, use this hierarchy:
 
 ```text
-docs/product/PRD.md
-docs/architecture/ARCHITECTURE.md
-docs/database/DATABASE.md
-docs/api/API_SPEC.md
+CLAUDE.md
+    ↓
+Product / Architecture / Database / API specifications
+    ↓
+Business Rules
+    ↓
+Security / Authorization Rules
+    ↓
+Payments / Financial / Maps / Promotions / Reviews / Support / Admin
+    ↓
+Implementation Plan
+    ↓
+App-specific README / SCREEN_PLAN
+    ↓
+Stitch UI design references
+    ↓
+Implementation
+```
 
-docs/business-rules/ORDER_RULES.md
-docs/business-rules/CANCELLATION_RULES.md
-docs/business-rules/DISPATCH_RULES.md
-docs/business-rules/RISK_RULES.md
+For conflicts:
 
-docs/flows/GOLDEN_E2E_FLOW.md
+* Security rules override UI assumptions.
+* Backend/API/business rules override frontend assumptions.
+* Database specification overrides inferred database structure.
+* Stitch is the visual reference for UI appearance and interaction presentation.
+* Stitch does NOT override backend business rules.
+* Do not invent behavior because a design mockup does not show it.
 
-docs/security/AUTH_AUTHORIZATION.md
+If a requirement conflicts with an existing frozen rule:
 
-docs/notifications/NOTIFICATION_RULES.md
-docs/notifications/REALTIME_SPEC.md
+```text
+Identify conflict
+        ↓
+Explain affected documents
+        ↓
+Do not silently change behavior
+        ↓
+Request/receive approval
+        ↓
+Update affected specifications
+        ↓
+Implement
+```
 
-docs/payments/PAYMENT_RULES.md
-docs/payments/FINANCIAL_SPEC.md
+---
 
-docs/maps/MAPS_LOCATION_RULES.md
-docs/maps/MAPS_LOCATION_SPEC.md
+# 3. CURRENT PROJECT STATUS
 
-docs/promotions/PROMOTION_RULES.md
-docs/promotions/PROMOTION_SPEC.md
+Specification phases are complete through:
 
-docs/reviews/REVIEW_RULES.md
-docs/reviews/REVIEW_SPEC.md
+```text
+01 Product Requirements        COMPLETE
+02 System Architecture         COMPLETE
+03 Database Architecture       COMPLETE
+04 API Specification           COMPLETE
+05 Business Rules              COMPLETE
+06 Security / Authorization    COMPLETE
+07 Notifications / Realtime    COMPLETE
+08 Payments / Financial        COMPLETE
+09 Maps / Location             COMPLETE
+10 Promotions                  COMPLETE
+11 Reviews / Ratings           COMPLETE
+12 Support                     COMPLETE
+13 Admin / Operations           COMPLETE
+14 Observability               COMPLETE
+15 Testing / QA                COMPLETE
+16 Infrastructure              COMPLETE
+17 CI/CD / DevOps              COMPLETE
+18 Architecture Review         COMPLETE
+19 Implementation Plan         COMPLETE
+```
 
-docs/support/SUPPORT_RULES.md
-docs/support/SUPPORT_SPEC.md
+The project is now in:
 
-docs/admin/ADMIN_RULES.md
-docs/admin/ADMIN_SPEC.md
+```text
+PHASE 20 — IMPLEMENTATION
+```
 
-docs/observability/OBSERVABILITY_RULES.md
-docs/observability/OBSERVABILITY_SPEC.md
+The master implementation plan is:
 
-docs/testing/TESTING_RULES.md
-docs/testing/TESTING_SPEC.md
-
-docs/infrastructure/INFRASTRUCTURE_RULES.md
-docs/infrastructure/DEPLOYMENT_SPEC.md
-
-docs/devops/CI_CD_RULES.md
-docs/devops/DEVOPS_SPEC.md
-
-docs/ARCHITECTURE_CONSISTENCY_REVIEW.md
+```text
 docs/IMPLEMENTATION_PLAN.md
 ```
 
-ADR directory:
-
-```text
-docs/decisions/ADR/
-```
-
-If a feature conflicts with an authoritative document, do not silently choose one interpretation.
-
-Stop and identify the conflict.
-
 ---
 
-# 3. Frozen Architecture
+# 4. V1 ARCHITECTURE
 
-V1 uses a **modular monolith**.
+QuickBite V1 is a:
+
+```text
+MODULAR MONOLITH
+```
+
+Do NOT introduce microservices unless an explicit architecture decision is approved.
 
 Core infrastructure:
 
-* PostgreSQL
-* Redis
-* Background workers/job queue
-* WebSockets
-* Object storage
-* Payment provider abstraction
-* Maps provider abstraction
-* Notification providers
+```text
+PostgreSQL
+Redis
+Background Workers
+Job Queue
+WebSockets
+Object Storage
+Payment Provider
+Maps Provider
+Notification Providers
+```
 
 PostgreSQL is the durable source of truth.
 
-Redis must not become the source of truth for durable business state.
-
-Use Redis for appropriate temporary or high-speed workloads such as:
-
-* caching
-* rate limiting
-* temporary state
-* presence
-* geo/dispatch assistance
-* realtime presence
-* short-lived coordination
-
-Critical durable events must use the outbox pattern where specified.
-
-External providers must not be called from critical database transactions.
+Redis is not the durable source of truth.
 
 ---
 
-# 4. Roles
+# 5. FROZEN ROLES
 
-The only approved V1 roles are:
+Only these roles exist:
 
 ```text
 CUSTOMER
@@ -141,122 +163,1090 @@ Do not create:
 RESTAURANT_MANAGER
 ORDER_STAFF
 KITCHEN_STAFF
+DELIVERY_MANAGER
 ```
 
-Restaurant operational responsibilities are intentionally consolidated into:
+or other additional roles without an explicit approved architecture change.
 
-```text
-RESTAURANT_OPERATOR
-```
-
-Do not introduce additional roles without an approved architectural decision.
+Restaurant Owner and Restaurant Operator are intentionally consolidated for V1.
 
 ---
 
-# 5. Backend Authority
+# 6. BACKEND AUTHORITY
 
-The backend is authoritative for all business-critical values.
+The backend is authoritative for:
 
-Never trust the client for:
+* Prices
+* Menu availability
+* Discounts
+* Promotion eligibility
+* Order totals
+* Payment status
+* Refund status
+* Order status
+* Restaurant availability
+* Rider assignment
+* Rider eligibility
+* Cancellation eligibility
+* Earnings
+* Settlements
+* Payouts
+* Permissions
+* Risk status
+* Review eligibility
+* Review status
+* Rating aggregation
 
-* prices
-* menu availability
-* discounts
-* promotion eligibility
-* order totals
-* payment state
-* refund state
-* order status
-* restaurant availability
-* rider eligibility
-* rider assignment
-* cancellation eligibility
-* earnings
-* settlements
-* permissions
-* risk status
-* review eligibility
-* rating aggregation
+Never trust client-provided authoritative values.
 
-Client-provided values must be treated as requests, not authoritative facts.
-
-The backend must recalculate and validate authoritative values.
+Frontend values are presentation/input values only.
 
 ---
 
-# 6. Security Rule
+# 7. SECURITY MODEL
 
-Every protected action follows this conceptual chain:
+Authorization follows:
 
 ```text
 Authentication
-    ↓
+      ↓
 Identity
-    ↓
+      ↓
 Role
-    ↓
+      ↓
 Permission
-    ↓
+      ↓
 Resource Ownership / Tenant
-    ↓
+      ↓
 Business Rule
-    ↓
+      ↓
 Action
 ```
 
-Authorization must be enforced server-side.
+All important authorization checks must happen server-side.
 
-Do not rely on:
+Never rely on:
 
-* hidden UI elements
-* route visibility
+* hidden UI buttons
+* disabled frontend controls
 * client-side role checks
-* frontend validation
-* obscured identifiers
+* route hiding
+* client-provided resource ownership
 
-for security.
-
-Sensitive administrative operations require the appropriate authentication, authorization, audit, and step-up/MFA controls defined by the security specifications.
+Sensitive admin actions must be protected according to the security specification and audited.
 
 ---
 
-# 7. Vertical Slice Development
+# 8. DATABASE RULES
 
-Implement features as **vertical slices**, not isolated technical layers.
+Use PostgreSQL as the durable database.
 
-A slice should be considered incomplete until all applicable layers work together.
+Money must use:
 
-Typical slice components:
+```text
+NUMERIC(12,2)
+```
+
+Never use floating point for financial values.
+
+Use:
+
+* foreign keys
+* appropriate constraints
+* indexes
+* transactions
+* version-controlled migrations
+* timezone-aware timestamps
+
+Do not create duplicate tables when an existing table satisfies the requirement.
+
+Important existing domains include:
+
+```text
+Identity
+Restaurants
+Menu
+Orders
+Payments
+Riders
+Delivery
+Risk
+Promotions
+Reviews
+Notifications
+Financial
+Support
+Audit
+System
+```
+
+Use the existing database specification before creating schema.
+
+---
+
+# 9. TRANSACTIONS
+
+Critical state changes must be transactionally safe.
+
+Examples:
+
+* order creation
+* order status transitions
+* rider assignment
+* payment state changes
+* refunds
+* financial records
+* settlement creation
+* payout state changes
+* review creation where required
+
+Do not perform external provider calls inside critical database transactions.
+
+Use the outbox pattern for critical domain events.
+
+---
+
+# 10. IDEMPOTENCY
+
+Use the existing:
+
+```text
+idempotency_keys
+```
+
+mechanism.
+
+Important operations requiring idempotency include:
+
+* order creation
+* payment
+* refund
+* settlement
+* payout
+* review creation where applicable
+* promotion redemption where applicable
+
+Do not invent unrelated idempotency systems.
+
+---
+
+# 11. OUTBOX
+
+Critical domain events should follow:
+
+```text
+Database Transaction
+        ↓
+Business Record
+        ↓
+Outbox Event
+        ↓
+Background Worker
+        ↓
+External / Async Effects
+```
+
+Examples:
+
+* notifications
+* realtime events
+* risk processing
+* asynchronous provider actions
+
+External providers must not be called directly inside critical database transactions.
+
+---
+
+# 12. ORDER LIFECYCLE
+
+Primary order lifecycle:
+
+```text
+PENDING
+    ↓
+RESTAURANT_ACCEPTED
+    ↓
+PREPARING
+    ↓
+READY_FOR_PICKUP
+    ↓
+RIDER_ASSIGNED
+    ↓
+PICKED_UP
+    ↓
+OUT_FOR_DELIVERY
+    ↓
+DELIVERED
+```
+
+Cancellation states:
+
+```text
+CANCELLED_BY_CUSTOMER
+CANCELLED_BY_RESTAURANT
+CANCELLED_BY_ADMIN
+```
+
+The backend controls valid transitions.
+
+Frontend must never directly decide order state.
+
+---
+
+# 13. CANCELLATION
+
+Current V1 behavior:
+
+```text
+PENDING
+→ Customer cancellation allowed subject to payment/refund rules.
+
+RESTAURANT_ACCEPTED
+→ Restricted/configurable.
+
+PREPARING
+→ Customer normally cannot cancel.
+
+READY_FOR_PICKUP
+→ Customer normally cannot cancel.
+
+RIDER_ASSIGNED
+→ Customer normally cannot cancel.
+
+PICKED_UP
+→ Customer cannot normally cancel.
+
+OUT_FOR_DELIVERY
+→ Customer cannot normally cancel.
+
+DELIVERED
+→ Cancellation not applicable.
+```
+
+Admin/support intervention must follow business rules and must be audited.
+
+---
+
+# 14. RIDER DISPATCH
+
+Rider orders must NOT be globally broadcast.
+
+When an order becomes:
+
+```text
+READY_FOR_PICKUP
+```
+
+the Dispatch Engine determines eligible riders.
+
+Eligibility includes:
+
+* proximity
+* online status
+* availability
+* no conflicting active delivery
+* vehicle eligibility
+* account status
+* risk restrictions
+
+Then:
+
+```text
+Rank
+ ↓
+Offer
+ ↓
+Accept
+ ↓
+Atomic Assignment
+```
+
+V1 normally supports one active delivery per rider.
+
+Configurable dispatch values include:
+
+```text
+initial_radius
+radius_increment
+maximum_radius
+offer_timeout_seconds
+max_offer_attempts
+```
+
+---
+
+# 15. TRUST & RISK
+
+Risk subjects:
+
+```text
+CUSTOMER
+RESTAURANT
+RIDER
+```
+
+Risk signals include:
+
+```text
+COD_NON_RECEIPT
+REPEATED_ORDER_CANCELLATION
+REPEATED_PAYMENT_FAILURE
+SUSPICIOUS_ORDER_PATTERN
+MULTIPLE_FAILED_DELIVERIES
+EXCESSIVE_REFUNDS
+ABNORMAL_ORDER_FREQUENCY
+SUSPICIOUS_ACCOUNT_ACTIVITY
+REPEATED_FALSE_COMPLAINT
+```
+
+Risk actions:
+
+```text
+NORMAL
+MONITORED
+COD_RESTRICTED
+ADDITIONAL_VERIFICATION
+ORDER_RESTRICTED
+ACCOUNT_RESTRICTED
+```
+
+Do not hard-code permanent bans.
+
+Thresholds must remain configurable.
+
+---
+
+# 16. PAYMENTS AND FINANCIALS
+
+V1 payment methods:
+
+```text
+ONLINE_PAYMENT
+CASH_ON_DELIVERY
+```
+
+Payment states:
+
+```text
+PENDING
+AUTHORIZED
+SUCCEEDED
+FAILED
+CANCELLED
+REFUNDED
+PARTIALLY_REFUNDED
+```
+
+Financial chain:
+
+```text
+Order
+ ↓
+Payment
+ ↓
+Restaurant Earnings
+ ↓
+Rider Earnings
+ ↓
+Settlement
+ ↓
+Payout
+ ↓
+Invoice
+ ↓
+Reconciliation
+ ↓
+Audit
+```
+
+Never calculate authoritative financial values in the frontend.
+
+---
+
+# 17. PROMOTIONS
+
+V1 promotion types:
+
+```text
+PERCENTAGE
+FIXED_AMOUNT
+```
+
+Promotion statuses:
+
+```text
+DRAFT
+ACTIVE
+PAUSED
+EXPIRED
+DISABLED
+```
+
+V1 supports:
+
+```text
+One promotion per order
+```
+
+No promotion stacking.
+
+Do not introduce:
+
+* referral
+* cashback
+* complex segmentation
+* loyalty
+* subscription
+
+unless explicitly approved.
+
+---
+
+# 18. REVIEWS
+
+V1 review relationship:
+
+```text
+CUSTOMER → RESTAURANT
+```
+
+Rating:
+
+```text
+1–5
+```
+
+Eligibility:
+
+```text
+DELIVERED
+```
+
+One eligible review per order.
+
+Review statuses:
+
+```text
+PUBLISHED
+PENDING_MODERATION
+HIDDEN
+REMOVED
+```
+
+Restaurant Owner and authorized Restaurant Operator may respond.
+
+Do not introduce rider ratings unless the architecture is explicitly changed.
+
+---
+
+# 19. NOTIFICATIONS / REALTIME
+
+Use the notification and realtime specifications.
+
+Supported notification channels may include:
+
+* push
+* in-app
+* SMS
+* email
+
+Use outbox/background processing where required.
+
+Realtime must handle:
+
+* authentication
+* authorization
+* reconnection
+* ordering
+* duplicate events
+* offline behavior
+
+---
+
+# 20. EXTERNAL PROVIDERS
+
+Use provider abstractions.
+
+Do not scatter provider-specific SDK calls throughout business logic.
+
+Examples:
+
+```text
+PaymentService
+MapsService
+NotificationService
+StorageService
+```
+
+Business logic should depend on application-level interfaces rather than directly on provider implementations.
+
+---
+
+# 21. FRONTEND APPLICATION STRUCTURE
+
+QuickBite has four separate application areas:
+
+```text
+apps/customer
+apps/restaurant
+apps/rider
+apps/admin
+```
+
+Each app must have its own:
+
+```text
+README.md
+SCREEN_PLAN.md
+design/
+src/
+```
+
+Recommended structure:
+
+```text
+apps/
+├── customer/
+│   ├── README.md
+│   ├── SCREEN_PLAN.md
+│   ├── design/
+│   │   └── stitch/
+│   └── src/
+│
+├── restaurant/
+│   ├── README.md
+│   ├── SCREEN_PLAN.md
+│   ├── design/
+│   │   └── stitch/
+│   └── src/
+│
+├── rider/
+│   ├── README.md
+│   ├── SCREEN_PLAN.md
+│   ├── design/
+│   │   └── stitch/
+│   └── src/
+│
+└── admin/
+    ├── README.md
+    ├── SCREEN_PLAN.md
+    ├── design/
+    │   └── stitch/
+    └── src/
+```
+
+Do not mix screen implementations between applications.
+
+Shared components should live in the appropriate shared package rather than being copied between apps.
+
+---
+
+# 22. STITCH DESIGN WORKFLOW
+
+The user creates UI designs using Google Stitch.
+
+Stitch designs are the primary visual reference for frontend implementation.
+
+Claude Code must reproduce the approved design faithfully.
+
+Match where applicable:
+
+* layout
+* spacing
+* typography
+* colors
+* component hierarchy
+* card styles
+* borders
+* shadows
+* icons
+* buttons
+* navigation
+* form layout
+* states
+* empty states
+* loading states
+* error states
+* responsive behavior
+
+Do not redesign the UI simply because Claude prefers another style.
+
+However:
+
+```text
+Stitch controls appearance.
+Product/API/business/security specifications control behavior.
+```
+
+If Stitch conflicts with an authoritative business rule, implement the business rule and preserve the design as closely as possible.
+
+---
+
+# 23. SCREEN-BATCH RULE
+
+NEVER build an entire app in one task.
+
+Build:
+
+```text
+ONE APP
+    ↓
+ONE SCREEN BATCH
+    ↓
+IMPLEMENT
+    ↓
+TEST
+    ↓
+REVIEW
+    ↓
+STOP
+    ↓
+USER APPROVAL
+    ↓
+NEXT BATCH
+```
+
+Default Stitch batch size:
+
+```text
+4 screens
+```
+
+Do not automatically increase the batch size.
+
+If a batch contains fewer than four screens because the feature boundary requires it, keep the smaller batch.
+
+---
+
+# 24. APP ORDER
+
+Unless the user explicitly changes the order:
+
+```text
+1. Customer App
+2. Restaurant App
+3. Rider App
+4. Admin Panel
+```
+
+Complete the current app before starting the next app.
+
+Do not work on multiple apps simultaneously unless explicitly instructed.
+
+---
+
+# 25. SCREEN PLAN STATUS
+
+Every screen in `SCREEN_PLAN.md` must have a status:
+
+```text
+TODO
+IN_PROGRESS
+REVIEW
+APPROVED
+BLOCKED
+```
+
+Rules:
+
+```text
+TODO
+→ Claude may start it when its batch is active.
+
+IN_PROGRESS
+→ Claude is actively implementing it.
+
+REVIEW
+→ Implementation is complete and waiting for user review.
+
+APPROVED
+→ User has accepted it.
+
+BLOCKED
+→ Implementation cannot continue because a dependency or decision is missing.
+```
+
+Claude must not mark a screen `APPROVED`.
+
+Only the user/reviewer approves a screen.
+
+---
+
+# 26. ACTIVE BATCH RULE
+
+Claude may only implement screens explicitly listed in the current active batch.
+
+Example:
+
+```text
+BATCH 01
+
+1. Splash
+2. Welcome
+3. Login
+4. Create Account
+```
+
+Claude must NOT implement:
+
+* Phone Verification
+* Forgot Password
+* Home
+* Dashboard
+* Menu
+* other future screens
+
+even if those screens are easy to implement.
+
+---
+
+# 27. STOP RULE
+
+At the end of an active screen batch:
+
+```text
+STOP.
+```
+
+Do not continue to the next batch automatically.
+
+Claude should report:
+
+```text
+Batch completed.
+Screens implemented:
+- ...
+- ...
+- ...
+- ...
+
+Validation:
+- lint
+- typecheck
+- tests
+- build
+
+Known issues:
+- ...
+
+Next batch:
+BATCH XX
+
+Waiting for approval.
+```
+
+Do not implement the next batch until the user explicitly asks to continue.
+
+---
+
+# 28. SCREEN COMPLETION DEFINITION
+
+A screen is complete only when:
+
+* UI matches the Stitch reference
+* required navigation works
+* required interactions work
+* API integration is implemented where applicable
+* loading state exists where applicable
+* error state exists where applicable
+* empty state exists where applicable
+* authentication/authorization behavior is correct
+* accessibility basics are respected
+* responsive behavior is reasonable for the target
+* lint passes
+* typecheck passes
+* relevant tests pass
+* build passes where applicable
+* no unrelated screens are changed
+
+Do not claim a screen is complete if it is only visually mocked.
+
+---
+
+# 29. DO NOT USE FAKE BACKEND LOGIC
+
+Do not hide unfinished backend behavior behind fake success responses.
+
+Do not implement:
+
+```text
+fake payment success
+fake order creation
+fake rider assignment
+fake financial records
+fake authorization
+```
+
+unless a development mock is explicitly requested and clearly isolated.
+
+When backend functionality is not yet available:
+
+* use the approved API contract
+* create the correct integration boundary
+* clearly identify the missing dependency
+* do not silently invent production behavior
+
+---
+
+# 30. API RULES
+
+Use:
+
+```text
+/api/v1
+```
+
+Follow the API specification.
+
+Do not invent endpoint names when the API specification already defines the endpoint.
+
+Do not change request/response contracts without updating the API specification.
+
+Validate input server-side.
+
+Return structured errors according to the API specification.
+
+---
+
+# 31. ERROR HANDLING
+
+Errors must be:
+
+* explicit
+* structured
+* actionable
+* safe
+* consistent
+
+Do not expose:
+
+* secrets
+* internal stack traces
+* database internals
+* provider credentials
+* sensitive implementation details
+
+Frontend should display appropriate user-facing messages while preserving structured backend errors internally.
+
+---
+
+# 32. OBSERVABILITY
+
+Use the observability specification.
+
+Important operations should provide appropriate:
+
+* structured logs
+* correlation/request IDs
+* metrics
+* traces where applicable
+* audit records
+
+Never log:
+
+* passwords
+* authentication secrets
+* payment secrets
+* sensitive tokens
+* unnecessary personal data
+
+---
+
+# 33. TESTING
+
+Implementation must follow the testing specification.
+
+Use appropriate:
+
+```text
+Unit Tests
+Integration Tests
+API Tests
+Authorization Tests
+Business Rule Tests
+Database Tests
+End-to-End Tests
+```
+
+Important business engines require meaningful test coverage.
+
+At minimum, protect:
+
+* authentication
+* authorization
+* order lifecycle
+* cancellation
+* dispatch
+* risk
+* payment state transitions
+* financial calculations
+* promotion eligibility
+* review eligibility
+
+---
+
+# 34. GIT DISCIPLINE
+
+Keep commits focused.
+
+Examples:
+
+```text
+feat(auth): implement authentication
+feat(customer): implement customer profile
+feat(restaurant): implement onboarding
+feat(menu): implement menu management
+feat(dispatch): implement rider dispatch
+```
+
+Avoid:
+
+```text
+feat: build entire QuickBite platform
+```
+
+Do not mix unrelated features into one commit.
+
+---
+
+# 35. NO UNRELATED CHANGES
+
+During a task:
+
+DO:
+
+* implement the requested slice
+* modify required shared code
+* modify required backend/API code
+* add required tests
+* update required documentation
+
+DO NOT:
+
+* refactor unrelated modules
+* redesign unrelated screens
+* change architecture
+* rename unrelated files
+* add unnecessary dependencies
+* implement future features
+* modify another app without necessity
+
+---
+
+# 36. DEPENDENCY RULE
+
+If implementation requires a missing dependency:
+
+1. Identify it.
+2. Check the existing specifications.
+3. Check whether the dependency is already planned.
+4. Implement the smallest coherent solution.
+5. Do not introduce a large new technology without approval.
+
+Avoid unnecessary:
+
+* microservices
+* message brokers
+* search infrastructure
+* distributed systems
+* AI services
+* infrastructure complexity
+
+---
+
+# 37. V1 EXCLUSIONS
+
+Do not implement the following unless explicitly approved:
+
+* AI recommendations
+* AI voice ordering
+* loyalty
+* subscriptions
+* corporate accounts
+* multi-restaurant cart
+* advanced advertising marketplace
+* advanced AI fraud detection
+* complex predictive analytics
+* grocery
+* pharmacy
+* multi-country
+* multi-currency
+* cryptocurrency
+* rider ratings
+* AI review sentiment
+* review rewards
+* review photos/videos
+* promotion stacking
+* referrals
+* cashback
+* complex promotion segmentation
+
+---
+
+# 38. AMBIGUITY RULE
+
+If an implementation detail is missing:
+
+DO NOT silently invent important business behavior.
+
+Instead:
+
+```text
+Identify ambiguity
+↓
+Check existing specifications
+↓
+Check related business rules
+↓
+If still unresolved:
+Report the ambiguity
+↓
+Request a decision when necessary
+```
+
+For small implementation details that do not change architecture, security, business rules, API contracts, or data behavior, use the simplest conventional implementation.
+
+---
+
+# 39. DEFINITION OF DONE
+
+A vertical implementation slice is complete when:
 
 ```text
 Database
-↓
-Domain/business logic
-↓
-Authorization
-↓
+    ↓
+Backend
+    ↓
 API
-↓
-Background jobs
-↓
-Notifications/realtime
-↓
+    ↓
+Authorization
+    ↓
+Business Rules
+    ↓
 Frontend
-↓
-Logging/audit
-↓
+    ↓
+Notifications / Realtime where required
+    ↓
+Logging / Audit
+    ↓
 Tests
+    ↓
+Lint
+    ↓
+Typecheck
+    ↓
+Build
+    ↓
+Review
 ```
 
-Do not build the entire database first, then the entire backend, then the entire frontend.
-
-Complete the relevant functionality end-to-end.
+are complete for the scope of that slice.
 
 ---
 
-# 8. Current Implementation Order
+# 40. MASTER IMPLEMENTATION SLICES
 
-The approved implementation order is:
+Follow:
 
 ```text
 1. Authentication
@@ -279,741 +1269,108 @@ The approved implementation order is:
 18. Admin Operations
 ```
 
-Do not reorder slices without a documented reason.
+Do not skip ahead without a reason.
 
 ---
 
-# 9. Authentication Is Slice 1
+# 41. FRONTEND IMPLEMENTATION ORDER
 
-Authentication is the first functional vertical slice.
-
-Before implementing authentication:
-
-1. Read the architecture documentation.
-2. Read the database documentation.
-3. Read the API specification.
-4. Read the security/authorization documentation.
-5. Read the testing specification.
-6. Read the observability specification.
-7. Read the implementation plan.
-8. Inspect the existing repository.
-9. Determine the actual selected framework/package structure from the repository.
-10. Do not invent a conflicting stack.
-
-Authentication implementation must establish the foundation required by the rest of the application.
-
----
-
-# 10. Authentication Requirements
-
-Authentication must support the approved QuickBite identity model.
-
-Implementation must respect:
-
-* secure credential handling
-* password hashing where passwords are used
-* authentication sessions/tokens
-* authentication expiry
-* refresh/revocation behavior where specified
-* account status
-* role assignment
-* authorization integration
-* rate limiting
-* brute-force protection
-* audit logging
-* security events
-* validation
-* error handling
-* test coverage
-
-Do not expose sensitive authentication information in API responses or logs.
-
-Do not log:
-
-* passwords
-* password hashes
-* access tokens
-* refresh tokens
-* authentication secrets
-* payment secrets
-* provider credentials
-
----
-
-# 11. User and Role Model
-
-Authentication establishes identity.
-
-Authorization determines what the authenticated identity may do.
-
-Do not combine authentication and authorization into frontend logic.
-
-Roles must come from the approved role model.
-
-Do not allow users to self-assign privileged roles.
-
-Examples:
+Within each application:
 
 ```text
-CUSTOMER
-RESTAURANT_OWNER
-RESTAURANT_OPERATOR
-RIDER
-ADMIN
-SUPER_ADMIN
+Foundation
+    ↓
+Authentication
+    ↓
+Core navigation
+    ↓
+Primary feature screens
+    ↓
+Secondary feature screens
+    ↓
+Settings / supporting screens
+    ↓
+Edge states
 ```
 
-Privileged role assignment must follow the approved backend/admin workflow.
+Implement in screen batches according to the application's `SCREEN_PLAN.md`.
 
 ---
 
-# 12. Database Rules
+# 42. CLAUDE TASK FORMAT
 
-Database changes must use migrations.
-
-Never manually modify production database structure.
-
-Every schema change must have:
-
-* migration
-* appropriate indexes
-* constraints
-* foreign keys where applicable
-* uniqueness rules where applicable
-* appropriate nullability
-* audit implications
-* tests
-
-Use PostgreSQL as the durable source of truth.
-
-Money must use:
+When beginning an implementation task, Claude should first read:
 
 ```text
-NUMERIC(12,2)
+CLAUDE.md
 ```
 
-Never use floating-point numbers for financial values.
-
----
-
-# 13. Transactions
-
-Use database transactions when multiple durable state changes must succeed or fail together.
-
-Do not place external provider calls inside critical database transactions.
-
-Preferred pattern:
+Then read the relevant:
 
 ```text
-Validate
-↓
-Begin transaction
-↓
-Write durable state
-↓
-Write outbox event
-↓
-Commit
-↓
-Worker processes external side effect
+docs/
+apps/<current-app>/README.md
+apps/<current-app>/SCREEN_PLAN.md
+apps/<current-app>/design/stitch/
 ```
 
-Do not create race conditions around:
+For backend work, read the relevant specification documents before coding.
 
-* order state
-* payment state
-* rider assignment
-* inventory/menu availability where applicable
-* promotion redemption
-* refunds
-* earnings
-* settlements
-* payouts
-* review creation
-
-Use appropriate database constraints, locking, idempotency, and transactional logic.
+For frontend work, read both the relevant specifications and Stitch references.
 
 ---
 
-# 14. Idempotency
+# 43. REQUIRED BATCH PROMPT BEHAVIOR
 
-Use idempotency wherever required by the specifications.
-
-Important examples include:
-
-* order creation
-* payment operations
-* refunds
-* settlements
-* payouts
-* promotion redemption where applicable
-* review creation where applicable
-* externally triggered callbacks/webhooks
-
-A retried request must not accidentally create duplicate durable business effects.
-
----
-
-# 15. Order Lifecycle
-
-The approved order lifecycle is:
+A typical frontend instruction will look like:
 
 ```text
-PENDING
-→ RESTAURANT_ACCEPTED
-→ PREPARING
-→ READY_FOR_PICKUP
-→ RIDER_ASSIGNED
-→ PICKED_UP
-→ OUT_FOR_DELIVERY
-→ DELIVERED
-```
+Implement the current active screen batch for the Customer App.
 
-Cancellation states:
+Read:
+- CLAUDE.md
+- apps/customer/README.md
+- apps/customer/SCREEN_PLAN.md
+- relevant docs
+- Stitch references under apps/customer/design/stitch/
 
-```text
-CANCELLED_BY_CUSTOMER
-CANCELLED_BY_RESTAURANT
-CANCELLED_BY_ADMIN
-```
+Implement ONLY the currently active batch.
 
-Backend code must enforce valid transitions.
+Do not implement future screens.
 
-Never allow clients to arbitrarily set an order status.
+Match the Stitch designs closely.
 
----
+Follow all existing backend, API, authorization, and business rules.
 
-# 16. Dispatch
+Run the required validation.
 
-Rider dispatch is proximity-based.
+When the batch is complete, STOP and report the result.
 
-When an order reaches:
-
-```text
-READY_FOR_PICKUP
-```
-
-the system evaluates eligible riders.
-
-Eligibility can include:
-
-* proximity
-* online status
-* availability
-* active delivery constraints
-* vehicle eligibility
-* account status
-* risk restrictions
-
-Dispatch must not globally broadcast every order to every rider.
-
-The dispatch engine must use the configured rules for:
-
-* initial radius
-* radius increment
-* maximum radius
-* offer timeout
-* maximum offer attempts
-* ranking
-
-Assignment must be concurrency-safe.
-
----
-
-# 17. Risk and Abuse Controls
-
-Risk controls apply to:
-
-```text
-CUSTOMER
-RESTAURANT
-RIDER
-```
-
-Examples of risk signals include:
-
-```text
-COD_NON_RECEIPT
-REPEATED_ORDER_CANCELLATION
-REPEATED_PAYMENT_FAILURE
-SUSPICIOUS_ORDER_PATTERN
-MULTIPLE_FAILED_DELIVERIES
-EXCESSIVE_REFUNDS
-ABNORMAL_ORDER_FREQUENCY
-SUSPICIOUS_ACCOUNT_ACTIVITY
-REPEATED_FALSE_COMPLAINT
-```
-
-Possible actions include:
-
-```text
-NORMAL
-MONITORED
-COD_RESTRICTED
-ADDITIONAL_VERIFICATION
-ORDER_RESTRICTED
-ACCOUNT_RESTRICTED
-```
-
-Do not hard-code permanent bans.
-
-Thresholds and restrictions must follow the configured business rules.
-
----
-
-# 18. Notifications
-
-Notifications must follow the notification specification.
-
-Supported channels may include:
-
-* push
-* in-app
-* SMS
-* email
-* realtime/WebSocket
-
-Important durable events should use the outbox pattern.
-
-Notification delivery must account for:
-
-* retries
-* failures
-* duplicate prevention
-* idempotency
-* preferences
-* authorization
-* appropriate recipients
-
-Do not send sensitive information to unauthorized users.
-
----
-
-# 19. Financial Rules
-
-The financial chain is:
-
-```text
-Order
-→ Payment
-→ Restaurant Earnings
-→ Rider Earnings
-→ Settlement
-→ Payout
-→ Invoice
-→ Reconciliation
-→ Audit
-```
-
-Do not calculate financial state independently in multiple modules.
-
-Use the authoritative financial rules.
-
-Never use floating-point arithmetic for money.
-
----
-
-# 20. Logging and Observability
-
-Production code must use structured logging.
-
-Where applicable, preserve:
-
-* request/correlation ID
-* actor/user ID
-* resource ID
-* operation
-* result
-* duration
-* error category
-
-Do not log secrets or sensitive credentials.
-
-Business-critical operations must be observable.
-
-Security-sensitive and administrative actions must be auditable.
-
----
-
-# 21. Error Handling
-
-Errors must be:
-
-* predictable
-* structured
-* safe for clients
-* useful for developers
-* observable internally
-
-Do not expose:
-
-* stack traces
-* SQL errors
-* secrets
-* internal infrastructure details
-* authentication secrets
-* provider credentials
-
-to normal clients.
-
-Do not silently swallow errors.
-
----
-
-# 22. Testing
-
-Every implemented feature must include appropriate tests.
-
-Depending on the feature:
-
-```text
-Unit tests
-Integration tests
-API tests
-Database tests
-Authorization tests
-Security tests
-Concurrency tests
-Idempotency tests
-End-to-end tests
-```
-
-At minimum, test:
-
-* happy path
-* validation failures
-* authorization failures
-* ownership failures
-* duplicate requests
-* invalid state transitions
-* concurrency-sensitive behavior
-* important edge cases
-
-Do not mark a feature complete because the code merely compiles.
-
----
-
-# 23. Frontend Rules
-
-Frontend applications are clients of the backend.
-
-Never duplicate authoritative business logic in the frontend.
-
-Frontend may provide:
-
-* validation for UX
-* presentation
-* optimistic UI where safe
-* local state
-* navigation
-* user interaction
-
-Backend remains authoritative.
-
-Never rely on frontend checks for:
-
-* authorization
-* prices
-* payment state
-* order state
-* promotion eligibility
-* cancellation eligibility
-* rider eligibility
-* financial calculations
-
----
-
-# 24. API Rules
-
-APIs must follow the approved API specification.
-
-Before adding an endpoint:
-
-1. Check whether an equivalent endpoint already exists.
-2. Check request/response conventions.
-3. Check authentication requirements.
-4. Check authorization.
-5. Check validation.
-6. Check idempotency.
-7. Check error behavior.
-8. Check audit requirements.
-9. Check notifications/realtime effects.
-10. Check tests.
-
-Do not create duplicate APIs for the same business operation.
-
----
-
-# 25. Configuration
-
-Business thresholds that are defined as configurable must remain configurable.
-
-Do not bury configurable values inside source code.
-
-Examples include:
-
-* dispatch radius
-* dispatch timeout
-* dispatch attempt limits
-* risk thresholds
-* cancellation configuration
-* promotion constraints
-* rate limits
-* operational limits
-
-Use the approved configuration mechanism.
-
----
-
-# 26. External Providers
-
-External systems must be accessed through the approved abstraction boundaries.
-
-Examples:
-
-```text
-PaymentService
-MapsService
-NotificationService
-StorageService
-```
-
-Do not scatter provider-specific implementation throughout business logic.
-
-Business logic should depend on the internal abstraction rather than directly on a provider SDK wherever the architecture specifies an abstraction.
-
----
-
-# 27. No Silent Architecture Changes
-
-Claude Code must not silently:
-
-* add microservices
-* introduce new roles
-* change database ownership
-* replace PostgreSQL
-* replace Redis
-* change the order lifecycle
-* change financial states
-* add unsupported V1 features
-* remove security controls
-* bypass authorization
-* remove audit requirements
-* change dispatch behavior
-* add rider ratings
-* add promotion stacking
-* add referral systems
-* add cashback
-* add AI systems
-* introduce unnecessary infrastructure
-
-If a change is genuinely required, document it as an ADR before treating it as part of the architecture.
-
----
-
-# 28. Ambiguity Rule
-
-If the specifications do not define behavior clearly:
-
-**Do not guess.**
-
-First determine whether the behavior is already defined elsewhere in the documentation.
-
-If still unresolved:
-
-1. Identify the ambiguity.
-2. Identify the affected modules.
-3. Explain the possible implementation consequences.
-4. Ask for a decision when required.
-5. Create an ADR if the decision changes architecture or a significant business rule.
-
-Never silently choose behavior that can affect money, security, permissions, order state, dispatch, risk, or data integrity.
-
----
-
-# 29. Definition of Done
-
-A feature is not complete until:
-
-* implementation exists
-* database migrations exist where required
-* API behavior is implemented
-* authorization is enforced
-* business rules are enforced
-* validation exists
-* errors are handled
-* idempotency exists where required
-* transactions are correct
-* events/outbox are implemented where required
-* notifications/realtime are implemented where required
-* audit/logging is implemented where required
-* tests exist
-* relevant documentation is updated
-* lint/typecheck/build/tests pass
-* no frozen architecture rule was violated
-
----
-
-# 30. Implementation Workflow
-
-Before coding:
-
-```text
-Read CLAUDE.md
-↓
-Read authoritative feature specifications
-↓
-Inspect existing implementation
-↓
-Identify dependencies
-↓
-Identify database impact
-↓
-Identify API impact
-↓
-Identify authorization requirements
-↓
-Identify business rules
-↓
-Identify notification/realtime impact
-↓
-Identify financial/risk impact
-↓
-Identify tests
-↓
-Identify ambiguity
-```
-
-Then:
-
-```text
-Implement
-↓
-Run tests
-↓
-Run typecheck
-↓
-Run lint
-↓
-Run build
-↓
-Review security
-↓
-Review authorization
-↓
-Review business rules
-↓
-Review database migrations
-↓
-Review observability
-↓
-Review documentation
+Do not start the next batch until explicitly instructed.
 ```
 
 ---
 
-# 31. Repository Discipline
+# 44. FINAL RULE
 
-Keep responsibilities separated according to the approved modular architecture.
-
-Avoid:
-
-* giant controllers
-* business logic inside route handlers
-* database logic scattered through unrelated modules
-* duplicated business rules
-* duplicated financial calculations
-* duplicated authorization
-* provider-specific code inside domain logic
-
-Prefer clear module boundaries and reusable domain/business services.
-
-Do not create abstractions merely for theoretical future requirements.
-
----
-
-# 32. V1 Scope Protection
-
-The following remain outside V1 unless explicitly approved:
+The goal is:
 
 ```text
-AI recommendations
-AI voice ordering
-Loyalty
-Subscriptions
-Corporate accounts
-Multi-restaurant cart
-Advanced advertising marketplace
-Advanced AI fraud detection
-Complex predictive analytics
-Grocery
-Pharmacy
-Multi-country
-Multi-currency
-Cryptocurrency
-Rider ratings
-AI review sentiment
-Review rewards
-Review photos/videos
-Promotion stacking
-Referral systems
-Cashback
-Complex promotional segmentation
+Simple enough to build
++
+Strong enough for production
++
+Explicit enough for Claude Code
++
+Secure enough for real users
++
+Auditable enough for financial operations
++
+Faithful enough to the approved Stitch designs
 ```
 
-Do not implement excluded functionality as “preparation” unless the current slice genuinely requires it.
+Never sacrifice correctness for speed.
 
----
+Never sacrifice the architecture for convenience.
 
-# 33. Git Discipline
-
-Keep commits focused.
-
-Prefer commits that represent coherent implementation units.
-
-Examples:
-
-```text
-feat(auth): add authentication foundation
-feat(auth): add session management
-feat(auth): add role authorization
-test(auth): add authentication integration tests
-fix(auth): prevent duplicate session creation
-```
-
-Do not mix unrelated features in one implementation change.
-
-Never commit secrets.
-
-Never commit:
-
-* `.env` files containing secrets
-* API keys
-* private credentials
-* production passwords
-* payment secrets
-* provider tokens
-
----
-
-# 34. Final Rule
-
-QuickBite is being built as a production system.
-
-Correctness takes priority over speed.
-
-Security takes priority over convenience.
-
-Backend authority takes priority over client assumptions.
-
-Data integrity takes priority over shortcuts.
-
-Explicit specifications take priority over guesses.
-
-When the specification is clear, implement it.
-
-When the specification is ambiguous, stop and resolve it.
-
-When a proposed change affects architecture or a frozen business rule, document the decision before implementation.
-
-**Do not silently invent behavior.**
+Never expand the scope silently.
