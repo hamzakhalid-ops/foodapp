@@ -17,6 +17,7 @@ import { type CartQuote, CartService } from '../cart/cart.service';
 import { loadPricingRates, orderTotals, type OrderTotals } from '../cart/pricing';
 import { OrdersService } from '../orders/orders.service';
 import { PaymentsService } from '../payments/payments.service';
+import { PromotionsService } from '../promotions/promotions.service';
 import { RiskService } from '../risk/risk.service';
 
 type Tx = Prisma.TransactionClient;
@@ -27,6 +28,7 @@ interface Priced {
   restaurant: QuotedRestaurant;
   address: Address;
   totals: OrderTotals;
+  promotionId: string | null;
 }
 
 /**
@@ -44,10 +46,11 @@ export class CheckoutService {
     private readonly outbox: OutboxService,
     private readonly config: AppConfigService,
     private readonly risk: RiskService,
+    private readonly promotions: PromotionsService,
   ) {}
 
   async preview(customerId: string, input: CheckoutPreviewRequest): Promise<CheckoutPreview> {
-    const { restaurant, totals } = await this.price(this.prisma, customerId, input);
+    const { restaurant, totals } = await this.price(this.prisma, customerId, input, false);
     return {
       restaurantId: restaurant.id,
       addressId: input.addressId,
@@ -75,7 +78,12 @@ export class CheckoutService {
   ): Promise<Order> {
     const orderId = await this.prisma.$transaction(async (tx) => {
       await this.cart.lockCart(tx, customerId);
-      const { quote, restaurant, address, totals } = await this.price(tx, customerId, input);
+      const { quote, restaurant, address, totals, promotionId } = await this.price(
+        tx,
+        customerId,
+        input,
+        true,
+      );
       const now = new Date();
       const order = await this.orders.createInTx(
         tx,
@@ -83,6 +91,7 @@ export class CheckoutService {
           customerId,
           restaurantId: restaurant.id,
           deliveryAddressId: address.id,
+          promotionId,
           paymentMethod: input.paymentMethod,
           subtotal: totals.subtotal,
           discountAmount: totals.discount,
@@ -125,6 +134,15 @@ export class CheckoutService {
         },
         now,
       );
+      if (promotionId) {
+        // One promotion per order; usage consumed with the order (PROMOTION_RULES §24, §28).
+        await this.promotions.redeem(tx, {
+          promotionId,
+          customerId,
+          orderId: order.id,
+          discount: totals.discount,
+        });
+      }
       await this.payments.createForOrder(tx, order, idempotencyKey);
       await this.outbox.enqueue(tx, {
         eventType: 'order.created',
@@ -146,7 +164,12 @@ export class CheckoutService {
     return this.orders.getById(orderId);
   }
 
-  private async price(tx: Tx, customerId: string, input: CheckoutPreviewRequest): Promise<Priced> {
+  private async price(
+    tx: Tx,
+    customerId: string,
+    input: CheckoutPreviewRequest,
+    forOrder: boolean,
+  ): Promise<Priced> {
     const quote = await this.cart.quote(customerId, tx);
     const restaurant = quote.cart?.restaurant;
     if (quote.lines.length === 0 || !restaurant) {
@@ -178,12 +201,21 @@ export class CheckoutService {
       );
     }
 
-    // No promotions exist until the promotions slice introduces them (PROMOTION_RULES).
-    if (input.promotionCode) {
-      throw unprocessable('PROMOTION_NOT_FOUND', 'No promotion matches this code.');
-    }
-    const totals = orderTotals(quote.subtotal, money(0), await loadPricingRates(this.settings, tx));
-    return { quote, restaurant, address, totals };
+    const applied = input.promotionCode
+      ? await this.promotions.evaluate(tx, {
+          restaurantId: restaurant.id,
+          customerId,
+          code: input.promotionCode,
+          subtotal: quote.subtotal,
+          lock: forOrder,
+        })
+      : null;
+    const totals = orderTotals(
+      quote.subtotal,
+      applied?.discount ?? money(0),
+      await loadPricingRates(this.settings, tx),
+    );
+    return { quote, restaurant, address, totals, promotionId: applied?.promotion.id ?? null };
   }
 
   /** Radius-based delivery eligibility on straight-line distance (MAPS_LOCATION_RULES §12–13, §30). */

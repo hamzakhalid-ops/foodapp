@@ -35,6 +35,7 @@ export interface NewOrder {
   customerId: string;
   restaurantId: string;
   deliveryAddressId: string;
+  promotionId: string | null;
   paymentMethod: PaymentMethod;
   subtotal: Money;
   discountAmount: Money;
@@ -84,6 +85,7 @@ export class OrdersService {
         customerId: input.customerId,
         restaurantId: input.restaurantId,
         deliveryAddressId: input.deliveryAddressId,
+        promotionId: input.promotionId,
         status: 'PENDING',
         paymentMethod: input.paymentMethod,
         paymentStatus: 'PENDING',

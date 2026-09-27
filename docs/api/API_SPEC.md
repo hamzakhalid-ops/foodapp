@@ -460,6 +460,21 @@ code, this catalogue wins: `ORDER_MINIMUM_NOT_MET` (not `MINIMUM_ORDER_NOT_MET`)
 `ORDER_ITEM_UNAVAILABLE` (not `MENU_ITEM_UNAVAILABLE`), `RESTAURANT_NOT_AVAILABLE` (not
 `RESTAURANT_NOT_ORDERABLE`).
 
+## Promotion
+
+```text
+PROMOTION_INACTIVE
+PROMOTION_NOT_STARTED
+PROMOTION_EXPIRED
+PROMOTION_NOT_ELIGIBLE
+PROMOTION_USAGE_LIMIT_REACHED
+```
+
+Added in Phase 20 (promotions slice) from PROMOTION_RULES §50 / PROMOTION_SPEC. Unknown codes and
+codes of another restaurant return `PROMOTION_NOT_FOUND`; an unmet promotion minimum returns
+`PROMOTION_NOT_ELIGIBLE` with `details.reason = MINIMUM_ORDER_NOT_MET`; the per-customer limit
+returns `PROMOTION_USAGE_LIMIT_REACHED` with `details.scope = CUSTOMER`.
+
 ## Payment
 
 ```text

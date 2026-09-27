@@ -356,3 +356,40 @@ Restrictions with `expiresAt` in the past are not enforced.
 | `POST /admin/risk/restrictions/{id}/remove` | {reason} |
 
 Every administrative risk action is audited (`RISK_*` audit actions).
+
+---
+
+## Slice 11 — Promotions (§58, §104, PROMOTION_RULES)
+
+Restaurant-funded only (ADR-0014 §3); managed by the restaurant **owner** (`promotions.manage`,
+AUTH_AUTHORIZATION §42). Statuses: created as `DRAFT`; `DRAFT → ACTIVE`, `ACTIVE ↔ PAUSED` via
+PATCH; `disable` is final; past-end promotions become `EXPIRED` (worker, every minute — validation
+always checks the time window itself). The code can change only while `DRAFT`; disabled/expired
+promotions cannot be edited. All changes are audited (`PROMOTION_*`).
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET/POST /restaurant/promotions` | owner | POST {name, description?, code, type `PERCENTAGE`\|`FIXED_AMOUNT`, value, minimumOrderAmount?, maximumDiscount?, usageLimit?, perCustomerUsageLimit?, startsAt, endsAt}; list query: status?, page, pageSize |
+| `GET/PATCH /restaurant/promotions/{id}` | owner | PATCH: any create field + status `ACTIVE`\|`PAUSED` |
+| `POST /restaurant/promotions/{id}/disable` | owner | |
+| `GET /restaurants/{id}/promotions` | public | currently usable promotions (no usage counters); visibility is not eligibility |
+| `POST /promotions/validate` | customer | {code} → `200 {valid, promotionId, discount, currency, reason, message}` against the current cart; informational only |
+| `GET /admin/promotions`, `/{id}` | admin | |
+| `PATCH /admin/promotions/{id}` | admin | {status `ACTIVE`\|`PAUSED`, reason} (admins change status only) |
+| `POST /admin/promotions/{id}/disable` | admin | {reason} |
+
+**Eligibility** (checkout preview, order creation, validate): the code belongs to the cart's
+restaurant, status `ACTIVE`, `startsAt ≤ now < endsAt`, item subtotal ≥ `minimumOrderAmount`,
+total usage below `usageLimit`, the customer's usages below `perCustomerUsageLimit`.
+
+**Discount** = percentage of the item subtotal (half-up, 2 dp) capped by `maximumDiscount`, or the
+fixed amount; never more than the subtotal. Tax applies to `subtotal − discount` (ADR-0014 §1).
+
+**Redemption.** At order creation the promotion row is locked, eligibility is re-checked, the
+order stores `promotionId` and `discountAmount`, and one `promotion_usages` row is created with
+`usage_count + 1` — concurrent checkouts cannot exceed the limit and idempotent retries never
+consume twice. A cancelled order keeps its usage (PROMOTION_RULES §32 default); refunds are based
+on the amount actually paid (§33).
+
+Not implemented (no rules yet): first-order/targeted promotions, promotion-specific risk
+restrictions.

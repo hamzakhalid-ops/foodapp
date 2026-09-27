@@ -444,6 +444,19 @@ risk_restrictions.status         ACTIVE | REMOVED | EXPIRED
 profile id for RIDER. One ACTIVE flag per subject+rule and one ACTIVE restriction per
 subject+type (partial unique indexes).
 
+Slice 11 (promotions):
+
+```text
+promotions.code                       customer-entered code: trimmed, upper-cased, 3–20 of A–Z 0–9;
+                                      UNIQUE (restaurant_id, code)
+promotions.per_customer_usage_limit   PROMOTION_RULES §27
+```
+
+Both fields are listed in PROMOTION_SPEC §5. `promotions.usage_count` is incremented in the order
+transaction together with the `promotion_usages` row (`usage_count <= usage_limit` is a CHECK);
+`promotion_usages.order_id` is unique (one promotion per order). `orders.promotion_id` now
+references `promotions`.
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

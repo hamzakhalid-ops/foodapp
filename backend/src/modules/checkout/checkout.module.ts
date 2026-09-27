@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CartModule } from '../cart/cart.module';
 import { OrdersModule } from '../orders/orders.module';
 import { PaymentsModule } from '../payments/payments.module';
+import { PromotionsModule } from '../promotions/promotions.module';
 import { RiskModule } from '../risk/risk.module';
 import { CheckoutController } from './checkout.controller';
 import { CheckoutService } from './checkout.service';
@@ -13,7 +14,7 @@ import { CheckoutService } from './checkout.service';
  * Implemented in slice: 7 — Checkout (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  imports: [CartModule, OrdersModule, PaymentsModule, RiskModule],
+  imports: [CartModule, OrdersModule, PaymentsModule, RiskModule, PromotionsModule],
   controllers: [CheckoutController],
   providers: [CheckoutService],
 })

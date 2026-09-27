@@ -6,6 +6,7 @@ export * from './delivery';
 export * from './menu';
 export * from './order';
 export * from './payment';
+export * from './promotion';
 export * from './restaurant';
 export * from './rider';
 export * from './risk';
