@@ -468,6 +468,12 @@ device_tokens(id, user_id, device_id, platform, push_token, last_seen_at, active
     NOTIFICATION_RULES §20; UNIQUE (user_id, device_id)
 ```
 
+Slice 13 (reviews): `reviews.rating` is a SMALLINT with CHECK 1–5 and `reviews.order_id` is
+UNIQUE; `review_responses.review_id` is UNIQUE (one response per review);
+`review_reports.details` holds the optional description (gap fill) and
+`UNIQUE (review_id, reported_by)` prevents duplicate reports; report status is
+`OPEN | RESOLVED | DISMISSED`.
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

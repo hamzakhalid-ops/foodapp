@@ -16,6 +16,7 @@ import { type Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { toAddOn, toVariation } from '../menu/menu.service';
 import { effectiveStatus, RestaurantsService } from '../restaurants/restaurants.service';
+import { ReviewsService } from '../reviews/reviews.service';
 
 const INCLUDE = { operatingHours: true, deliverySettings: true } as const;
 type Row = Prisma.RestaurantGetPayload<{ include: typeof INCLUDE }>;
@@ -37,6 +38,7 @@ export class DiscoveryService {
     private readonly prisma: PrismaService,
     private readonly restaurants: RestaurantsService,
     private readonly settings: SettingsService,
+    private readonly reviews: ReviewsService,
   ) {}
 
   async list(query: RestaurantListQuery): Promise<{ rows: RestaurantSummary[]; total: number }> {
@@ -69,7 +71,7 @@ export class DiscoveryService {
 
   async details(restaurantId: string, location: Located): Promise<RestaurantDetails> {
     const row = await this.visible(restaurantId);
-    const summarize = await this.summarizer(location);
+    const summarize = await this.summarizer(location, [row.id]);
     return {
       ...summarize(row),
       addressLine1: row.addressLine1,
@@ -160,7 +162,10 @@ export class DiscoveryService {
       // ponytail: loads every matching visible restaurant to apply the radius in memory; move
       // distance into SQL (PostGIS or a lat/lng expression) when the catalogue outgrows one city.
       const restaurants = await this.candidates(query, []);
-      const summarize = await this.summarizer(query);
+      const summarize = await this.summarizer(
+        query,
+        restaurants.map((restaurant) => restaurant.id),
+      );
       const items = await this.prisma.menuItem.findMany({
         where: {
           restaurantId: { in: restaurants.map((restaurant) => restaurant.id) },
@@ -236,12 +241,21 @@ export class DiscoveryService {
   }
 
   private async summarize(rows: Row[], location: Located): Promise<RestaurantSummary[]> {
-    return rows.map(await this.summarizer(location));
+    return rows.map(
+      await this.summarizer(
+        location,
+        rows.map((row) => row.id),
+      ),
+    );
   }
 
-  private async summarizer(location: Located): Promise<(row: Row) => RestaurantSummary> {
+  private async summarizer(
+    location: Located,
+    restaurantIds: string[],
+  ): Promise<(row: Row) => RestaurantSummary> {
     const origin = coordinates(location);
     const deliveryFee = await this.settings.get('pricing.delivery_fee');
+    const ratings = await this.reviews.ratingSummaries(restaurantIds);
     const now = new Date();
     return (row) => {
       const distanceKm = origin ? distanceTo(origin, row) : null;
@@ -257,6 +271,10 @@ export class DiscoveryService {
         area: row.area,
         city: row.city,
         status: effectiveStatus(row, now),
+        rating: {
+          average: ratings.get(row.id)?.averageRating ?? null,
+          count: ratings.get(row.id)?.reviewCount ?? 0,
+        },
         isOrderableNow: this.restaurants.isOrderable(row, now),
         minimumOrderAmount: row.deliverySettings
           ? formatMoney(money(row.deliverySettings.minimumOrderAmount))

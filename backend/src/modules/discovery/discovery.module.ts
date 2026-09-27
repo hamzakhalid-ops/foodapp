@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { ReviewsModule } from '../reviews/reviews.module';
 import { DiscoveryController } from './discovery.controller';
 import { DiscoveryService } from './discovery.service';
 
@@ -10,7 +11,7 @@ import { DiscoveryService } from './discovery.service';
  * Implemented in slice: 5 — Customer Discovery (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  imports: [RestaurantsModule],
+  imports: [RestaurantsModule, ReviewsModule],
   controllers: [DiscoveryController],
   providers: [DiscoveryService],
 })

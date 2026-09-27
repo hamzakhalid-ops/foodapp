@@ -63,6 +63,8 @@ export class NotificationEvents {
     'restaurant.application_reviewed': (event) => this.restaurantReviewed(payload(event), event.id),
     'rider.application_submitted': (event) => this.riderSubmitted(payload(event), event.id),
     'rider.status_changed': (event) => this.riderStatusChanged(payload(event), event.id),
+    'review.created': (event) => this.reviewCreated(payload(event)),
+    'review.responded': (event) => this.reviewResponded(payload(event)),
   };
 
   private async orderCreated(p: Payload): Promise<void> {
@@ -290,6 +292,32 @@ export class NotificationEvents {
       vars: {},
       data: { riderId: String(p.riderId) },
       dedupKey: `rider:${String(p.riderId)}:status:${eventId}`,
+    });
+  }
+
+  private async reviewCreated(p: Payload): Promise<void> {
+    const order = await this.order(String(p.orderId));
+    for (const userId of await this.staffOf(order.restaurantId)) {
+      await this.notifications.notify({
+        userId,
+        type: 'REVIEW_RECEIVED',
+        vars: { orderNumber: order.orderNumber, rating: String(p.rating) },
+        data: { reviewId: String(p.reviewId) },
+        dedupKey: `review:${String(p.reviewId)}:received:user:${userId}`,
+      });
+    }
+  }
+
+  private async reviewResponded(p: Payload): Promise<void> {
+    const restaurant = await this.prisma.restaurant.findUniqueOrThrow({
+      where: { id: String(p.restaurantId) },
+    });
+    await this.notifications.notify({
+      userId: String(p.customerId),
+      type: 'REVIEW_RESPONSE',
+      vars: { restaurantName: restaurant.name },
+      data: { reviewId: String(p.reviewId) },
+      dedupKey: `review:${String(p.reviewId)}:response`,
     });
   }
 

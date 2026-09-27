@@ -9,5 +9,6 @@ export * from './payment';
 export * from './promotion';
 export * from './restaurant';
 export * from './retry';
+export * from './review';
 export * from './rider';
 export * from './risk';

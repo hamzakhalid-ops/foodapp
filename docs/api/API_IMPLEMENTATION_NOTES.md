@@ -455,3 +455,35 @@ REST. Events: `order.created`, `order.status_changed`, `payment.status_changed`,
 `delivery.offer_created`, `delivery.offer_expired`, `delivery.assigned`, `delivery.status_changed`,
 `delivery.cancelled`, `dispatch.failed` (admin), `notification.created`. Payloads carry ids and
 statuses only.
+
+---
+
+## Slice 13 — Reviews (§62, §88–89, §105, REVIEW_SPEC §25–27)
+
+Customer → restaurant, rating 1–5 (integers only), optional comment ≤ 1000 characters
+(`REVIEW_COMMENT_MAX_LENGTH`), one review per `DELIVERED` order; the backend derives customer and
+restaurant from the order. New reviews are `PUBLISHED`; moderation happens through reports and
+administrators. Nothing is physically deleted.
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET /orders/{id}/review-eligibility` | customer (own order) | `{eligible, reason (REVIEW_NOT_ELIGIBLE \| REVIEW_ALREADY_EXISTS), reviewId}` |
+| `POST /orders/{id}/review` | customer | {rating, comment?} → `201`; `409 REVIEW_NOT_ELIGIBLE` / `409 REVIEW_ALREADY_EXISTS` (also under concurrency) |
+| `GET /orders/{id}/review` | customer | |
+| `PATCH /reviews/{id}` | customer (author) | {rating?, comment?}; not after HIDDEN/REMOVED (`409 REVIEW_ALREADY_REMOVED`) |
+| `DELETE /reviews/{id}` | customer (author) | `204`; sets `REMOVED` (audited) |
+| `POST /reviews/{id}/report` | customer | {reason (REVIEW_RULES §18 list), details? (required for OTHER)}; published reviews; one report per user (`409 REVIEW_REPORT_INVALID`) |
+| `GET /restaurants/{id}/reviews` | public | query: rating?, sort `newest`\|`highest`\|`lowest`, page, pageSize; published only; author shown as first name |
+| `GET /restaurants/{id}/rating-summary` | public | {averageRating (1 decimal) \| null, reviewCount, distribution {1..5}} over published reviews |
+| `GET /restaurant/reviews`, `/{id}` | owner/operator | own restaurant, excluding removed; query rating?, cursor, limit |
+| `POST /restaurant/reviews/{id}/reply` | owner/operator | {response ≤ 1000}; creates or edits the single response (audited) |
+| `POST /restaurant/reviews/{id}/report` | owner/operator | as above, own restaurant's reviews |
+| `GET /admin/reviews`, `/{id}` | admin | query status?, restaurantId?; detail includes reports |
+| `POST /admin/reviews/{id}/hide\|restore\|remove` | admin | {reason}; hide/remove resolve open reports, restore dismisses them; audited |
+| `GET /admin/review-reports` | admin | query status? |
+| `POST /admin/review-reports/{id}/resolve` | admin | {outcome `RESOLVED`\|`DISMISSED`, reason} |
+
+`RestaurantSummary` in discovery now includes `rating {average, count}`. Notifications:
+`REVIEW_RECEIVED` to restaurant staff, `REVIEW_RESPONSE` to the customer (first response only).
+Not implemented (no rules yet): moderation of restaurant responses, review reminders, automated
+content screening.

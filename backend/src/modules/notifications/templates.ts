@@ -220,6 +220,22 @@ export const TEMPLATES = {
     title: () => 'Application not approved',
     body: () => 'Your rider application was not approved. Check the app for details.',
   },
+  REVIEW_RECEIVED: {
+    category: 'REVIEW',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH'],
+    title: () => 'New review',
+    body: (v) => `A customer rated order #${v.orderNumber} ${v.rating}/5.`,
+  },
+  REVIEW_RESPONSE: {
+    category: 'REVIEW',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH'],
+    title: () => 'The restaurant replied',
+    body: (v) => `${v.restaurantName} replied to your review.`,
+  },
 } satisfies Record<string, NotificationTemplate>;
 
 export type NotificationType = keyof typeof TEMPLATES;

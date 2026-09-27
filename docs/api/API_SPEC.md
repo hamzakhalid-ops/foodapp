@@ -475,6 +475,18 @@ codes of another restaurant return `PROMOTION_NOT_FOUND`; an unmet promotion min
 `PROMOTION_NOT_ELIGIBLE` with `details.reason = MINIMUM_ORDER_NOT_MET`; the per-customer limit
 returns `PROMOTION_USAGE_LIMIT_REACHED` with `details.scope = CUSTOMER`.
 
+## Review
+
+```text
+REVIEW_NOT_ELIGIBLE
+REVIEW_ALREADY_EXISTS
+REVIEW_ALREADY_REMOVED
+REVIEW_REPORT_INVALID
+```
+
+Added in Phase 20 (reviews slice) from REVIEW_RULES §44. Other review cases use the existing codes:
+`REVIEW_NOT_FOUND`, `ORDER_NOT_FOUND` (not the caller's order), `VALIDATION_ERROR` (rating/content).
+
 ## Payment
 
 ```text

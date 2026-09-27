@@ -82,6 +82,10 @@ model User {
   notifications          Notification[]
   notificationPrefs      NotificationPreference[]
   deviceTokens           DeviceToken[]
+  reviews                Review[]
+  reviewResponses        ReviewResponse[]
+  reviewReports          ReviewReport[]           @relation("ReviewReporter")
+  resolvedReviewReports  ReviewReport[]           @relation("ReviewReportResolver")
   riderProfile           RiderProfile?
   reviewedRiders         RiderProfile[]           @relation("RiderReviewer")
   reviewedRiderDocuments RiderDocument[]          @relation("RiderDocumentReviewer")
@@ -385,6 +389,7 @@ model Restaurant {
   carts            Cart[]
   orders           Order[]
   promotions       Promotion[]
+  reviews          Review[]
 
   @@index([status])
   @@index([approvalStatus])
@@ -753,6 +758,7 @@ model Order {
   deliveryAddress Address?             @relation(fields: [deliveryAddressId], references: [id], onDelete: SetNull)
   promotion       Promotion?           @relation(fields: [promotionId], references: [id], onDelete: Restrict)
   promotionUsage  PromotionUsage?
+  review          Review?
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   payments        Payment[]
@@ -1458,4 +1464,81 @@ model DeviceToken {
   @@unique([userId, deviceId])
   @@index([pushToken])
   @@map("device_tokens")
+}
+
+// ----------------------------------------------------------------------------- Reviews (DATABASE.md §46–48, REVIEW_RULES)
+
+enum ReviewStatus {
+  PUBLISHED
+  PENDING_MODERATION
+  HIDDEN
+  REMOVED
+
+  @@map("review_status")
+}
+
+enum ReviewReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+
+  @@map("review_report_status")
+}
+
+/// One review per delivered order (REVIEW_RULES §7); records are never physically deleted (§14).
+model Review {
+  id           String       @id @default(uuid()) @db.Uuid
+  orderId      String       @unique @map("order_id") @db.Uuid
+  customerId   String       @map("customer_id") @db.Uuid
+  restaurantId String       @map("restaurant_id") @db.Uuid
+  rating       Int          @db.SmallInt
+  comment      String?
+  status       ReviewStatus @default(PUBLISHED)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer   User            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  response   ReviewResponse?
+  reports    ReviewReport[]
+
+  @@index([restaurantId, status, createdAt])
+  @@map("reviews")
+}
+
+/// One restaurant response per review (REVIEW_RULES §15–17).
+model ReviewResponse {
+  id               String   @id @default(uuid()) @db.Uuid
+  reviewId         String   @unique @map("review_id") @db.Uuid
+  restaurantUserId String   @map("restaurant_user_id") @db.Uuid
+  response         String
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+  author User   @relation(fields: [restaurantUserId], references: [id], onDelete: Restrict)
+
+  @@map("review_responses")
+}
+
+/// `details` holds the optional description (REVIEW_RULES §18; gap fill DATABASE.md §5.4).
+model ReviewReport {
+  id         String             @id @default(uuid()) @db.Uuid
+  reviewId   String             @map("review_id") @db.Uuid
+  reportedBy String             @map("reported_by") @db.Uuid
+  reason     String
+  details    String?
+  status     ReviewReportStatus @default(OPEN)
+  resolvedBy String?            @map("resolved_by") @db.Uuid
+  resolvedAt DateTime?          @map("resolved_at") @db.Timestamptz(6)
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+  reporter User   @relation("ReviewReporter", fields: [reportedBy], references: [id], onDelete: Restrict)
+  resolver User?  @relation("ReviewReportResolver", fields: [resolvedBy], references: [id], onDelete: Restrict)
+
+  @@unique([reviewId, reportedBy])
+  @@index([status, createdAt])
+  @@map("review_reports")
 }

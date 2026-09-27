@@ -168,6 +168,8 @@ export const restaurantSummarySchema = z.object({
   estimatedPreparationMinutes: z.number().nullable(),
   /** Platform flat delivery fee (ADR-0014 §1); null until configured. */
   deliveryFee: z.string().nullable(),
+  /** Public rating from PUBLISHED reviews (REVIEW_RULES §22); average null without reviews. */
+  rating: z.object({ average: z.number().nullable(), count: z.number() }),
   /** Present only when the caller supplied a location. */
   distanceKm: z.number().nullable(),
   deliversToLocation: z.boolean().nullable(),
