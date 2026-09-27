@@ -2,7 +2,7 @@
 
 QuickBite is a production-oriented **food delivery marketplace** connecting customers, restaurants and riders, operated by platform administrators.
 
-> **Status:** Phase 20 — Implementation. The repository foundation is in place. **No product feature is implemented yet.** See [Current implementation status](#current-implementation-status).
+> **Status:** Phase 20 — Implementation. Foundation complete; **Slice 1 (Authentication) backend implemented**. No product screens yet. See [Current implementation status](#current-implementation-status).
 
 ---
 

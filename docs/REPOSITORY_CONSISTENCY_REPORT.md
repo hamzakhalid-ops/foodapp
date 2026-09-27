@@ -40,22 +40,19 @@ No substantive business rule was changed by these fixes.
 
 ---
 
-# 2. CRITICAL — Blocks Slice 1 (Authentication)
+# 2. CRITICAL — Resolved in Slice 1
 
-### C1. Authentication storage is not defined in `DATABASE.md`
+### C1. Authentication storage — RESOLVED
 
-* `docs/security/AUTH_AUTHORIZATION.md` §20 defines a server-side session record (`session_id, user_id, refresh_token_hash, created_at, last_used_at, expires_at, revoked_at, ip_address, user_agent, device metadata`), §16 requires hashed OTP codes, and §23–24 require revocable, rotating refresh tokens. Password reset tokens are required by API_SPEC §23–24.
-* `docs/database/DATABASE.md` defines only `users` and `user_roles` for identity. There is **no table** for sessions/refresh tokens, verification codes (phone/email OTP) or password-reset tokens.
-* `CLAUDE.md` §8 and DATABASE.md §77 forbid inventing tables.
-* **Affected:** `DATABASE.md` §4–5, `AUTH_AUTHORIZATION.md` §16–24, `API_SPEC.md` §16–25, Slice 1.
-* **Needed decision:** approve table definitions (names, columns, constraints) for sessions, verification codes and password-reset tokens, and add them to `DATABASE.md` before Slice 1.
+Approved by the project owner. `DATABASE.md` §5.1–5.3 now defines `user_sessions`, `refresh_tokens` and `verification_challenges` (hashed secrets, rotation and reuse rules), identity column types, and the account-activation rule. Implemented in migration `backend/prisma/migrations/20260927204038_slice1_authentication`.
 
-### C2. Verification-code delivery channel for Slice 1
+### C2. Verification-code delivery — RESOLVED (interim)
 
-* Slice 1 includes phone and email verification and forgot-password (API_SPEC §20–24), which require sending codes via SMS and email.
-* No SMS or email provider is selected (`NOTIFICATION_RULES.md` is provider-agnostic; `.env.example` leaves `SMS_PROVIDER` / `EMAIL_PROVIDER` empty).
-* `CLAUDE.md` §29 forbids fake production behavior.
-* **Needed decision:** select SMS and email providers, **or** explicitly approve an isolated development-only delivery adapter (e.g. codes written to local logs in `APP_ENV=development` only) for Slice 1 while providers are procured.
+Approved by the project owner: delivery goes through the `VerificationSender` interface; the only adapter is a development/test-only log adapter, which configuration refuses in staging/production. **A real SMS and email provider is still required before any deployed environment can register users** (tracked as H8).
+
+### Owner decision recorded — account activation
+
+A customer account moves from `PENDING_VERIFICATION` to `ACTIVE` on **phone verification**; email verification is recorded but does not change status (`DATABASE.md` §5.3).
 
 ---
 
@@ -112,9 +109,29 @@ These screens are listed in `apps/admin/SCREEN_PLAN.md` with explicit **Dependen
 
 ---
 
+### H8. SMS/email providers (before the first staging deployment)
+
+Staging/production refuse to start with the development verification adapter (`VERIFICATION_DELIVERY=log`). Select providers and implement `VerificationSender` adapters behind `NotificationService` (`NOTIFICATION_RULES.md`).
+
+### H9. Slice 1 specification gaps (found while implementing authentication)
+
+| # | Gap | Current behavior | Needed |
+|---|-----|------------------|--------|
+| a | No endpoint to **resend the email verification** link (API_SPEC §21 covers phone only). | Email token sent once at registration (valid 24 h). | Add an endpoint to API_SPEC. |
+| b | **Logout all sessions** (AUTH_AUTHORIZATION §29) and **password change** (§30) have no endpoints. | Not implemented. Password reset revokes all sessions. | Add endpoints to API_SPEC (likely with Slice 2 / account settings). |
+| c | **Changing email/phone** (AUTH_AUTHORIZATION §125) is unspecified. | Challenges are bound to the contact they were sent to (`target`), so a change would invalidate them. | Specify with Customer Profile (Slice 2). |
+| d | **Admin MFA / step-up** (§34–38) — see H7. | Not implemented; no admin endpoints exist yet. | Before Admin Batch 01. |
+| e | **Realtime authentication** (§53–54). | Socket.IO gateway still rejects every connection (fail closed). | Implement with the first realtime slice, together with H1. |
+| f | **Common/breached password rejection** (§9, "where supported"). | Only min/max length is enforced. | Decide whether to add a local common-password list. |
+
+---
+
 # 4. MEDIUM
 
-### M1. Standard error codes incomplete in `API_SPEC.md` §13
+### M1. Standard error codes incomplete in `API_SPEC.md` §13 — PARTIALLY RESOLVED
+
+Slice 1 added a **System** group (`RATE_LIMITED`, `INTERNAL_ERROR`) and `AUTH_ACCOUNT_ALREADY_EXISTS`, `AUTH_PASSWORD_POLICY_VIOLATION` to API_SPEC §13. Remaining: a dedicated "not ready" code, and aligning the category lists below. `AUTH_AUTHORIZATION.md` §81 lists different names (`INVALID_CREDENTIALS`, `SESSION_REVOKED`, `MFA_REQUIRED`, …); the implementation uses the **API_SPEC §13** codes, and §81 should be updated to reference them.
+
 
 `INTERNAL_ERROR` and `RATE_LIMITED` are defined in `ARCHITECTURE.md` §48, `AUTH_AUTHORIZATION.md` §19 and `ARCHITECTURE_CONSISTENCY_REVIEW.md` §30, but are not in `API_SPEC.md` §13. There is also no code for "service not ready" (used by `/health/ready`). The foundation uses `INTERNAL_ERROR` (HTTP 500/503) and `RATE_LIMITED` (HTTP 429) — see `packages/types/src/api.ts` `SYSTEM` group. **Recommendation:** add a "System" group to API_SPEC §13.
 
@@ -169,6 +186,8 @@ Both are transitive in Expo packages and cannot be overridden safely without ups
 | L8 | `ARCHITECTURE_CONSISTENCY_REVIEW.md` §47 discourages ADRs that duplicate settled rules. ADR-0001…0013 were created at the owner's explicit request; each states that it only records a frozen decision and defers to its source specification. |
 | L9 | No local S3-compatible emulator is pinned in `infrastructure/local/docker-compose.yml` (MinIO community container images are no longer a safe default). Choose a local option when Slice 3 (documents/images) starts. |
 | L10 | `CLAUDE.md` §3 does not yet reference `docs/TECHNOLOGY_STACK.md` or `docs/decisions/ADR/`. Consider adding them to the document hierarchy (`CLAUDE.md` was not modified in this task). |
+| L11 | `AUTH_AUTHORIZATION.md` §6 lists statuses `ACTIVE, PENDING_VERIFICATION, SUSPENDED, DISABLED`; `DATABASE.md` §4.1 lists `ACTIVE, SUSPENDED, RESTRICTED, DEACTIVATED, PENDING_VERIFICATION`. §6 defers to the database specification, so the database list is implemented (`DISABLED` ≙ `DEACTIVATED` → `AUTH_ACCOUNT_DISABLED`). `RESTRICTED` accounts can log in; restrictions apply in business rules. |
+| L12 | Verification-code delivery happens directly after the database commit rather than through the outbox (not yet built). A lost delivery is recoverable by resending. Move delivery onto the outbox when it exists. |
 
 ---
 
@@ -176,9 +195,9 @@ Both are transitive in Expo packages and cannot be overridden safely without ups
 
 These are not inconsistencies; they are the planned remaining work.
 
-* Prisma schema contains **no models**; no migrations exist.
+* Prisma schema contains only the Slice 1 identity/auth/audit models (one migration).
 * Idempotency (`idempotency_keys`) and outbox (`outbox_events`) infrastructure — to be implemented before the first slice that needs them (`IMPLEMENTATION_PLAN.md` §24).
-* Authentication/authorization guards, rate limiting, audit logging — Slice 1 onwards.
+* Authentication, role guard, rate limiting and audit logging are implemented (Slice 1). Ownership/tenant authorization arrives with the first tenant-scoped slice.
 * Socket.IO gateway rejects all connections until authentication exists (fail-closed).
 * Provider abstractions (`PaymentService`, `MapsService`, `NotificationService`, `StorageService`) — introduced with their first slice.
 * Mobile/admin Sentry SDKs — added with the first real screen batch of each app.
@@ -198,11 +217,11 @@ These are not inconsistencies; they are the planned remaining work.
 # 8. Summary
 
 ```text
-Fixed:     9
-CRITICAL:  2   (C1 auth storage, C2 verification delivery)
-HIGH:      7
-MEDIUM:    8
-LOW:       10
+Fixed:     9  (+ C1, C2 resolved in Slice 1)
+CRITICAL:  0
+HIGH:      9  (H1–H7, H8 providers, H9 Slice 1 spec gaps)
+MEDIUM:    8  (M1 partially resolved)
+LOW:       12
 ```
 
 The architecture itself remains consistent with `ARCHITECTURE_CONSISTENCY_REVIEW.md`: no contradiction to the modular monolith, roles, order lifecycle, dispatch, payments, reviews or promotions was found. The open items are **missing specifications** (mostly data model and API contracts) and **owner decisions** (providers, market, identities), not conflicts in frozen rules.
