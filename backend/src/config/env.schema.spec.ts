@@ -3,6 +3,8 @@ import { validateEnv } from './env.schema';
 const valid = {
   DATABASE_URL: 'postgresql://user:secret-password@localhost:5432/quickbite',
   REDIS_URL: 'redis://localhost:6379',
+  JWT_ACCESS_SECRET: 'x'.repeat(32),
+  AUTH_SECRET_HASH_KEY: 'y'.repeat(32),
 };
 
 describe('validateEnv', () => {
@@ -20,7 +22,7 @@ describe('validateEnv', () => {
   });
 
   it('rejects missing required configuration without echoing values', () => {
-    expect(() => validateEnv({ REDIS_URL: 'redis://localhost:6379' })).toThrow(/DATABASE_URL/);
+    expect(() => validateEnv({ ...valid, DATABASE_URL: undefined })).toThrow(/DATABASE_URL/);
   });
 
   it('rejects a non-PostgreSQL database URL and never includes secrets in the error', () => {
@@ -32,5 +34,26 @@ describe('validateEnv', () => {
     }
     expect(message).toContain('DATABASE_URL');
     expect(message).not.toContain('secret-password');
+  });
+
+  it('parses rate-limit rules', () => {
+    expect(validateEnv({ ...valid, RATE_LIMIT_LOGIN: '5/60' }).RATE_LIMIT_LOGIN).toEqual({
+      max: 5,
+      windowSeconds: 60,
+    });
+    expect(() => validateEnv({ ...valid, RATE_LIMIT_LOGIN: 'lots' })).toThrow(/RATE_LIMIT_LOGIN/);
+  });
+
+  it('requires strong auth secrets', () => {
+    expect(() => validateEnv({ ...valid, JWT_ACCESS_SECRET: 'short' })).toThrow(
+      /JWT_ACCESS_SECRET/,
+    );
+  });
+
+  it('refuses the development verification adapter in staging and production', () => {
+    for (const APP_ENV of ['staging', 'production']) {
+      expect(() => validateEnv({ ...valid, APP_ENV })).toThrow(/VERIFICATION_DELIVERY/);
+    }
+    expect(validateEnv({ ...valid, APP_ENV: 'development' }).VERIFICATION_DELIVERY).toBe('log');
   });
 });

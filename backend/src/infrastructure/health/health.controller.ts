@@ -1,5 +1,6 @@
 import { Controller, Get, HttpStatus, Inject } from '@nestjs/common';
 import { type Redis } from 'ioredis';
+import { Public } from '../../common/auth/auth.decorators';
 import { ApiException } from '../../common/http/api.exception';
 import { PrismaService } from '../database/prisma.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
@@ -10,6 +11,7 @@ type DependencyStatus = 'up' | 'down';
  * Liveness/readiness probes (OBSERVABILITY_SPEC §39–41, DEPLOYMENT_SPEC §25).
  * Served outside /api/v1 because they are infrastructure endpoints, not product API.
  */
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

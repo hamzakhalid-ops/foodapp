@@ -1,12 +1,51 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { AppConfigService } from '../../config/app-config.service';
+import { CustomersModule } from '../customers/customers.module';
+import { UsersModule } from '../users/users.module';
+import { AuthController } from './auth.controller';
+import { AuthGuard } from './auth.guard';
+import { AuthService } from './auth.service';
+import { ChallengeService } from './challenge.service';
+import { LogVerificationSender } from './delivery/log-verification-sender';
+import { VERIFICATION_SENDER } from './delivery/verification-sender';
+import { PasswordService } from './password.service';
+import { RolesGuard } from './roles.guard';
+import { SessionService } from './session.service';
+import { TokenService } from './token.service';
 
 /**
- * Auth module — Registration, login/logout, sessions and refresh tokens, verification, password management, account status checks (ARCHITECTURE §5, AUTH_AUTHORIZATION).
+ * Auth module — Registration, login/logout, sessions and refresh tokens, verification, password
+ * management, account status checks (ARCHITECTURE §5, AUTH_AUTHORIZATION).
  *
- * Owns tables: Session/refresh-token storage defined in AUTH_AUTHORIZATION but not yet in DATABASE.md (see REPOSITORY_CONSISTENCY_REPORT).
+ * Owns tables: user_sessions, refresh_tokens, verification_challenges (DATABASE.md §5.1).
  * Implemented in slice: 1 — Authentication (docs/IMPLEMENTATION_PLAN.md).
  *
- * Status: BOUNDARY ONLY. No business logic is implemented yet.
+ * Registers the global AuthGuard (authentication required by default) and RolesGuard.
  */
-@Module({})
+@Module({
+  imports: [UsersModule, CustomersModule],
+  controllers: [AuthController],
+  providers: [
+    AuthService,
+    PasswordService,
+    TokenService,
+    SessionService,
+    ChallengeService,
+    {
+      provide: VERIFICATION_SENDER,
+      inject: [AppConfigService],
+      useFactory: (config: AppConfigService) => {
+        const appEnv = config.get('APP_ENV');
+        if (appEnv === 'staging' || appEnv === 'production') {
+          throw new Error('No verification delivery provider is configured for this environment');
+        }
+        return new LogVerificationSender();
+      },
+    },
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
+  exports: [TokenService, SessionService],
+})
 export class AuthModule {}

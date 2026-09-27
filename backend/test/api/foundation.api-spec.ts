@@ -65,4 +65,39 @@ describe('HTTP foundation (no external services)', () => {
   it('serves product routes only under /api/v1', async () => {
     await request(app.getHttpServer()).get('/api/v1/health/live').expect(404);
   });
+
+  it('requires authentication by default (fail closed) without touching the database', async () => {
+    const response = await request(app.getHttpServer()).get('/api/v1/me').expect(401);
+    expect(response.body).toMatchObject({ success: false, error: { code: 'AUTH_TOKEN_INVALID' } });
+  });
+
+  it('rejects forged bearer tokens', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/me')
+      .set('Authorization', 'Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJ4In0.')
+      .expect(401);
+    expect(response.body).toMatchObject({ error: { code: 'AUTH_TOKEN_INVALID' } });
+  });
+
+  it('validates auth request bodies before any rate limiting or persistence', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ identifier: '', password: 'secret-value' })
+      .expect(400);
+    expect(response.body).toMatchObject({
+      error: {
+        code: 'VALIDATION_ERROR',
+        details: { fields: { identifier: expect.any(String) as string } },
+      },
+    });
+    expect(JSON.stringify(response.body)).not.toContain('secret-value');
+  });
+
+  it('fails closed when the rate limiter (Redis) is unavailable', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ identifier: 'a@b.co', password: 'whatever-password' })
+      .expect(503);
+    expect(response.body).toMatchObject({ error: { code: 'INTERNAL_ERROR' } });
+  });
 });

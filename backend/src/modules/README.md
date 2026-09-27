@@ -52,4 +52,5 @@ first slice that needs them (`docs/IMPLEMENTATION_PLAN.md` §24).
 
 ## Current status
 
-All modules are **boundary only**. No business feature has been implemented.
+Implemented (Slice 1): `auth`, `users`, `audit`, and the registration part of `customers`.
+All other modules are **boundaries only**.

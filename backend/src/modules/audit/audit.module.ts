@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
+import { AuditService } from './audit.service';
 
 /**
- * Audit module — Append-only audit logging for sensitive and financial actions.
+ * Audit module — append-only audit logging for sensitive and financial actions.
  *
- * Owns tables: audit_logs.
- * Implemented in slice: Cross-slice (first use: 1 — Authentication) (docs/IMPLEMENTATION_PLAN.md).
- *
- * Status: BOUNDARY ONLY. No business logic is implemented yet.
+ * Owns tables: audit_logs (DATABASE.md §59).
  */
-@Module({})
+@Global()
+@Module({
+  providers: [AuditService],
+  exports: [AuditService],
+})
 export class AuditModule {}

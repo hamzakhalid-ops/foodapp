@@ -58,6 +58,11 @@ export class ApiExceptionFilter implements ExceptionFilter {
       this.logger.error({ err: exception, request_id: requestId, code }, 'Unhandled error');
     }
 
+    const retryAfter = details?.retryAfterSeconds;
+    if (code === 'RATE_LIMITED' && typeof retryAfter === 'number') {
+      response.setHeader('Retry-After', String(retryAfter));
+    }
+
     const body: ApiErrorResponse = {
       success: false,
       error: {

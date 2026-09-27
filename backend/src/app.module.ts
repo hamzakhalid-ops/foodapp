@@ -4,6 +4,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
 import { ApiExceptionFilter } from './common/http/api-exception.filter';
 import { ApiResponseInterceptor } from './common/http/api-response.interceptor';
 import { LoggingModule } from './common/logging/logging.module';
+import { RateLimitModule } from './common/rate-limit/rate-limit.module';
 import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { HealthModule } from './infrastructure/health/health.module';
@@ -20,6 +21,7 @@ import { DOMAIN_MODULES } from './modules';
     LoggingModule,
     DatabaseModule,
     RedisModule,
+    RateLimitModule,
     QueueModule,
     RealtimeModule,
     HealthModule,

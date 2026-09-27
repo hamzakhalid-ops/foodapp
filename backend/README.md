@@ -29,7 +29,8 @@ One build artifact, two process roles (`docs/infrastructure/DEPLOYMENT_SPEC.md` 
 ```text
 backend/
 ├── prisma/
-│   └── schema.prisma          # governed by docs/database/DATABASE.md — no models yet
+│   ├── schema.prisma          # governed by docs/database/DATABASE.md
+│   └── migrations/
 ├── prisma.config.ts
 ├── src/
 │   ├── main.ts / worker.ts    # process entrypoints
@@ -41,7 +42,7 @@ backend/
 │   │   ├── http/              # error envelope, success envelope, request/correlation IDs
 │   │   └── logging/           # structured logging with redaction
 │   ├── infrastructure/        # database, redis, queue, realtime, health
-│   ├── modules/               # 25 domain module boundaries (see modules/README.md)
+│   ├── modules/               # domain modules (auth, users, customers, audit implemented; others boundaries)
 │   └── generated/             # Prisma client (generated, git-ignored)
 └── test/
     ├── api/                   # Supertest suites, no external services
@@ -56,10 +57,44 @@ backend/
 - Structured JSON logs; authorization headers, cookies, passwords and tokens redacted
 - `/health/live` (process) and `/health/ready` (PostgreSQL + Redis) outside `/api/v1`
 - Prisma client wiring (lazy connection), Redis client, BullMQ root configuration
-- Socket.IO gateway that **rejects every connection** until authentication exists (fail-closed)
+- Socket.IO gateway that **rejects every connection** until realtime authentication is built (fail-closed)
 - Sentry initialisation with request bodies, headers, cookies, query strings and user info disabled
+- Redis rate limiter (fixed window, hashed keys, fails closed), append-only audit log writer
 
-**No product feature is implemented.** All domain modules are boundaries only.
+## Slice 1 — Authentication (implemented)
+
+| Endpoint                                               | Auth   | Notes                                                                                |
+| ------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------ |
+| `POST /api/v1/auth/register`                           | public | Customer account (`PENDING_VERIFICATION`) + profile; sends phone OTP and email token |
+| `POST /api/v1/auth/login`                              | public | Email or phone; generic `AUTH_INVALID_CREDENTIALS` (no enumeration)                  |
+| `POST /api/v1/auth/refresh`                            | public | Single-use refresh tokens; reuse revokes the whole session                           |
+| `POST /api/v1/auth/logout`                             | token  | Revokes the current session                                                          |
+| `POST /api/v1/auth/verify-phone` (+ `/resend`)         | token  | Activates the account (`DATABASE.md` §5.3)                                           |
+| `POST /api/v1/auth/verify-email`                       | public | Single-use token                                                                     |
+| `POST /api/v1/auth/forgot-password` / `reset-password` | public | Generic 202; reset revokes all sessions                                              |
+| `GET /api/v1/me`                                       | token  | `API_SPEC.md` §25                                                                    |
+
+Security model:
+
+- **Authentication is required by default** (global `AuthGuard`); routes opt out with `@Public()`.
+  Every request re-checks the server-side session, account status and current roles, so logout,
+  suspension and role changes apply immediately. Unverified accounts only reach routes marked
+  `@AllowUnverified()`. `@Roles(...)` enforces the role step of the authorization chain.
+- Passwords: Argon2id, configurable length policy, no truncation, constant-work login for unknown accounts.
+- Access tokens: HS256 JWT (`sub`, `sid`, `typ`, `iss`, `aud`, `exp`), algorithm pinned, previous
+  secrets accepted for key rotation. Refresh/verification/reset secrets are random 256-bit values
+  stored as SHA-256; phone OTPs are stored as HMAC with a server key.
+- Rate limits per IP and per identifier/user, configurable (`RATE_LIMIT_*`).
+- Security events (`LOGIN_SUCCESS`, `LOGIN_FAILURE`, `LOGOUT`, `PHONE_VERIFIED`, …) are written to
+  `audit_logs` in the same transaction as the change; no secrets are ever recorded.
+- **Verification delivery:** `VerificationSender` interface. Only a development/test **log** adapter
+  exists (approved interim); staging/production refuse to start until real SMS/email providers are added.
+
+Local development needs `JWT_ACCESS_SECRET` and `AUTH_SECRET_HASH_KEY` (≥ 32 chars) in `.env`:
+
+```bash
+openssl rand -base64 48   # run twice, once per secret
+```
 
 ## Commands
 
