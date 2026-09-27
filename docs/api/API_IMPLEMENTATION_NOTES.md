@@ -77,3 +77,45 @@ the payment account can be changed by the owner at any time (audited).
 
 **Orderable** (ARCHITECTURE §59, ADR-0014 §12): approved, effectively `ONLINE` (an expired pause
 counts as online), delivery enabled, and inside today's operating hours in the business timezone.
+
+---
+
+## Slice 4 — Menu (§50) and customer discovery (§28–31)
+
+**Roles.** Owner: all menu writes. Owner or operator: menu reads and
+`POST /restaurant/menu/items/{id}/availability`. Menu writes require an `APPROVED` restaurant
+(`409 RESTAURANT_NOT_APPROVED`; PRD §10 places menu setup after approval).
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET/POST /restaurant/menu/categories` | member / owner | {name, description?, sortOrder? 0–10000, isActive?} |
+| `PATCH/DELETE /restaurant/menu/categories/{id}` | owner | partial body; DELETE only when empty (`409 INVALID_REQUEST`), otherwise deactivate with `isActive: false` |
+| `GET /restaurant/menu/items` | member | query `categoryId?`; items include variations and add-ons |
+| `POST /restaurant/menu/items` | owner | {categoryId, name, description?, imageUrl? (https), basePrice, isAvailable?, sortOrder?}; category must be the caller's |
+| `GET/PATCH/DELETE /restaurant/menu/items/{id}` | member / owner / owner | DELETE removes the item with its variations and add-ons (orders keep their own snapshots) |
+| `POST /restaurant/menu/items/{id}/availability` | member | {available} → `MenuItem` |
+| `GET/POST /restaurant/menu/items/{id}/variations` | member / owner | {name, priceAdjustment? (default `0.00`), isActive?, sortOrder?} |
+| `PATCH/DELETE /restaurant/menu/variations/{id}` | owner | |
+| `GET/POST /restaurant/menu/items/{id}/add-ons` | member / owner | {name, price, isActive?, sortOrder?} |
+| `PATCH/DELETE /restaurant/menu/add-ons/{id}` | owner | |
+
+Prices are non-negative decimal strings with at most 2 places; the database enforces `>= 0`.
+Variation adjustments are additive and non-negative (DATABASE.md §19 example `Small +0`).
+
+**Discovery (public, no authentication).** Visible restaurants are `APPROVED` with status
+`ONLINE`, `OFFLINE` or `TEMPORARILY_PAUSED`; `SUSPENDED`/`CLOSED`/unapproved restaurants return
+`404 RESTAURANT_NOT_FOUND`. A visible restaurant may be not orderable (`isOrderableNow: false`,
+MAPS_LOCATION_RULES §32–33).
+
+| Endpoint | Notes |
+|----------|-------|
+| `GET /restaurants` | query: latitude?, longitude? (together), radius? km (needs location), search?, cuisine?, status? (`ONLINE`\|`OFFLINE`\|`TEMPORARILY_PAUSED`), sort `name`\|`distance` (distance needs location), page, pageSize. `cursor` is not supported (offset pagination). |
+| `GET /restaurants/{id}` | query: latitude?, longitude?; summary + addressLine1, coordinates, deliveryRadius, operatingHours. No phone/email/approval/business/payment data. |
+| `GET /restaurants/{id}/menu` | active categories that contain items; unavailable items are listed with `isAvailable: false`; inactive variations/add-ons are omitted |
+| `GET /search` | query: q (1–100), type `RESTAURANT`\|`MENU_ITEM`\|`ALL`, latitude?, longitude?, radius?, page, pageSize → `{restaurants, menuItems}`; page/pageSize apply to each list; case-insensitive substring match |
+
+`RestaurantSummary`: id, name, slug, description, logoUrl, coverImageUrl, cuisineDescription, area,
+city, status, isOrderableNow, minimumOrderAmount, estimatedPreparationMinutes, deliveryFee
+(platform flat fee, `null` until configured), distanceKm and deliversToLocation (`null` without a
+caller location). Distance is straight-line (MAPS_LOCATION_RULES §13) and delivery reach compares
+it with the restaurant's delivery radius. Ratings are added with the reviews slice.

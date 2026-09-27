@@ -52,5 +52,7 @@ first slice that needs them (`docs/IMPLEMENTATION_PLAN.md` §24).
 
 ## Current status
 
-Implemented (Slice 1): `auth`, `users`, `audit`, and the registration part of `customers`.
-All other modules are **boundaries only**.
+Implemented: `auth`, `users`, `audit`, `customers` (Slices 1–2), `restaurants`,
+`restaurant-staff`, restaurant review in `admin` (Slice 3), `menu`, `discovery` (Slice 4).
+Shared infrastructure in `src/common`: outbox, idempotency, settings, money, geo, business time.
+Modules not listed are **boundaries only** until their slice lands.

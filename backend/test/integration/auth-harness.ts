@@ -91,6 +91,7 @@ export interface Harness {
   app: TestApp;
   /** Creates an APPROVED, ONLINE restaurant open every day 00:00–23:59, with its owner actor. */
   restaurant: (overrides?: {
+    name?: string;
     latitude?: number;
     longitude?: number;
     deliveryRadius?: number;
@@ -143,6 +144,7 @@ export async function createHarness(): Promise<Harness> {
 
   const restaurant = async (
     overrides: {
+      name?: string;
       latitude?: number;
       longitude?: number;
       deliveryRadius?: number;
@@ -153,7 +155,7 @@ export async function createHarness(): Promise<Harness> {
     const created = await prisma.restaurant.create({
       data: {
         ownerUserId: owner.userId,
-        name: 'Test Kitchen',
+        name: overrides.name ?? 'Test Kitchen',
         slug: `test-kitchen-${owner.userId.slice(0, 8)}`,
         phone: '+923001112233',
         email: 'kitchen@example.com',
