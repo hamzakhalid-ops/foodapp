@@ -1,0 +1,44 @@
+# QuickBite — local development infrastructure.
+#
+# Development only (INFRASTRUCTURE_RULES §5, DEVOPS_SPEC §19). Never point this at production data.
+# Usage (from the repository root):
+#   docker compose -f infrastructure/local/docker-compose.yml up -d
+#
+# Credentials below are local, non-secret development defaults and match .env.example.
+
+name: quickbite-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: quickbite
+      POSTGRES_PASSWORD: quickbite_local_only
+      POSTGRES_DB: quickbite
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quickbite -d quickbite']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    # Local only: no persistence needed — Redis is never the durable source of truth (ADR-0003).
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Object storage: the StorageService targets any S3-compatible API. A local emulator is not
+  # pinned yet — see docs/REPOSITORY_CONSISTENCY_REPORT.md (open decision).
+
+volumes:
+  postgres-data:

@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.next
+**/.expo
+**/.turbo
+**/coverage
+**/src/generated
+.env
+.env.*
+!.env.example
+.git
+apps
+docs
