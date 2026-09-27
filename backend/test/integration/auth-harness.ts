@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Idempotent } from '../../src/common/idempotency/idempotent.decorator';
 import { type Redis } from 'ioredis';
 import { type AuthContext, CurrentAuth, Roles } from '../../src/common/auth/auth.decorators';
 import request from 'supertest';
@@ -58,6 +59,20 @@ export class GuardProbeController {
   }
 }
 
+/** Counts executions to prove idempotent replays do not re-run the handler. */
+@Controller('__test__/idempotent')
+export class IdempotencyProbeController {
+  static executions = 0;
+
+  @Post()
+  @Idempotent()
+  create(@Body() body: { value?: string }): { execution: number; value: string | null } {
+    IdempotencyProbeController.executions += 1;
+    if (body.value === 'fail') throw new Error('probe failure');
+    return { execution: IdempotencyProbeController.executions, value: body.value ?? null };
+  }
+}
+
 export interface Harness {
   app: TestApp;
   sender: CapturingSender;
@@ -71,7 +86,7 @@ export async function createHarness(): Promise<Harness> {
   const sender = new CapturingSender();
   const app = await createTestApp(
     (builder) => builder.overrideProvider(VERIFICATION_SENDER).useValue(sender),
-    [GuardProbeController],
+    [GuardProbeController, IdempotencyProbeController],
   );
   const prisma = app.get(PrismaService);
   const redis = app.get<Redis>(REDIS_CLIENT);
@@ -84,8 +99,11 @@ export async function createHarness(): Promise<Harness> {
     http: () => request(app.getHttpServer()),
     // Integration databases/Redis are disposable test services (TESTING_SPEC §71).
     reset: async () => {
+      const tables = await prisma.$queryRaw<{ tablename: string }[]>`
+        SELECT tablename FROM pg_tables
+        WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;
       await prisma.$executeRawUnsafe(
-        'TRUNCATE audit_logs, refresh_tokens, user_sessions, verification_challenges, customer_profiles, user_roles, users CASCADE',
+        `TRUNCATE ${tables.map((t) => `"${t.tablename}"`).join(', ')} RESTART IDENTITY CASCADE`,
       );
       await redis.flushdb();
       sender.clear();

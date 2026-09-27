@@ -64,6 +64,8 @@ model User {
   sessions               UserSession[]
   verificationChallenges VerificationChallenge[]
   auditLogs              AuditLog[]
+  updatedSettings        SystemSetting[]         @relation("SystemSettingUpdater")
+  idempotencyKeys        IdempotencyKey[]
 
   @@map("users")
 }
@@ -192,4 +194,71 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([action, createdAt])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// System — DATABASE.md §60–62 (cross-cutting infrastructure)
+// ---------------------------------------------------------------------------
+
+model SystemSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  value       Json
+  valueType   String   @map("value_type")
+  description String?
+  isSensitive Boolean  @default(false) @map("is_sensitive")
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  updater User? @relation("SystemSettingUpdater", fields: [updatedBy], references: [id], onDelete: Restrict)
+
+  @@map("system_settings")
+}
+
+model IdempotencyKey {
+  id             String   @id @default(uuid()) @db.Uuid
+  key            String
+  userId         String   @map("user_id") @db.Uuid
+  endpoint       String
+  requestHash    String   @map("request_hash")
+  responseStatus Int?     @map("response_status")
+  responseBody   Json?    @map("response_body")
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, endpoint, key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+
+  @@map("outbox_status")
+}
+
+model OutboxEvent {
+  id            String       @id @default(uuid()) @db.Uuid
+  /// Monotonic order of creation (events of one transaction share created_at).
+  sequence      BigInt       @unique @default(autoincrement())
+  eventType     String       @map("event_type")
+  aggregateType String       @map("aggregate_type")
+  aggregateId   String       @map("aggregate_id")
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  lastError     String?      @map("last_error")
+  availableAt   DateTime     @default(now()) @map("available_at") @db.Timestamptz(6)
+  processedAt   DateTime?    @map("processed_at") @db.Timestamptz(6)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, availableAt])
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_events")
 }

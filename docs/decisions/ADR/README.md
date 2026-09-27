@@ -21,6 +21,7 @@ not introduce new product decisions.
 | [ADR-0011](0011-outbox-pattern.md) | Outbox Pattern | Accepted |
 | [ADR-0012](0012-idempotency.md) | Idempotency | Accepted |
 | [ADR-0013](0013-one-active-delivery-per-rider.md) | One Active Delivery per Rider | Accepted |
+| [ADR-0014](0014-v1-open-decisions.md) | V1 Decisions for Previously Unspecified Behavior | Accepted |
 
 ## When to write a new ADR
 

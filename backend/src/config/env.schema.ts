@@ -31,6 +31,12 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['development', 'test', 'staging', 'production']).default('development'),
   APP_VERSION: z.string().min(1).default('0.0.0-local'),
+  /** V1 single market (ADR-0014 §6). */
+  APP_CURRENCY: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .default('PKR'),
+  APP_TIMEZONE: z.string().min(1).default('Asia/Karachi'),
 
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   API_CORS_ORIGINS: z

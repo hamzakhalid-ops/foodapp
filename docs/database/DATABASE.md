@@ -1808,6 +1808,15 @@ FAILED
 
 This supports reliable event processing.
 
+Implementation columns (Phase 20):
+
+```text
+sequence     monotonic creation order (events of one transaction share created_at)
+last_error   last handler error message, for monitoring failed events
+```
+
+`idempotency_keys` is unique on `(user_id, endpoint, key)`.
+
 ---
 
 # 63. Database Relationships
