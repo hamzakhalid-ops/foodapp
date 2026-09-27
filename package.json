@@ -2,7 +2,7 @@
   "name": "quickbite",
   "version": "0.0.0",
   "private": true,
-  "description": "QuickBite food delivery marketplace — monorepo (Customer, Restaurant, Rider, Admin, Backend).",
+  "description": "QuickBite food delivery marketplace \u2014 monorepo (Customer, Restaurant, Rider, Admin, Backend).",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22.12.0",
@@ -19,10 +19,11 @@
     "test:e2e": "turbo run test:e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "docs:check": "node scripts/check-doc-links.mjs",
     "db:generate": "pnpm --filter @quickbite/backend db:generate",
     "db:migrate": "pnpm --filter @quickbite/backend db:migrate",
     "db:validate": "pnpm --filter @quickbite/backend db:validate",
-    "validate": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "validate": "pnpm format:check && pnpm docs:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "clean": "turbo run clean"
   },
   "devDependencies": {
