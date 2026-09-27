@@ -34,6 +34,8 @@ export interface CursorPagination {
 
 export interface ApiMeta {
   pagination?: OffsetPagination | CursorPagination;
+  /** Unread count on notification lists (API_SPEC §90). */
+  unreadCount?: number;
 }
 
 /** API_SPEC §8 — single resource. */

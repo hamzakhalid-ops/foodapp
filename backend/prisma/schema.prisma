@@ -64,24 +64,27 @@ model User {
   sessions               UserSession[]
   verificationChallenges VerificationChallenge[]
   auditLogs              AuditLog[]
-  updatedSettings        SystemSetting[]         @relation("SystemSettingUpdater")
+  updatedSettings        SystemSetting[]          @relation("SystemSettingUpdater")
   idempotencyKeys        IdempotencyKey[]
   addresses              Address[]
   restaurantOwnerProfile RestaurantOwnerProfile?
-  ownedRestaurants       Restaurant[]            @relation("RestaurantOwner")
+  ownedRestaurants       Restaurant[]             @relation("RestaurantOwner")
   restaurantMemberships  RestaurantStaff[]
-  reviewedApplications   RestaurantApplication[] @relation("ApplicationReviewer")
-  uploadedDocuments      RestaurantDocument[]    @relation("DocumentUploader")
-  reviewedDocuments      RestaurantDocument[]    @relation("DocumentReviewer")
+  reviewedApplications   RestaurantApplication[]  @relation("ApplicationReviewer")
+  uploadedDocuments      RestaurantDocument[]     @relation("DocumentUploader")
+  reviewedDocuments      RestaurantDocument[]     @relation("DocumentReviewer")
   cart                   Cart?
   orders                 Order[]
   orderStatusChanges     OrderStatusHistory[]
   orderCancellations     OrderCancellation[]
   initiatedRefunds       Refund[]
   promotionUsages        PromotionUsage[]
+  notifications          Notification[]
+  notificationPrefs      NotificationPreference[]
+  deviceTokens           DeviceToken[]
   riderProfile           RiderProfile?
-  reviewedRiders         RiderProfile[]          @relation("RiderReviewer")
-  reviewedRiderDocuments RiderDocument[]         @relation("RiderDocumentReviewer")
+  reviewedRiders         RiderProfile[]           @relation("RiderReviewer")
+  reviewedRiderDocuments RiderDocument[]          @relation("RiderDocumentReviewer")
   payments               Payment[]
 
   @@map("users")
@@ -1325,4 +1328,134 @@ model PromotionUsage {
 
   @@index([promotionId, customerId])
   @@map("promotion_usages")
+}
+
+// ----------------------------------------------------------------------------- Notifications (DATABASE.md §49–50, NOTIFICATION_RULES)
+
+enum NotificationCategory {
+  AUTHENTICATION
+  SECURITY
+  ORDER
+  PAYMENT
+  DELIVERY
+  DISPATCH
+  RESTAURANT
+  RIDER
+  EARNINGS
+  SETTLEMENT
+  PROMOTION
+  REVIEW
+  SUPPORT
+  SYSTEM
+
+  @@map("notification_category")
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+
+  @@map("notification_priority")
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+
+  @@map("notification_channel")
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  DELIVERED
+  FAILED
+  EXPIRED
+
+  @@map("notification_delivery_status")
+}
+
+/// In-app notification record. `category`, `priority` and `dedup_key` are gap fills
+/// (NOTIFICATION_RULES §4–5, §16; DATABASE.md §5.4).
+model Notification {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  type      String
+  category  NotificationCategory
+  priority  NotificationPriority
+  title     String
+  body      String
+  data      Json?
+  dedupKey  String               @unique @map("dedup_key")
+  readAt    DateTime?            @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  deliveries NotificationDelivery[]
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+/// Channel-level delivery state (NOTIFICATION_RULES §17–19). `attempts`, `next_attempt_at` and
+/// `last_error` support the retry policy (gap fill).
+model NotificationDelivery {
+  id                String                     @id @default(uuid()) @db.Uuid
+  notificationId    String                     @map("notification_id") @db.Uuid
+  channel           NotificationChannel
+  provider          String?
+  status            NotificationDeliveryStatus @default(PENDING)
+  providerMessageId String?                    @map("provider_message_id")
+  attempts          Int                        @default(0)
+  nextAttemptAt     DateTime                   @default(now()) @map("next_attempt_at") @db.Timestamptz(6)
+  lastError         String?                    @map("last_error")
+  sentAt            DateTime?                  @map("sent_at") @db.Timestamptz(6)
+  deliveredAt       DateTime?                  @map("delivered_at") @db.Timestamptz(6)
+  failedAt          DateTime?                  @map("failed_at") @db.Timestamptz(6)
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+
+  @@unique([notificationId, channel])
+  @@index([status, nextAttemptAt])
+  @@map("notification_deliveries")
+}
+
+/// Per-user opt-outs by category and channel (API_SPEC §91). Absent row = enabled.
+model NotificationPreference {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory
+  channel   NotificationChannel
+  enabled   Boolean
+  updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, category, channel])
+  @@map("notification_preferences")
+}
+
+/// Registered push devices (NOTIFICATION_RULES §20).
+model DeviceToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  deviceId   String   @map("device_id")
+  platform   String
+  pushToken  String   @map("push_token")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, deviceId])
+  @@index([pushToken])
+  @@map("device_tokens")
 }

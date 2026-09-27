@@ -198,20 +198,25 @@ export class DeliveriesService {
 
   /** GET /deliveries/{id}: assigned rider, the order's customer or restaurant staff, admins. */
   async detailForActor(deliveryId: string, auth: AuthContext): Promise<DeliveryView> {
+    if (!(await this.canView(deliveryId, auth))) throw notFound('DELIVERY_NOT_FOUND');
+    return this.view(deliveryId);
+  }
+
+  /** Shared by REST and realtime subscriptions (REALTIME_SPEC §11–13). */
+  async canView(deliveryId: string, auth: AuthContext): Promise<boolean> {
     const delivery = await this.prisma.delivery.findUnique({
       where: { id: deliveryId },
       include: { order: true, rider: true },
     });
-    if (!delivery) throw notFound('DELIVERY_NOT_FOUND');
-    const isAdmin = auth.roles.some((role) => ADMIN_ROLES.has(role));
-    const isRider = delivery.rider?.userId === auth.userId;
-    const isCustomer = delivery.order.customerId === auth.userId;
-    const isStaff =
+    if (!delivery) return false;
+    if (auth.roles.some((role) => ADMIN_ROLES.has(role))) return true;
+    if (delivery.rider?.userId === auth.userId) return true;
+    if (delivery.order.customerId === auth.userId) return true;
+    return (
       (await this.prisma.restaurantStaff.count({
         where: { userId: auth.userId, restaurantId: delivery.order.restaurantId, status: 'ACTIVE' },
-      })) > 0;
-    if (!isAdmin && !isRider && !isCustomer && !isStaff) throw notFound('DELIVERY_NOT_FOUND');
-    return this.view(deliveryId);
+      })) > 0
+    );
   }
 
   async history(userId: string, query: RiderDeliveryListQuery) {

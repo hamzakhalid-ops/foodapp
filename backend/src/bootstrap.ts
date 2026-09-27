@@ -2,6 +2,7 @@ import { type INestApplication, RequestMethod } from '@nestjs/common';
 import { API_BASE_PATH } from '@quickbite/types';
 import { Logger } from 'nestjs-pino';
 import { AppConfigService } from './config/app-config.service';
+import { RealtimeIoAdapter } from './infrastructure/realtime/realtime-io.adapter';
 
 /**
  * Applies HTTP configuration shared by the production entrypoint and API tests so that tests
@@ -21,6 +22,7 @@ export function configureHttpApp(app: INestApplication): void {
     origin: config.get('API_CORS_ORIGINS'),
     credentials: true,
   });
+  app.useWebSocketAdapter(new RealtimeIoAdapter(app, config.get('API_CORS_ORIGINS')));
   app.enableShutdownHooks();
 
   const httpAdapter = app.getHttpAdapter().getInstance() as {

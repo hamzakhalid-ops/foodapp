@@ -4,6 +4,7 @@ export * from './common';
 export * from './customer';
 export * from './delivery';
 export * from './menu';
+export * from './notification';
 export * from './order';
 export * from './payment';
 export * from './promotion';

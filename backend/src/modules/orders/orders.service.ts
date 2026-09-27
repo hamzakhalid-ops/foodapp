@@ -142,6 +142,11 @@ export class OrdersService {
     return order;
   }
 
+  async canViewById(orderId: string, auth: AuthContext): Promise<boolean> {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    return order !== null && (await this.canView(order, auth));
+  }
+
   async getById(orderId: string): Promise<Order> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -232,7 +237,8 @@ export class OrdersService {
     };
   }
 
-  private async canView(order: OrderRow, auth: AuthContext): Promise<boolean> {
+  /** Shared by REST and realtime subscriptions (REALTIME_SPEC §7, §11–14). */
+  async canView(order: OrderRow, auth: AuthContext): Promise<boolean> {
     if (order.customerId === auth.userId) return true;
     if (auth.roles.some((role) => ADMIN_ROLES.has(role))) return true;
     if (auth.roles.includes('RESTAURANT_OWNER') || auth.roles.includes('RESTAURANT_OPERATOR')) {

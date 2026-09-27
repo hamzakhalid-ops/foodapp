@@ -6,6 +6,7 @@ import { SettingsModule } from './common/settings/settings.module';
 import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { QueueModule } from './infrastructure/queue/queue.module';
+import { RealtimePublisherModule } from './infrastructure/realtime/realtime-publisher.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ScheduledTasksModule } from './infrastructure/scheduler/scheduled-tasks.module';
 import { StorageModule } from './infrastructure/storage/storage.module';
@@ -24,6 +25,7 @@ import { DOMAIN_MODULES } from './modules';
     OutboxModule,
     ScheduledTasksModule,
     StorageModule,
+    RealtimePublisherModule,
     ...DOMAIN_MODULES,
   ],
 })

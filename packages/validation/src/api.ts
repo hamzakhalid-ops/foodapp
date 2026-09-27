@@ -39,6 +39,7 @@ export const cursorPaginationSchema = z.object({
 
 export const apiMetaSchema = z.object({
   pagination: z.union([offsetPaginationSchema, cursorPaginationSchema]).optional(),
+  unreadCount: z.number().int().optional(),
 });
 
 /** API_SPEC §8 — success envelope around a caller-supplied data schema. */

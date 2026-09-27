@@ -7,6 +7,7 @@ import { RidersModule } from '../riders/riders.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
+import { SessionAuthenticator } from './session-authenticator';
 import { AuthService } from './auth.service';
 import { ChallengeService } from './challenge.service';
 import { LogVerificationSender } from './delivery/log-verification-sender';
@@ -31,6 +32,7 @@ import { TokenService } from './token.service';
   imports: [UsersModule, CustomersModule, RestaurantsModule, RidersModule],
   controllers: [AuthController, RestaurantAuthController, RiderAuthController],
   providers: [
+    SessionAuthenticator,
     AuthService,
     PasswordService,
     TokenService,
@@ -50,6 +52,6 @@ import { TokenService } from './token.service';
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [TokenService, SessionService],
+  exports: [TokenService, SessionService, SessionAuthenticator],
 })
 export class AuthModule {}

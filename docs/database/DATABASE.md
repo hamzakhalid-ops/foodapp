@@ -457,6 +457,17 @@ transaction together with the `promotion_usages` row (`usage_count <= usage_limi
 `promotion_usages.order_id` is unique (one promotion per order). `orders.promotion_id` now
 references `promotions`.
 
+Slice 12 (notifications):
+
+```text
+notifications.category, priority, dedup_key (UNIQUE)     NOTIFICATION_RULES §4–5, §16
+notification_deliveries.attempts, next_attempt_at, last_error   retry policy (§17);
+    UNIQUE (notification_id, channel)
+notification_preferences(id, user_id, category, channel, enabled, updated_at)   API_SPEC §91
+device_tokens(id, user_id, device_id, platform, push_token, last_seen_at, active, created_at)
+    NOTIFICATION_RULES §20; UNIQUE (user_id, device_id)
+```
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

@@ -393,3 +393,65 @@ on the amount actually paid (§33).
 
 Not implemented (no rules yet): first-order/targeted promotions, promotion-specific risk
 restrictions.
+
+---
+
+## Slice 12 — Notifications and realtime (§90–91, REALTIME_SPEC)
+
+**Notifications.** Created by the worker from committed domain events (outbox), each with a
+deterministic dedup key, so re-delivered events never duplicate a notification. Every
+notification is stored in-app; push/SMS/email deliveries are queued per channel and sent by the
+worker through the provider port with retries (10 s doubling, capped at 1 h, up to
+`NOTIFICATION_MAX_ATTEMPTS`); permanent failures (e.g. no destination) fail immediately. Only the
+development/test `log` adapter exists and deployed environments refuse it. Templates are a
+versioned code registry (v1, English) in `backend/src/modules/notifications/templates.ts`.
+
+Push is queued only when the user has an active device; SMS only to a verified phone; email only
+when an address exists. Users may switch PUSH/SMS/EMAIL off per category except `AUTHENTICATION`
+and `SECURITY` (`422`). In-app notifications are always recorded.
+
+| Event | Recipients / notification |
+|-------|---------------------------|
+| `order.created` | customer `ORDER_CREATED`; restaurant staff `RESTAURANT_NEW_ORDER` for cash orders |
+| `payment.status_changed` | customer `PAYMENT_SUCCEEDED` / `PAYMENT_FAILED`; staff `RESTAURANT_NEW_ORDER` when an online order is released |
+| `order.status_changed` | customer `ORDER_ACCEPTED` … `ORDER_DELIVERED`, `ORDER_REJECTED`, `ORDER_CANCELLED`; staff `RESTAURANT_ORDER_CANCELLED` |
+| `refund.succeeded` | customer `PAYMENT_REFUNDED` |
+| `dispatch.offer_created` / `_expired` | rider `DELIVERY_OFFER` / `DELIVERY_OFFER_EXPIRED` |
+| `delivery.assigned`, `delivery.delivered`, `delivery.cancelled` | rider `DELIVERY_ASSIGNED`, `DELIVERY_COMPLETED`, `DELIVERY_CANCELLED` |
+| `restaurant.application_submitted`, `rider.application_submitted` | admins |
+| `restaurant.application_reviewed`, `rider.status_changed` | owner / rider decision notifications |
+
+| Endpoint | Notes |
+|----------|-------|
+| `GET /notifications` | query: read? (`true`\|`false`), type?, cursor?, limit; `meta.unreadCount` |
+| `GET /notifications/{id}`, `POST /notifications/{id}/read` | own notifications only |
+| `POST /notifications/read-all` | `{updated}` |
+| `GET /notifications/preferences` | `[{category, channel PUSH\|SMS\|EMAIL, enabled, mandatory}]` |
+| `PATCH /notifications/preferences` | `{preferences: [{category, channel, enabled}]}` |
+| `PUT /notifications/devices` | {deviceId, platform `IOS`\|`ANDROID`\|`WEB`, pushToken} → `204` (register/refresh) |
+| `DELETE /notifications/devices/{deviceId}` | `204` (deactivate) |
+
+**Realtime (Socket.IO, path `/realtime`).** Connect with `auth: { token: <access token> }` (or an
+`Authorization: Bearer` header). Invalid, revoked or unverified sessions fail with a
+`connect_error` whose message is the API error code; live sockets are re-checked every 30 seconds
+and disconnected when their session ends. On connect the socket joins `user:{userId}` (and
+`rider:{riderId}` for riders) and receives `session.ready`.
+
+Client messages (with acknowledgement): `subscribe {channel}` → `{ok, channel}` or
+`{ok: false, error: {code: AUTHZ_FORBIDDEN}}`; `unsubscribe {channel}`. Channels and who may join:
+
+| Channel | Allowed |
+|---------|---------|
+| `user:{id}` | that user |
+| `order:{id}` | the same rule as `GET /orders/{id}` |
+| `delivery:{id}` | the same rule as `GET /deliveries/{id}` |
+| `restaurant:{id}`, `restaurant:{id}:orders`, `restaurant:{id}:operations` | active staff of that restaurant |
+| `rider:{id}` | that rider |
+| `admin:operations\|orders\|dispatch\|risk\|support` | ADMIN / SUPER_ADMIN |
+
+Server events use the envelope `{eventId, eventType, version, occurredAt, resourceType, resourceId,
+channel, sequence, data}` (ADR-0014 §7); `sequence` increases per channel — on a gap, refetch over
+REST. Events: `order.created`, `order.status_changed`, `payment.status_changed`,
+`delivery.offer_created`, `delivery.offer_expired`, `delivery.assigned`, `delivery.status_changed`,
+`delivery.cancelled`, `dispatch.failed` (admin), `notification.created`. Payloads carry ids and
+statuses only.

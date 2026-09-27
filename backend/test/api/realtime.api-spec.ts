@@ -2,7 +2,7 @@ import { type AddressInfo } from 'node:net';
 import { io } from 'socket.io-client';
 import { createTestApp, type TestApp } from '../create-test-app';
 
-describe('Realtime gateway (fail-closed until authentication exists)', () => {
+describe('Realtime gateway authentication', () => {
   let app: TestApp;
   let url: string;
 
@@ -17,16 +17,23 @@ describe('Realtime gateway (fail-closed until authentication exists)', () => {
     await app.close();
   });
 
-  it('rejects unauthenticated Socket.IO connections with a structured error', async () => {
+  it('refuses connections without an access token before any event can flow', async () => {
     const socket = io(url, { path: '/realtime', transports: ['websocket'], reconnection: false });
+    const error = await new Promise<Error>((resolve) => socket.on('connect_error', resolve));
+    expect(error.message).toBe('AUTH_TOKEN_INVALID');
+    expect(socket.connected).toBe(false);
+    socket.close();
+  });
 
-    const [error, reason] = await Promise.all([
-      new Promise<unknown>((resolve) => socket.on('error', resolve)),
-      new Promise<string>((resolve) => socket.on('disconnect', resolve)),
-    ]);
-
-    expect(error).toEqual({ code: 'AUTH_TOKEN_INVALID', message: 'Authentication is required.' });
-    expect(reason).toBe('io server disconnect');
+  it('refuses malformed tokens', async () => {
+    const socket = io(url, {
+      path: '/realtime',
+      transports: ['websocket'],
+      reconnection: false,
+      auth: { token: 'not-a-jwt' },
+    });
+    const error = await new Promise<Error>((resolve) => socket.on('connect_error', resolve));
+    expect(error.message).toBe('AUTH_TOKEN_INVALID');
     socket.close();
   });
 });

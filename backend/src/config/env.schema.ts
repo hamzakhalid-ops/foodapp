@@ -81,6 +81,11 @@ export const envSchema = z.object({
   /** Sandbox webhook signing secret; a random per-process secret is used when empty. */
   PAYMENT_SANDBOX_WEBHOOK_SECRET: z.string().default(''),
 
+  // --- Notifications (NOTIFICATION_RULES §17, §32) ----------------------------------------
+  /** Push/SMS/email delivery adapter. `log` is development/test only; refused in staging/production. */
+  NOTIFICATION_DELIVERY: z.enum(['log']).default('log'),
+  NOTIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
+
   // --- Authentication (Slice 1, AUTH_AUTHORIZATION.md §8–33) -------------------------------
   JWT_ACCESS_SECRET: secret('JWT_ACCESS_SECRET'),
   /** Comma-separated previous signing secrets still accepted for verification (key rotation, §80). */
@@ -146,6 +151,13 @@ const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['STORAGE_DRIVER'],
       message: 'The local storage adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_DELIVERY.has(env.NOTIFICATION_DELIVERY)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['NOTIFICATION_DELIVERY'],
+      message: 'The development "log" notification adapter is not allowed in staging/production',
     });
   }
   if (deployed && DEV_ONLY_PAYMENT.has(env.PAYMENT_PROVIDER)) {

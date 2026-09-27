@@ -195,11 +195,7 @@ Both are transitive in Expo packages and cannot be overridden safely without ups
 
 These are not inconsistencies; they are the planned remaining work.
 
-* Prisma schema contains only the Slice 1 identity/auth/audit models (one migration).
-* Idempotency (`idempotency_keys`) and outbox (`outbox_events`) infrastructure — to be implemented before the first slice that needs them (`IMPLEMENTATION_PLAN.md` §24).
-* Authentication, role guard, rate limiting and audit logging are implemented (Slice 1). Ownership/tenant authorization arrives with the first tenant-scoped slice.
-* Socket.IO gateway rejects all connections until authentication exists (fail-closed).
-* Provider abstractions (`PaymentService`, `MapsService`, `NotificationService`, `StorageService`) — introduced with their first slice.
+* Real provider adapters (payments, push/SMS/email) — only development/test adapters exist; staging/production refuse to start with them (ADR-0014 §5).
 * Mobile/admin Sentry SDKs — added with the first real screen batch of each app.
 * No product screens exist in any app; each app has a clearly marked foundation placeholder route.
 * Staging/production deployment pipelines — after M7.
