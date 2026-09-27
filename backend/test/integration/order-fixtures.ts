@@ -154,5 +154,40 @@ export function orderFixtures(h: Harness) {
     return placed;
   }
 
-  return { configurePricing, menuItem, address, placeOrder, dispatchSettings, rider, readyOrder };
+  /**
+   * Walks a cash order all the way to DELIVERED through the real restaurant, dispatch and rider
+   * APIs. Requires `OutboxProcessor` draining so dispatch offers are created.
+   */
+  async function deliveredOrder(
+    drain: () => Promise<void>,
+    options: Parameters<typeof placeOrder>[0] & { rider?: Awaited<ReturnType<typeof rider>> } = {},
+  ) {
+    await dispatchSettings();
+    const courier = options.rider ?? (await rider());
+    const placed = await readyOrder(options);
+    await drain();
+    const offer = await h.prisma.dispatchOffer.findFirstOrThrow({
+      where: { orderId: placed.orderId, riderId: courier.riderId },
+    });
+    const post = (url: string, body: object = {}) =>
+      h.http().post(`/api/v1${url}`).set('Authorization', courier.auth).send(body).expect(200);
+    const accepted = await post(`/rider/delivery-offers/${offer.id}/accept`);
+    const deliveryId = (accepted.body as { data: { id: string } }).data.id;
+    for (const step of ['arriving', 'pickup', 'out-for-delivery']) {
+      await post(`/rider/deliveries/${deliveryId}/${step}`);
+    }
+    await post(`/rider/deliveries/${deliveryId}/complete`, { cashCollected: true });
+    return { ...placed, rider: courier, deliveryId };
+  }
+
+  return {
+    configurePricing,
+    menuItem,
+    address,
+    placeOrder,
+    dispatchSettings,
+    rider,
+    readyOrder,
+    deliveredOrder,
+  };
 }

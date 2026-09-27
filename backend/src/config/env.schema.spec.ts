@@ -65,6 +65,7 @@ describe('validateEnv', () => {
     };
     for (const APP_ENV of ['staging', 'production']) {
       expect(() => validateEnv({ ...deployed, APP_ENV })).toThrow(/PAYMENT_PROVIDER/);
+      expect(() => validateEnv({ ...deployed, APP_ENV })).toThrow(/PAYOUT_PROVIDER/);
     }
     expect(validateEnv({ ...valid, APP_ENV: 'test' }).PAYMENT_PROVIDER).toBe('sandbox');
   });

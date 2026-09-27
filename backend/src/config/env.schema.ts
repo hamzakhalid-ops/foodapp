@@ -81,6 +81,10 @@ export const envSchema = z.object({
   /** Sandbox webhook signing secret; a random per-process secret is used when empty. */
   PAYMENT_SANDBOX_WEBHOOK_SECRET: z.string().default(''),
 
+  // --- Payouts (FINANCIAL_SPEC §34–39) ---------------------------------------------------
+  /** `sandbox` simulates a payout provider for development/test only; refused in staging/production. */
+  PAYOUT_PROVIDER: z.enum(['sandbox']).default('sandbox'),
+
   // --- Notifications (NOTIFICATION_RULES §17, §32) ----------------------------------------
   /** Push/SMS/email delivery adapter. `log` is development/test only; refused in staging/production. */
   NOTIFICATION_DELIVERY: z.enum(['log']).default('log'),
@@ -134,7 +138,7 @@ export type Env = z.infer<typeof envSchema>;
 
 /** Delivery adapters that must never run in a deployed environment. */
 const DEV_ONLY_DELIVERY: ReadonlySet<string> = new Set(['log']);
-/** Payment adapters that must never run in a deployed environment (ADR-0014 §5). */
+/** Payment/payout adapters that must never run in a deployed environment (ADR-0014 §5). */
 const DEV_ONLY_PAYMENT: ReadonlySet<string> = new Set(['sandbox']);
 
 const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
@@ -165,6 +169,13 @@ const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['PAYMENT_PROVIDER'],
       message: 'The sandbox payment provider is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_PAYMENT.has(env.PAYOUT_PROVIDER)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['PAYOUT_PROVIDER'],
+      message: 'The sandbox payout provider is not allowed in staging/production',
     });
   }
   if (env.STORAGE_DRIVER === 's3' && !env.STORAGE_BUCKET_PRIVATE) {

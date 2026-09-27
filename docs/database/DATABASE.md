@@ -489,6 +489,30 @@ as possible statuses, while SUPPORT_RULES §7–8 defines the approved lifecycle
 `WAITING_FOR_CUSTOMER`, `WAITING_FOR_INTERNAL` and `REOPENED` and explicit transitions. The
 implementation follows SUPPORT_RULES (the detailed business rule); §57 is read as illustrative.
 
+Slice 15 (financial, §51–56):
+
+```text
+earning_status                AVAILABLE | IN_SETTLEMENT | SETTLED   (earnings and adjustments)
+settlement_status             PENDING | PROCESSING | COMPLETED | FAILED
+payout_status                 PENDING | PROCESSING | COMPLETED | FAILED
+restaurant_earnings           + commission_percent (rate snapshot), settlement_id, updated_at;
+                              UNIQUE order_id; CHECK net = gross − commission − fee − refund
+rider_earnings                + settlement_id, updated_at; UNIQUE delivery_id;
+                              CHECK total = base + bonus + adjustment
+financial_adjustments         new table (FINANCIAL_SPEC §17–18): recipient_type, recipient_id,
+                              signed amount ≠ 0, currency, reason, reference, status,
+                              settlement_id, created_by
+settlements                   + currency, approved_by, approved_at, completed_at, updated_at;
+                              UNIQUE (recipient_type, recipient_id, period_start);
+                              CHECK net = gross − fees + adjustments, net > 0
+settlement_items              source_type RESTAURANT_EARNING | RIDER_EARNING | ADJUSTMENT;
+                              UNIQUE (source_type, source_id); append-only trigger
+payouts                       + currency, failure_reason, updated_at; UNIQUE provider_reference;
+                              partial UNIQUE settlement_id WHERE status <> 'FAILED'
+invoices                      + currency; invoice_number QB-INV-000001 (sequence);
+                              UNIQUE settlement_id; append-only trigger
+```
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

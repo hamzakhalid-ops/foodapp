@@ -487,6 +487,19 @@ REVIEW_REPORT_INVALID
 Added in Phase 20 (reviews slice) from REVIEW_RULES §44. Other review cases use the existing codes:
 `REVIEW_NOT_FOUND`, `ORDER_NOT_FOUND` (not the caller's order), `VALIDATION_ERROR` (rating/content).
 
+## Financial
+
+```text
+SETTLEMENT_NOT_FOUND
+SETTLEMENT_INVALID_STATUS
+SETTLEMENT_RECONCILIATION_FAILED
+```
+
+Added in Phase 20 (financial slice) from FINANCIAL_SPEC §27, §33. `SETTLEMENT_INVALID_STATUS` is
+returned when approve/process is requested in a state that does not allow it;
+`SETTLEMENT_RECONCILIATION_FAILED` when the settlement items no longer add up to the settlement net
+(automatic completion is blocked and an operational alert is logged).
+
 ## Payment
 
 ```text

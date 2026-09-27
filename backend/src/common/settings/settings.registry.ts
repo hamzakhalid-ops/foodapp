@@ -32,6 +32,11 @@ export const SETTINGS = {
     schema: moneyAmount,
     description: 'Flat rider earning per completed delivery (ADR-0014 §2).',
   },
+  'finance.settlement_frequency': {
+    schema: z.enum(['DAILY', 'WEEKLY']),
+    description:
+      'Settlement period length in the business timezone; WEEKLY = ISO week Monday–Sunday (FINANCIAL_SPEC §26, §59). Unset = no settlements are generated.',
+  },
   'orders.accepted_cancellation_window_seconds': {
     schema: z.number().int().min(0),
     description:

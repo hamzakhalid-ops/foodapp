@@ -260,6 +260,30 @@ export const TEMPLATES = {
     title: () => 'Ticket updated',
     body: (v) => `Ticket ${v.ticketNumber} is now ${v.status}.`,
   },
+  SETTLEMENT_CREATED: {
+    category: 'SETTLEMENT',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH', 'EMAIL'],
+    title: () => 'Settlement generated',
+    body: (v) => `A settlement of ${v.currency} ${v.amount} has been generated.`,
+  },
+  PAYOUT_COMPLETED: {
+    category: 'SETTLEMENT',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH', 'EMAIL'],
+    title: () => 'Payout completed',
+    body: (v) => `Your payout of ${v.currency} ${v.amount} has been completed.`,
+  },
+  PAYOUT_FAILED: {
+    category: 'SETTLEMENT',
+    priority: 'HIGH',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH', 'EMAIL'],
+    title: () => 'Payout failed',
+    body: (v) => `Your payout of ${v.currency} ${v.amount} could not be completed. We will retry.`,
+  },
 } satisfies Record<string, NotificationTemplate>;
 
 export type NotificationType = keyof typeof TEMPLATES;

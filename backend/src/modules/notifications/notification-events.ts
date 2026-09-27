@@ -68,6 +68,22 @@ export class NotificationEvents {
     'support.ticket_created': (event) => this.supportCreated(payload(event), event.id),
     'support.message_created': (event) => this.supportMessage(payload(event), event.id),
     'support.ticket_status_changed': (event) => this.supportStatus(payload(event), event.id),
+    'settlement.created': (event) =>
+      this.finance(
+        payload(event),
+        'SETTLEMENT_CREATED',
+        'netAmount',
+        `settlement:${event.aggregateId}`,
+      ),
+    'payout.status_changed': (event) => {
+      const p = payload(event);
+      return this.finance(
+        p,
+        p.status === 'COMPLETED' ? 'PAYOUT_COMPLETED' : 'PAYOUT_FAILED',
+        'amount',
+        `payout:${event.aggregateId}:${String(p.status)}`,
+      );
+    },
   };
 
   private async orderCreated(p: Payload): Promise<void> {
@@ -413,6 +429,37 @@ export class NotificationEvents {
       where: { id: orderId },
       include: { restaurant: true },
     });
+  }
+
+  /** Financial notices go to the restaurant owner or the rider (FINANCIAL_SPEC §41–42). */
+  private async finance(
+    p: Payload,
+    type: NotificationType,
+    amountKey: string,
+    dedup: string,
+  ): Promise<void> {
+    const recipientId = String(p.recipientId);
+    const userIds =
+      p.recipientType === 'RIDER'
+        ? [
+            (await this.prisma.riderProfile.findUniqueOrThrow({ where: { id: recipientId } }))
+              .userId,
+          ]
+        : (
+            await this.prisma.restaurantStaff.findMany({
+              where: { restaurantId: recipientId, role: 'OWNER', status: 'ACTIVE' },
+              select: { userId: true },
+            })
+          ).map((row) => row.userId);
+    for (const userId of userIds) {
+      await this.notifications.notify({
+        userId,
+        type,
+        vars: { amount: String(p[amountKey]), currency: String(p.currency) },
+        data: { settlementId: String(p.settlementId) },
+        dedupKey: `${dedup}:user:${userId}`,
+      });
+    }
   }
 
   private async staffOf(restaurantId: string): Promise<string[]> {
