@@ -45,7 +45,10 @@ export function createConfig({ tsconfigRootDir, react = false, node = false, ign
       rules: {
         // Type safety: `any` and unsafe casts require an explicit, documented exception.
         '@typescript-eslint/no-explicit-any': 'error',
-        '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { fixStyle: 'inline-type-imports' },
+        ],
         '@typescript-eslint/no-unused-vars': [
           'error',
           { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

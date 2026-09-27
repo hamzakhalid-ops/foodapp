@@ -10,3 +10,10 @@ onlyBuiltDependencies:
   - msgpackr-extract
   - unrs-resolver
   - '@parcel/watcher'
+
+# One React version across the monorepo (Expo SDK 57 requires react 19.2.3; native builds must
+# not contain duplicate React copies).
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
+  '@types/react': 19.2.18

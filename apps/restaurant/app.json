@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "QuickBite Restaurant",
+    "slug": "quickbite-restaurant",
+    "scheme": "quickbite-restaurant",
+    "version": "0.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    }
+  }
+}

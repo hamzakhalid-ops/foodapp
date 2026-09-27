@@ -54,4 +54,6 @@ export function apiSuccessResponseSchema<TData extends z.ZodType>(data: TData) {
  * Money is transported as a decimal string (NUMERIC(12,2) on the backend) so that clients never
  * perform floating-point arithmetic on authoritative amounts. See docs/api/API_SPEC.md §122.
  */
-export const moneyAmountSchema = z.string().regex(/^-?\d{1,10}(\.\d{1,2})?$/, 'Invalid money amount');
+export const moneyAmountSchema = z
+  .string()
+  .regex(/^-?\d{1,10}(\.\d{1,2})?$/, 'Invalid money amount');
