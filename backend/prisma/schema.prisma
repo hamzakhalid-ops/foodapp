@@ -90,6 +90,9 @@ model User {
   reviewedRiders         RiderProfile[]           @relation("RiderReviewer")
   reviewedRiderDocuments RiderDocument[]          @relation("RiderDocumentReviewer")
   payments               Payment[]
+  supportTickets         SupportTicket[]          @relation("TicketRequester")
+  assignedSupportTickets SupportTicket[]          @relation("TicketAssignee")
+  supportMessages        SupportMessage[]
 
   @@map("users")
 }
@@ -390,6 +393,7 @@ model Restaurant {
   orders           Order[]
   promotions       Promotion[]
   reviews          Review[]
+  supportTickets   SupportTicket[]
 
   @@index([status])
   @@index([approvalStatus])
@@ -759,6 +763,7 @@ model Order {
   promotion       Promotion?           @relation(fields: [promotionId], references: [id], onDelete: Restrict)
   promotionUsage  PromotionUsage?
   review          Review?
+  supportTickets  SupportTicket[]
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   payments        Payment[]
@@ -1541,4 +1546,78 @@ model ReviewReport {
   @@unique([reviewId, reportedBy])
   @@index([status, createdAt])
   @@map("review_reports")
+}
+
+// ----------------------------------------------------------------------------- Support (DATABASE.md §57–58, SUPPORT_RULES)
+
+/// SUPPORT_RULES §7 lifecycle (DATABASE.md §57 lists example statuses; see §5.4).
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  WAITING_FOR_INTERNAL
+  RESOLVED
+  CLOSED
+  REOPENED
+
+  @@map("support_ticket_status")
+}
+
+enum SupportTicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@map("support_ticket_priority")
+}
+
+/// `ticket_number`, `requester_role`, `restaurant_id`, `order_id`, `first_response_at`,
+/// `closed_at` are gap fills (SUPPORT_SPEC ticket numbers, SUPPORT_RULES §4, §9, §20).
+model SupportTicket {
+  id              String                @id @default(uuid()) @db.Uuid
+  ticketNumber    String                @unique @default(dbgenerated("('QB-SUP-'::text || lpad(nextval('support_ticket_number_seq'::regclass)::text, 6, '0'))")) @map("ticket_number")
+  createdByUserId String                @map("created_by_user_id") @db.Uuid
+  requesterRole   Role                  @map("requester_role")
+  restaurantId    String?               @map("restaurant_id") @db.Uuid
+  orderId         String?               @map("order_id") @db.Uuid
+  subject         String
+  category        String
+  priority        SupportTicketPriority
+  status          SupportTicketStatus   @default(OPEN)
+  assignedTo      String?               @map("assigned_to") @db.Uuid
+  firstResponseAt DateTime?             @map("first_response_at") @db.Timestamptz(6)
+  resolvedAt      DateTime?             @map("resolved_at") @db.Timestamptz(6)
+  closedAt        DateTime?             @map("closed_at") @db.Timestamptz(6)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  requester  User             @relation("TicketRequester", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  assignee   User?            @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: Restrict)
+  restaurant Restaurant?      @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  order      Order?           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  messages   SupportMessage[]
+
+  @@index([createdByUserId, createdAt])
+  @@index([restaurantId, createdAt])
+  @@index([status, priority, createdAt])
+  @@map("support_tickets")
+}
+
+/// `is_internal` marks support-only notes (SUPPORT_RULES §17; gap fill). `attachments` holds
+/// private storage keys, served through short-lived signed URLs (§19).
+model SupportMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  ticketId     String   @map("ticket_id") @db.Uuid
+  senderUserId String   @map("sender_user_id") @db.Uuid
+  message      String
+  isInternal   Boolean  @default(false) @map("is_internal")
+  attachments  Json?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  sender User          @relation(fields: [senderUserId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+  @@map("support_messages")
 }

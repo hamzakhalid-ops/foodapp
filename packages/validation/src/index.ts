@@ -12,4 +12,5 @@ export * from './restaurant';
 export * from './review';
 export * from './rider';
 export * from './risk';
+export * from './support';
 export * from './vocabulary';

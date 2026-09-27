@@ -236,6 +236,30 @@ export const TEMPLATES = {
     title: () => 'The restaurant replied',
     body: (v) => `${v.restaurantName} replied to your review.`,
   },
+  SUPPORT_TICKET_CREATED: {
+    category: 'SUPPORT',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: [],
+    title: () => 'New support ticket',
+    body: (v) => `Ticket ${v.ticketNumber} (${v.priority}) needs attention.`,
+  },
+  SUPPORT_TICKET_MESSAGE: {
+    category: 'SUPPORT',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH', 'EMAIL'],
+    title: () => 'Support replied',
+    body: (v) => `There is a new reply on ticket ${v.ticketNumber}.`,
+  },
+  SUPPORT_TICKET_UPDATED: {
+    category: 'SUPPORT',
+    priority: 'NORMAL',
+    classification: 'TRANSACTIONAL',
+    channels: ['PUSH'],
+    title: () => 'Ticket updated',
+    body: (v) => `Ticket ${v.ticketNumber} is now ${v.status}.`,
+  },
 } satisfies Record<string, NotificationTemplate>;
 
 export type NotificationType = keyof typeof TEMPLATES;

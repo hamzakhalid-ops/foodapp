@@ -487,3 +487,30 @@ administrators. Nothing is physically deleted.
 `REVIEW_RECEIVED` to restaurant staff, `REVIEW_RESPONSE` to the customer (first response only).
 Not implemented (no rules yet): moderation of restaurant responses, review reminders, automated
 content screening.
+
+---
+
+## Slice 14 — Support (§92, §106, SUPPORT_RULES)
+
+Requesters: customers and riders (own tickets) and restaurant owners/operators (tickets shared by
+the restaurant's active staff). Categories are validated per requester type (SUPPORT_RULES §5);
+requesters choose `LOW`/`NORMAL`/`HIGH`; `SAFETY_REPORT` tickets are `URGENT` automatically.
+Referenced orders must be visible to the requester. Status transitions follow SUPPORT_RULES §8.
+
+| Endpoint | Notes |
+|----------|-------|
+| `POST /support/tickets` | {subject, category, priority?, message, orderId?} → `201 SupportTicketDetail` (ticketNumber `QB-SUP-000001`) |
+| `GET /support/tickets`, `/{id}` | query: status?, cursor?, limit; detail has the conversation without internal notes; attachments as short-lived URLs |
+| `POST /support/tickets/{id}/messages` | JSON {message} or multipart `message` + `file` (PDF/PNG/JPEG); `RESOLVED → REOPENED`, `WAITING_FOR_CUSTOMER → IN_PROGRESS`; `409` when closed |
+| `POST /support/tickets/{id}/close` | from `OPEN` or `RESOLVED` |
+| `GET /admin/support/tickets`, `/{id}` | query: status?, priority?, category?, assignedTo?, unassigned?; detail includes internal notes |
+| `PATCH /admin/support/tickets/{id}` | {status?, priority?, category?, reason?} — transitions validated |
+| `POST /admin/support/tickets/{id}/assign` | {assigneeId (an admin)}; `OPEN`/`REOPENED → IN_PROGRESS` |
+| `POST /admin/support/tickets/{id}/messages` | {message, internal?} or multipart; the first public reply sets `firstResponseAt` |
+| `POST /admin/support/tickets/{id}/resolve` | {message?} → `RESOLVED` |
+
+Admin actions are audited. Realtime channel `support_ticket:{id}` (requester side; internal notes
+only on `admin:support`). Notifications: admins `SUPPORT_TICKET_CREATED`; requester
+`SUPPORT_TICKET_MESSAGE` (public replies) and `SUPPORT_TICKET_UPDATED` (resolved / waiting for
+you). Not implemented (no configuration defined): SLA targets and breach tracking, escalation
+workflow, reopen window, ticket-creation rate limits.

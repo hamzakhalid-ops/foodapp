@@ -65,6 +65,9 @@ export class NotificationEvents {
     'rider.status_changed': (event) => this.riderStatusChanged(payload(event), event.id),
     'review.created': (event) => this.reviewCreated(payload(event)),
     'review.responded': (event) => this.reviewResponded(payload(event)),
+    'support.ticket_created': (event) => this.supportCreated(payload(event), event.id),
+    'support.message_created': (event) => this.supportMessage(payload(event), event.id),
+    'support.ticket_status_changed': (event) => this.supportStatus(payload(event), event.id),
   };
 
   private async orderCreated(p: Payload): Promise<void> {
@@ -318,6 +321,69 @@ export class NotificationEvents {
       vars: { restaurantName: restaurant.name },
       data: { reviewId: String(p.reviewId) },
       dedupKey: `review:${String(p.reviewId)}:response`,
+    });
+  }
+
+  private async supportCreated(p: Payload, eventId: string): Promise<void> {
+    const ticketId = String(p.ticketId);
+    await this.realtime.publish(['admin:support'], {
+      eventType: 'support.ticket_created',
+      resourceType: 'support_ticket',
+      resourceId: ticketId,
+      data: { ticketId, priority: p.priority ?? null },
+    });
+    for (const userId of await this.admins()) {
+      await this.notifications.notify({
+        userId,
+        type: 'SUPPORT_TICKET_CREATED',
+        vars: { ticketNumber: String(p.ticketNumber), priority: String(p.priority) },
+        data: { ticketId },
+        dedupKey: `support:${ticketId}:created:${eventId}:user:${userId}`,
+      });
+    }
+  }
+
+  /** Internal notes stay on admin channels only (SUPPORT_RULES §17). */
+  private async supportMessage(p: Payload, eventId: string): Promise<void> {
+    const ticketId = String(p.ticketId);
+    const internal = p.internal === true;
+    await this.realtime.publish(
+      internal ? ['admin:support'] : [`support_ticket:${ticketId}`, 'admin:support'],
+      {
+        eventType: 'support.message_created',
+        resourceType: 'support_ticket',
+        resourceId: ticketId,
+        data: { ticketId, internal },
+      },
+    );
+    if (internal || p.fromSupport !== true) return;
+    await this.notifications.notify({
+      userId: String(p.requesterId),
+      type: 'SUPPORT_TICKET_MESSAGE',
+      vars: { ticketNumber: String(p.ticketNumber) },
+      data: { ticketId },
+      dedupKey: `support:${ticketId}:message:${eventId}`,
+    });
+  }
+
+  private async supportStatus(p: Payload, eventId: string): Promise<void> {
+    const ticketId = String(p.ticketId);
+    await this.realtime.publish([`support_ticket:${ticketId}`, 'admin:support'], {
+      eventType: 'support.ticket_updated',
+      resourceType: 'support_ticket',
+      resourceId: ticketId,
+      data: { ticketId, status: p.status ?? null },
+    });
+    if (p.status !== 'RESOLVED' && p.status !== 'WAITING_FOR_CUSTOMER') return;
+    await this.notifications.notify({
+      userId: String(p.requesterId),
+      type: 'SUPPORT_TICKET_UPDATED',
+      vars: {
+        ticketNumber: String(p.ticketNumber),
+        status: p.status.toLowerCase().replaceAll('_', ' '),
+      },
+      data: { ticketId },
+      dedupKey: `support:${ticketId}:status:${eventId}`,
     });
   }
 

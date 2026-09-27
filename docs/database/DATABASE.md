@@ -474,6 +474,21 @@ UNIQUE; `review_responses.review_id` is UNIQUE (one response per review);
 `UNIQUE (review_id, reported_by)` prevents duplicate reports; report status is
 `OPEN | RESOLVED | DISMISSED`.
 
+Slice 14 (support):
+
+```text
+support_tickets.status   OPEN | IN_PROGRESS | WAITING_FOR_CUSTOMER | WAITING_FOR_INTERNAL |
+                         RESOLVED | CLOSED | REOPENED
+support_tickets.ticket_number (QB-SUP-000001 sequence), requester_role, restaurant_id, order_id,
+support_tickets.first_response_at, closed_at
+support_messages.is_internal   support-only notes; attachments = private storage keys
+```
+
+**Status vocabulary conflict:** §57 lists `OPEN, IN_PROGRESS, WAITING_FOR_USER, RESOLVED, CLOSED`
+as possible statuses, while SUPPORT_RULES §7–8 defines the approved lifecycle with
+`WAITING_FOR_CUSTOMER`, `WAITING_FOR_INTERNAL` and `REOPENED` and explicit transitions. The
+implementation follows SUPPORT_RULES (the detailed business rule); §57 is read as illustrative.
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,
