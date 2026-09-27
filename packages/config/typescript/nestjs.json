@@ -9,7 +9,6 @@
     "emitDecoratorMetadata": true,
     "declaration": false,
     "sourceMap": true,
-    "incremental": true,
     "types": ["node", "jest"]
   }
 }
