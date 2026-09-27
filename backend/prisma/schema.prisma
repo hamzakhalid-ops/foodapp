@@ -1,0 +1,23 @@
+// QuickBite V1 — Prisma schema
+//
+// The database design is governed by docs/database/DATABASE.md. Do NOT add models here that are
+// not defined there. Tables are introduced slice by slice (docs/IMPLEMENTATION_PLAN.md), each
+// with a version-controlled migration under prisma/migrations/.
+//
+// Conventions (DATABASE.md §64–68, CLAUDE.md §8):
+//   * Money: Decimal @db.Decimal(12, 2) plus a currency column. Never Float.
+//   * Timestamps: DateTime @db.Timestamptz(6), stored in UTC.
+//   * Table/column names: snake_case via @@map / @map; Prisma model/field names: PascalCase/camelCase.
+//   * Foreign keys, unique constraints and indexes are declared explicitly.
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "cjs"
+  generatedFileExtension = "ts"
+  importFileExtension    = ""
+}
+
+datasource db {
+  provider = "postgresql"
+}
