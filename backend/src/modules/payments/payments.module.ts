@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { type Redis } from 'ioredis';
 import { AppConfigService } from '../../config/app-config.service';
 import { REDIS_CLIENT } from '../../infrastructure/redis/redis.module';
+import { RiskModule } from '../risk/risk.module';
 import {
   AdminPaymentsController,
   PaymentsController,
@@ -20,6 +21,7 @@ import { SandboxPaymentsController } from './sandbox-payments.controller';
  * Implemented in slice: 8 — Payments (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
+  imports: [RiskModule],
   controllers: [
     PaymentsController,
     PaymentWebhooksController,

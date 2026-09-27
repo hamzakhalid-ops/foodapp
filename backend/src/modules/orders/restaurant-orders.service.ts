@@ -5,10 +5,11 @@ import {
   type OrderSummary,
   type RestaurantOrderListQuery,
 } from '@quickbite/validation';
-import { conflict, notFound } from '../../common/http/errors';
+import { conflict, forbidden, notFound } from '../../common/http/errors';
 import { type OrderStatus, type Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { OrderStateMachine } from './order-state-machine';
+import { RiskService } from '../risk/risk.service';
 import { OrdersService, RELEASED_TO_RESTAURANT } from './orders.service';
 
 /**
@@ -21,6 +22,7 @@ export class RestaurantOrdersService {
     private readonly prisma: PrismaService,
     private readonly orders: OrdersService,
     private readonly stateMachine: OrderStateMachine,
+    private readonly risk: RiskService,
   ) {}
 
   async listNew(restaurantId: string): Promise<OrderSummary[]> {
@@ -62,6 +64,9 @@ export class RestaurantOrdersService {
       }
       if (restaurant.status === 'CLOSED') {
         throw conflict('RESTAURANT_CLOSED', 'The restaurant is closed.');
+      }
+      if (await this.risk.isBlocked('RESTAURANT', restaurantId, tx)) {
+        throw forbidden('ACCOUNT_RESTRICTED', 'The restaurant is restricted.');
       }
       await this.stateMachine.transition(tx, {
         orderId,

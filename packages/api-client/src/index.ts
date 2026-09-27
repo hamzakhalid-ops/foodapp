@@ -8,3 +8,4 @@ export * from './payment';
 export * from './restaurant';
 export * from './retry';
 export * from './rider';
+export * from './risk';

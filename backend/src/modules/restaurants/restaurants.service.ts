@@ -37,6 +37,7 @@ import {
 } from '../../infrastructure/storage/file-validation';
 import { AUDIT_ACTIONS } from '../audit/audit.actions';
 import { AuditService } from '../audit/audit.service';
+import { RiskService } from '../risk/risk.service';
 import { normalizePhone } from '../users/identity-normalization';
 
 type Tx = Prisma.TransactionClient;
@@ -56,6 +57,7 @@ export class RestaurantsService {
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
     private readonly storage: StorageService,
+    private readonly risk: RiskService,
   ) {}
 
   // ---------------------------------------------------------------- owner registration
@@ -454,6 +456,9 @@ export class RestaurantsService {
       throw restaurantError('RESTAURANT_SUSPENDED', 'The restaurant is suspended.');
     if (restaurant.status === 'CLOSED')
       throw restaurantError('RESTAURANT_CLOSED', 'The restaurant is closed.');
+    if (await this.risk.isBlocked('RESTAURANT', restaurantId)) {
+      throw forbidden('ACCOUNT_RESTRICTED', 'The restaurant is restricted.');
+    }
     if (effectiveStatus(restaurant) === 'ONLINE') {
       throw restaurantError('RESTAURANT_ALREADY_ONLINE', 'The restaurant is already online.');
     }

@@ -312,3 +312,47 @@ rider available again. `GET /orders/{id}` also serves the assigned rider.
 **Not implemented (no specification yet):** manual admin assignment/reassignment endpoints and
 exception handling when an assigned rider is suspended mid-delivery (DISPATCH_RULES §42–43);
 distance-based ETA (`estimated_arrival_seconds` stays null without a maps provider).
+
+---
+
+## Slice 10 — Trust & Risk Engine (§83–87)
+
+**Signals recorded automatically** (in the same transaction as the business change, severity
+`LOW`): customer cancellation → `REPEATED_ORDER_CANCELLATION` (CUSTOMER); restaurant
+rejection/cancellation → `REPEATED_ORDER_CANCELLATION` (RESTAURANT); verified failed online
+payment → `REPEATED_PAYMENT_FAILURE`; succeeded refund → `EXCESSIVE_REFUNDS` (with amount and
+reason). `COD_NON_RECEIPT`, `REPEATED_FALSE_COMPLAINT`, `SUSPICIOUS_*`,
+`MULTIPLE_FAILED_DELIVERIES`, `ABNORMAL_ORDER_FREQUENCY` are recorded by administrators/support
+through `POST /admin/risk/events` (no automatic detection is specified).
+
+**Evaluation** (outbox worker, idempotent, serialised per subject): for each enabled rule on the
+event's subject type and event type, count that subject's events in `(occurredAt − window,
+occurredAt]`; at `count ≥ threshold` create one ACTIVE flag (reason explains rule, count, window,
+threshold) and, for `COD_RESTRICTED` / `ORDER_RESTRICTED` / `ADDITIONAL_VERIFICATION` /
+`ACCOUNT_RESTRICTED`, one ACTIVE restriction linked to the flag. `MONITORED` flags only; `NORMAL`
+does nothing. Rules are only ever data (no thresholds in code).
+
+**Enforcement** (synchronous, authoritative):
+
+| Subject | Restriction | Effect |
+|---------|-------------|--------|
+| Customer | `COD_RESTRICTED` | COD checkout `403 COD_RESTRICTED`; `GET /payment-methods` shows COD unavailable |
+| Customer | `ORDER_RESTRICTED` / `ACCOUNT_RESTRICTED` | checkout `403 ORDER_RESTRICTED` / `403 ACCOUNT_RESTRICTED` |
+| Customer | `ADDITIONAL_VERIFICATION` | checkout `403 RISK_VERIFICATION_REQUIRED` until an admin removes it (no V1 verification flow is specified) |
+| Restaurant | `ORDER_RESTRICTED` / `ACCOUNT_RESTRICTED` | not orderable at checkout (`422 RESTAURANT_NOT_AVAILABLE`), cannot go online or accept orders (`403 ACCOUNT_RESTRICTED`) |
+| Rider | `ORDER_RESTRICTED` / `ACCOUNT_RESTRICTED` | cannot go online (`409 ACCOUNT_RESTRICTED`), receives no offers, cannot accept (`409 RIDER_NOT_ELIGIBLE`) |
+
+Restrictions with `expiresAt` in the past are not enforced.
+
+| Endpoint (admin) | Notes |
+|------------------|-------|
+| `POST /admin/risk/events` | {subjectType, subjectId, eventType, severity? (default MEDIUM), metadata?} → `202` |
+| `GET /admin/risk/events` | query: subjectType?, subjectId?, cursor?, limit (listing added for the risk dashboard, ADMIN_SPEC §23) |
+| `GET/POST /admin/risk/rules`, `PATCH /admin/risk/rules/{id}` | body per API_SPEC §85; PATCH {name?, threshold?, windowSeconds?, action?, severity?, enabled?} |
+| `GET /admin/risk/flags`, `/{id}` | query adds status (`ACTIVE`\|`RESOLVED`\|`DISMISSED`\|`EXPIRED`); detail includes its restrictions |
+| `POST /admin/risk/flags/{id}/resolve\|dismiss` | {reason}; dismissal removes the restrictions the flag created |
+| `GET/POST /admin/risk/restrictions` | POST {subjectType, subjectId, restrictionType, reason, expiresAt?}; `409 RISK_RESTRICTION_ACTIVE` if already active |
+| `PATCH /admin/risk/restrictions/{id}` | {expiresAt \| null, reason} (override) |
+| `POST /admin/risk/restrictions/{id}/remove` | {reason} |
+
+Every administrative risk action is audited (`RISK_*` audit actions).

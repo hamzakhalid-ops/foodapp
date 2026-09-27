@@ -3,6 +3,7 @@ import { DeliveriesModule } from '../deliveries/deliveries.module';
 import { DispatchModule } from '../dispatch/dispatch.module';
 import { OrdersModule } from '../orders/orders.module';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { RiskModule } from '../risk/risk.module';
 import {
   AdminCancellationController,
   CustomerCancellationController,
@@ -17,7 +18,7 @@ import { CancellationService } from './cancellation.service';
  * Implemented in slice: 7 — Checkout / 9 — Restaurant Orders (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  imports: [OrdersModule, RestaurantsModule, DeliveriesModule, DispatchModule],
+  imports: [OrdersModule, RestaurantsModule, DeliveriesModule, DispatchModule, RiskModule],
   controllers: [
     CustomerCancellationController,
     RestaurantCancellationController,

@@ -433,6 +433,17 @@ location use is specified yet. Constraints: one active delivery per rider, one o
 order and per rider, one open assignment per delivery (partial unique indexes); a single
 `dispatch_settings` row with positive values and `maximum_radius >= initial_radius`.
 
+Slice 10 (risk):
+
+```text
+risk_restrictions.risk_flag_id   source flag of an automatic restriction (API_SPEC §87 traceability)
+risk_restrictions.status         ACTIVE | REMOVED | EXPIRED
+```
+
+`risk_*.subject_id` is the user id for CUSTOMER, the restaurant id for RESTAURANT and the rider
+profile id for RIDER. One ACTIVE flag per subject+rule and one ACTIVE restriction per
+subject+type (partial unique indexes).
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

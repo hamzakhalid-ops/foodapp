@@ -24,6 +24,7 @@ import {
   type UploadedFile,
 } from '../../infrastructure/storage/file-validation';
 import { normalizePhone } from '../users/identity-normalization';
+import { RiskService } from '../risk/risk.service';
 import { RiderLocationStore } from './rider-location.store';
 
 type Tx = Prisma.TransactionClient;
@@ -50,6 +51,7 @@ export class RidersService {
     private readonly config: AppConfigService,
     private readonly locations: RiderLocationStore,
     private readonly outbox: OutboxService,
+    private readonly risk: RiskService,
   ) {}
 
   async createProfile(
@@ -221,7 +223,7 @@ export class RidersService {
     if (rider.approvalStatus !== 'APPROVED' || rider.status !== 'ACTIVE') {
       throw conflict('RIDER_NOT_ELIGIBLE', 'Your rider account is not approved for deliveries.');
     }
-    if (rider.user.status !== 'ACTIVE') {
+    if (rider.user.status !== 'ACTIVE' || (await this.risk.isBlocked('RIDER', rider.id))) {
       throw conflict('ACCOUNT_RESTRICTED', 'Your account is restricted.');
     }
     const documentsValid =

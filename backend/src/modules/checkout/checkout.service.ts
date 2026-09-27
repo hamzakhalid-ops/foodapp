@@ -17,6 +17,7 @@ import { type CartQuote, CartService } from '../cart/cart.service';
 import { loadPricingRates, orderTotals, type OrderTotals } from '../cart/pricing';
 import { OrdersService } from '../orders/orders.service';
 import { PaymentsService } from '../payments/payments.service';
+import { RiskService } from '../risk/risk.service';
 
 type Tx = Prisma.TransactionClient;
 type QuotedRestaurant = NonNullable<NonNullable<CartQuote['cart']>['restaurant']>;
@@ -42,6 +43,7 @@ export class CheckoutService {
     private readonly settings: SettingsService,
     private readonly outbox: OutboxService,
     private readonly config: AppConfigService,
+    private readonly risk: RiskService,
   ) {}
 
   async preview(customerId: string, input: CheckoutPreviewRequest): Promise<CheckoutPreview> {
@@ -149,6 +151,14 @@ export class CheckoutService {
     const restaurant = quote.cart?.restaurant;
     if (quote.lines.length === 0 || !restaurant) {
       throw unprocessable('INVALID_REQUEST', 'Your cart is empty.');
+    }
+    // Authoritative restriction check before creating anything (RISK_RULES §19, ORDER_RULES §21).
+    await this.risk.assertCustomerMayOrder(customerId, input.paymentMethod, tx);
+    if (await this.risk.isBlocked('RESTAURANT', restaurant.id, tx)) {
+      throw unprocessable(
+        'RESTAURANT_NOT_AVAILABLE',
+        'The restaurant is not accepting orders right now.',
+      );
     }
     const [first] = quote.issues;
     if (first) {

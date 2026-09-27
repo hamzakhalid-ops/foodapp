@@ -11,6 +11,7 @@ import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { DeliveriesService } from '../deliveries/deliveries.service';
 import { RiderLocationStore } from '../riders/rider-location.store';
 import { ACTIVE_DELIVERY_STATUSES, RidersService } from '../riders/riders.service';
+import { RiskService } from '../risk/risk.service';
 
 type Tx = Prisma.TransactionClient;
 
@@ -37,6 +38,7 @@ export class DispatchService {
     private readonly riders: RidersService,
     private readonly locations: RiderLocationStore,
     private readonly outbox: OutboxService,
+    private readonly risk: RiskService,
   ) {}
 
   /** Entry point for READY_FOR_PICKUP (DISPATCH_RULES §2). */
@@ -229,7 +231,8 @@ export class DispatchService {
         current.isOnline &&
         current.isAvailable &&
         current.user.status === 'ACTIVE' &&
-        !(await this.riders.hasActiveDelivery(tx, rider.id));
+        !(await this.riders.hasActiveDelivery(tx, rider.id)) &&
+        !(await this.risk.isBlocked('RIDER', rider.id, tx));
       if (!eligible)
         throw conflict('RIDER_NOT_ELIGIBLE', 'You cannot accept deliveries right now.');
 
@@ -312,7 +315,11 @@ export class DispatchService {
       },
       select: { id: true },
     });
-    return new Set(rows.map((row) => row.id));
+    const blocked = await this.risk.blockedRiders(
+      rows.map((row) => row.id),
+      tx,
+    );
+    return new Set(rows.map((row) => row.id).filter((id) => !blocked.has(id)));
   }
 
   /** Max attempts reached: an operational exception, never a silent drop (§24, §35). */

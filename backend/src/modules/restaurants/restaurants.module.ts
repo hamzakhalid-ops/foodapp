@@ -1,5 +1,6 @@
 import { Module, type OnModuleInit } from '@nestjs/common';
 import { ScheduledTasks } from '../../infrastructure/scheduler/scheduler';
+import { RiskModule } from '../risk/risk.module';
 import { RestaurantAccessGuard } from './restaurant-access';
 import { RestaurantReviewService } from './restaurant-review.service';
 import {
@@ -18,6 +19,7 @@ import { RestaurantsService } from './restaurants.service';
  * Implemented in slice: 3 — Restaurant Onboarding (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
+  imports: [RiskModule],
   controllers: [RestaurantOnboardingController, RestaurantOperationsController],
   providers: [RestaurantsService, RestaurantReviewService, RestaurantAccessGuard],
   exports: [RestaurantsService, RestaurantReviewService, RestaurantAccessGuard],

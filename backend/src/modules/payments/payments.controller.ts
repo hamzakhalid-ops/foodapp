@@ -54,8 +54,8 @@ export class PaymentsController {
 
   @Get('payment-methods')
   @Roles('CUSTOMER')
-  methods(): PaymentMethodInfo[] {
-    return this.payments.paymentMethods();
+  methods(@CurrentAuth() auth: AuthContext): Promise<PaymentMethodInfo[]> {
+    return this.payments.paymentMethods(auth.userId);
   }
 
   @Post('payments')

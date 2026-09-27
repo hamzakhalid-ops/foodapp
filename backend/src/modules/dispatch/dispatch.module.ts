@@ -3,6 +3,7 @@ import { OutboxProcessor } from '../../common/outbox/outbox.processor';
 import { ScheduledTasks } from '../../infrastructure/scheduler/scheduler';
 import { DeliveriesModule } from '../deliveries/deliveries.module';
 import { RidersModule } from '../riders/riders.module';
+import { RiskModule } from '../risk/risk.module';
 import { DispatchOffersController } from './dispatch.controller';
 import { DispatchService } from './dispatch.service';
 
@@ -13,7 +14,7 @@ import { DispatchService } from './dispatch.service';
  * Implemented in slice: 10 — Dispatch (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  imports: [DeliveriesModule, RidersModule],
+  imports: [DeliveriesModule, RidersModule, RiskModule],
   controllers: [DispatchOffersController],
   providers: [DispatchService],
   exports: [DispatchService],

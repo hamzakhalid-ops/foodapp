@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { RiskModule } from '../risk/risk.module';
 import { OrderStateMachine } from './order-state-machine';
 import { CustomerOrdersController, OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
@@ -13,7 +14,7 @@ import { RestaurantOrdersService } from './restaurant-orders.service';
  * Implemented in slice: 7 — Checkout / 9 — Restaurant Orders (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  imports: [RestaurantsModule],
+  imports: [RestaurantsModule, RiskModule],
   controllers: [OrdersController, CustomerOrdersController, RestaurantOrdersController],
   providers: [OrdersService, OrderStateMachine, RestaurantOrdersService],
   exports: [OrdersService, OrderStateMachine],

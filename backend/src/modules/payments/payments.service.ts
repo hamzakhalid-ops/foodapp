@@ -27,6 +27,7 @@ import {
   type VerifiedWebhookEvent,
 } from './provider/payment-provider';
 import { RefundsService } from './refunds.service';
+import { RiskService } from '../risk/risk.service';
 
 type Tx = Prisma.TransactionClient;
 
@@ -58,6 +59,7 @@ export class PaymentsService {
     private readonly refunds: RefundsService,
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
+    private readonly risk: RiskService,
   ) {}
 
   /**
@@ -79,11 +81,11 @@ export class PaymentsService {
     });
   }
 
-  /** API_SPEC §77. COD availability narrows with risk restrictions (risk slice). */
-  paymentMethods(): PaymentMethodInfo[] {
+  /** API_SPEC §77. Cash on delivery is unavailable while the customer is COD-restricted. */
+  async paymentMethods(customerId: string): Promise<PaymentMethodInfo[]> {
     return [
       { method: 'ONLINE_PAYMENT', available: true },
-      { method: 'CASH_ON_DELIVERY', available: true },
+      { method: 'CASH_ON_DELIVERY', available: !(await this.risk.isCodRestricted(customerId)) },
     ];
   }
 
@@ -258,6 +260,14 @@ export class PaymentsService {
       },
       tx,
     );
+    if (next === 'FAILED' && matches) {
+      await this.risk.record(tx, {
+        subjectType: 'CUSTOMER',
+        subjectId: order.customerId,
+        eventType: 'REPEATED_PAYMENT_FAILURE',
+        metadata: { paymentId: payment.id, orderId: order.id },
+      });
+    }
     const orderCancelled = order.status.startsWith('CANCELLED');
     await this.outbox.enqueue(tx, {
       eventType: 'payment.status_changed',

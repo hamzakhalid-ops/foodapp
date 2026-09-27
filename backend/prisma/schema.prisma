@@ -1110,3 +1110,150 @@ model DispatchSettings {
 
   @@map("dispatch_settings")
 }
+
+// ----------------------------------------------------------------------------- Risk (DATABASE.md §39–43)
+
+enum RiskSubjectType {
+  CUSTOMER
+  RESTAURANT
+  RIDER
+
+  @@map("risk_subject_type")
+}
+
+enum RiskEventType {
+  COD_NON_RECEIPT
+  REPEATED_ORDER_CANCELLATION
+  REPEATED_PAYMENT_FAILURE
+  SUSPICIOUS_ORDER_PATTERN
+  MULTIPLE_FAILED_DELIVERIES
+  EXCESSIVE_REFUNDS
+  ABNORMAL_ORDER_FREQUENCY
+  SUSPICIOUS_ACCOUNT_ACTIVITY
+  REPEATED_FALSE_COMPLAINT
+
+  @@map("risk_event_type")
+}
+
+enum RiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@map("risk_severity")
+}
+
+enum RiskAction {
+  NORMAL
+  MONITORED
+  COD_RESTRICTED
+  ADDITIONAL_VERIFICATION
+  ORDER_RESTRICTED
+  ACCOUNT_RESTRICTED
+
+  @@map("risk_action")
+}
+
+enum RiskFlagStatus {
+  ACTIVE
+  RESOLVED
+  DISMISSED
+  EXPIRED
+
+  @@map("risk_flag_status")
+}
+
+enum RiskRestrictionType {
+  COD_RESTRICTED
+  ORDER_RESTRICTED
+  ADDITIONAL_VERIFICATION
+  ACCOUNT_RESTRICTED
+
+  @@map("risk_restriction_type")
+}
+
+enum RiskRestrictionStatus {
+  ACTIVE
+  REMOVED
+  EXPIRED
+
+  @@map("risk_restriction_status")
+}
+
+/// Immutable historical evidence (RISK_RULES §13). `subject_id`: user id (CUSTOMER), restaurant
+/// id (RESTAURANT) or rider profile id (RIDER).
+model RiskEvent {
+  id          String          @id @default(uuid()) @db.Uuid
+  subjectType RiskSubjectType @map("subject_type")
+  subjectId   String          @map("subject_id") @db.Uuid
+  eventType   RiskEventType   @map("event_type")
+  severity    RiskSeverity
+  metadata    Json?
+  occurredAt  DateTime        @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([subjectType, subjectId, eventType, occurredAt])
+  @@map("risk_events")
+}
+
+model RiskRule {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  subjectType   RiskSubjectType @map("subject_type")
+  eventType     RiskEventType   @map("event_type")
+  threshold     Int
+  windowSeconds Int             @map("window_seconds")
+  action        RiskAction
+  severity      RiskSeverity
+  isEnabled     Boolean         @default(true) @map("is_enabled")
+  createdBy     String?         @map("created_by") @db.Uuid
+  updatedBy     String?         @map("updated_by") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  flags RiskFlag[]
+
+  @@index([subjectType, eventType, isEnabled])
+  @@map("risk_rules")
+}
+
+model RiskFlag {
+  id          String          @id @default(uuid()) @db.Uuid
+  subjectType RiskSubjectType @map("subject_type")
+  subjectId   String          @map("subject_id") @db.Uuid
+  riskRuleId  String?         @map("risk_rule_id") @db.Uuid
+  status      RiskFlagStatus  @default(ACTIVE)
+  severity    RiskSeverity
+  reason      String
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?       @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy  String?         @map("resolved_by") @db.Uuid
+
+  rule         RiskRule?         @relation(fields: [riskRuleId], references: [id], onDelete: Restrict)
+  restrictions RiskRestriction[]
+
+  @@index([subjectType, subjectId, status])
+  @@map("risk_flags")
+}
+
+/// `risk_flag_id` traces an automatic restriction to its flag (API_SPEC §87 "traceable to its
+/// source"); NULL for restrictions created by an administrator. Gap fill: DATABASE.md §5.4.
+model RiskRestriction {
+  id              String                @id @default(uuid()) @db.Uuid
+  subjectType     RiskSubjectType       @map("subject_type")
+  subjectId       String                @map("subject_id") @db.Uuid
+  restrictionType RiskRestrictionType   @map("restriction_type")
+  status          RiskRestrictionStatus @default(ACTIVE)
+  startsAt        DateTime              @default(now()) @map("starts_at") @db.Timestamptz(6)
+  expiresAt       DateTime?             @map("expires_at") @db.Timestamptz(6)
+  reason          String
+  riskFlagId      String?               @map("risk_flag_id") @db.Uuid
+  createdBy       String?               @map("created_by") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  flag RiskFlag? @relation(fields: [riskFlagId], references: [id], onDelete: Restrict)
+
+  @@index([subjectType, subjectId, status])
+  @@map("risk_restrictions")
+}

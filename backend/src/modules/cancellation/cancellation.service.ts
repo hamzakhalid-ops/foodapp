@@ -15,6 +15,7 @@ import { AUDIT_ACTIONS } from '../audit/audit.actions';
 import { AuditService } from '../audit/audit.service';
 import { DeliveriesService } from '../deliveries/deliveries.service';
 import { DispatchService } from '../dispatch/dispatch.service';
+import { RiskService } from '../risk/risk.service';
 import {
   CANCELLED_STATUSES,
   invalidStatus,
@@ -59,6 +60,7 @@ export class CancellationService {
     private readonly outbox: OutboxService,
     private readonly deliveries: DeliveriesService,
     private readonly dispatch: DispatchService,
+    private readonly risk: RiskService,
   ) {}
 
   async cancel(
@@ -103,6 +105,15 @@ export class CancellationService {
           reasonText: request.reason ?? null,
         },
       });
+      // Cancellations are signals, not proof of abuse; rules decide (RISK_RULES §35).
+      if (actor.kind !== 'ADMIN') {
+        await this.risk.record(tx, {
+          subjectType: actor.kind === 'CUSTOMER' ? 'CUSTOMER' : 'RESTAURANT',
+          subjectId: actor.kind === 'CUSTOMER' ? order.customerId : order.restaurantId,
+          eventType: 'REPEATED_ORDER_CANCELLATION',
+          metadata: { orderId, fromStatus: order.status, reasonCode: request.reasonCode },
+        });
+      }
       await this.audit.record(
         {
           action: AUDIT_ACTIONS.ORDER_CANCELLED,

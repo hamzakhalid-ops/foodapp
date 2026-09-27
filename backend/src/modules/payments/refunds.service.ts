@@ -15,6 +15,7 @@ import { type Prisma, type Refund, type RefundStatus } from '../../generated/pri
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { AUDIT_ACTIONS } from '../audit/audit.actions';
 import { AuditService } from '../audit/audit.service';
+import { RiskService } from '../risk/risk.service';
 import {
   PAYMENT_PROVIDER,
   type PaymentProvider,
@@ -40,6 +41,7 @@ export class RefundsService {
     @Inject(PAYMENT_PROVIDER) private readonly provider: PaymentProvider,
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
+    private readonly risk: RiskService,
   ) {}
 
   /** API_SPEC §82 (admin). */
@@ -284,6 +286,17 @@ export class RefundsService {
     await tx.orderCancellation.updateMany({
       where: { orderId: refund.orderId },
       data: { refundAmount: refunded },
+    });
+    await this.risk.record(tx, {
+      subjectType: 'CUSTOMER',
+      subjectId: payment.customerId,
+      eventType: 'EXCESSIVE_REFUNDS',
+      metadata: {
+        refundId,
+        orderId: refund.orderId,
+        amount: formatMoney(money(refund.amount)),
+        reason: refund.reason,
+      },
     });
     await this.outbox.enqueue(tx, {
       eventType: 'refund.succeeded',

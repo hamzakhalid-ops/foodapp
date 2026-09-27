@@ -8,4 +8,5 @@ export * from './order';
 export * from './payment';
 export * from './restaurant';
 export * from './rider';
+export * from './risk';
 export * from './vocabulary';
