@@ -252,3 +252,63 @@ delivery has no online refund path in V1.
 
 **Not automated:** unpaid online orders are not expired automatically (no timeout rule is
 specified); they stay `PENDING` until paid or cancelled.
+
+---
+
+## Slices 8–9 — Riders, dispatch and deliveries (§63–74, §98–99)
+
+**Rider application.** `approvalStatus`: `PENDING` (filling in) → `UNDER_REVIEW` (submitted) →
+`APPROVED` / `REJECTED` (editable and resubmittable) ; `APPROVED` ↔ `SUSPENDED`. Submission needs
+vehicle type/number and at least one document. Approval also approves pending documents.
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `POST /rider/auth/register` | public | {email, phone, password, firstName, lastName}; same verification flow as customers |
+| `GET/PATCH /rider/profile` | rider | {firstName?, lastName?, profileImageUrl?, vehicleType? (UPPER_CASE), vehicleNumber?}; vehicle fields only while editable |
+| `GET/PATCH /rider/onboarding`, `POST /rider/onboarding/submit` | rider | `RiderOnboarding` {profile, documents, submittedAt, rejectionReason, missing[]}; submit `422` with `details.missing` |
+| `GET/POST /rider/documents`, `PATCH/DELETE /rider/documents/{id}` | rider | multipart `documentType` + `file` (PDF/PNG/JPEG); PATCH replaces the file; editable while `PENDING`/`REJECTED` |
+| `GET /rider/availability`, `POST /rider/availability/online\|offline` | rider | `{isOnline, isAvailable, state OFFLINE\|AVAILABLE\|BUSY}`; online requires `APPROVED` + `ACTIVE` + all documents approved (`409 RIDER_NOT_ELIGIBLE`); offline refused during an active delivery |
+| `POST /rider/availability` | rider | {available}; online riders only; unavailable withdraws open offers |
+| `POST /rider/location` | rider | {latitude, longitude, accuracyMeters?} → `204`; online riders only; stored in Redis |
+| `GET/PATCH /admin/riders[/{id}]` | admin | list query: approvalStatus?, online?, search?, page, pageSize; detail adds documents with short-lived URLs; PATCH {vehicleType?, vehicleNumber?} |
+| `POST /admin/riders/{id}/approve\|reject\|suspend\|restore` | admin | reject/suspend/restore take {reason}; suspension takes the rider offline; audited |
+
+**Dispatch.** Triggered by the `order.status_changed` → `READY_FOR_PICKUP` outbox event (and a
+5-second worker tick for expiry and retries). Settings come from the single `dispatch_settings`
+row; without it dispatch is paused. One open offer per order: the nearest eligible rider not yet
+offered this order, searching from `initial_radius` by `radius_increment` up to `maximum_radius`.
+Eligible = approved, active, online, available, account active, no active delivery, no other open
+offer, location newer than `location_max_age_seconds`. Vehicle type is not used (no vehicle rules
+exist in V1). After `max_offer_attempts` offers the delivery gets `dispatchFailedAt` and
+`dispatch.failed` is emitted for operations.
+
+| Endpoint | Notes |
+|----------|-------|
+| `GET /rider/delivery-offers`, `/{id}` | open offers of the caller: order number, restaurant location, delivery area/city, payment method, `amountToCollect` (COD), `expiresAt`, `distanceToRestaurantKm`; no customer contact before acceptance |
+| `POST /rider/delivery-offers/{id}/accept` | → `Delivery`; re-checks offer, expiry (`409 DISPATCH_OFFER_EXPIRED`), rider eligibility (`409 RIDER_NOT_ELIGIBLE`), assignment (`409 DELIVERY_ALREADY_ASSIGNED`); repeating an accepted offer returns the delivery |
+| `POST /rider/delivery-offers/{id}/reject` | {reasonCode UPPER_CASE}; the next rider is offered immediately |
+
+**Deliveries.**
+
+| Endpoint | Notes |
+|----------|-------|
+| `GET /rider/delivery/current` | active delivery or `null` |
+| `GET /rider/deliveries` | query: status?, from?, to?, cursor?, limit |
+| `GET /deliveries/{id}` | assigned rider, the order's customer, restaurant staff, admins |
+| `POST /rider/deliveries/{id}/arriving` | `ASSIGNED → ARRIVING_AT_RESTAURANT` |
+| `POST /rider/deliveries/{id}/pickup` | delivery `→ PICKED_UP`, order `RIDER_ASSIGNED → PICKED_UP` |
+| `POST /rider/deliveries/{id}/out-for-delivery` | both `→ OUT_FOR_DELIVERY` |
+| `POST /rider/deliveries/{id}/complete` | {notes?, cashCollected?}; both `→ DELIVERED`; cash on delivery requires `cashCollected: true` and marks the payment `SUCCEEDED` in the same transaction (ADR-0014 §10–11) |
+
+`Delivery` {id, orderId, orderNumber, orderStatus, status, riderId, restaurant {name, addressText,
+area, city, latitude, longitude, phone}, destination {recipientName, recipientPhone, addressText,
+area, city, latitude, longitude, instructions}, paymentMethod, amountToCollect, currency,
+pickupAt, pickedUpAt, deliveredAt, deliveryNotes, createdAt}. Other riders' deliveries read as
+`404 DELIVERY_NOT_FOUND`; out-of-order steps return `409 ORDER_INVALID_STATUS`.
+
+Cancelling an order cancels open offers and the delivery, closes the assignment and makes the
+rider available again. `GET /orders/{id}` also serves the assigned rider.
+
+**Not implemented (no specification yet):** manual admin assignment/reassignment endpoints and
+exception handling when an assigned rider is suspended mid-delivery (DISPATCH_RULES §42–43);
+distance-based ETA (`estimated_arrival_seconds` stays null without a maps provider).

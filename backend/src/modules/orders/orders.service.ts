@@ -149,7 +149,7 @@ export class OrdersService {
     return toOrder(order);
   }
 
-  /** API_SPEC §39: customer (own), restaurant staff (own restaurant), admin. Others: 404. */
+  /** API_SPEC §39: customer (own), restaurant staff (own restaurant), assigned rider, admin. Others: 404. */
   async getForActor(orderId: string, auth: AuthContext): Promise<Order> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -238,6 +238,13 @@ export class OrdersService {
         where: { userId: auth.userId, restaurantId: order.restaurantId, status: 'ACTIVE' },
       });
       return membership > 0 && isReleasedToRestaurant(order);
+    }
+    if (auth.roles.includes('RIDER')) {
+      // Only the rider assigned to this order's delivery (ORDER_RULES §27).
+      const assigned = await this.prisma.delivery.count({
+        where: { orderId: order.id, rider: { userId: auth.userId } },
+      });
+      return assigned > 0;
     }
     return false;
   }

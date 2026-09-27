@@ -13,6 +13,8 @@ import {
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { AUDIT_ACTIONS } from '../audit/audit.actions';
 import { AuditService } from '../audit/audit.service';
+import { DeliveriesService } from '../deliveries/deliveries.service';
+import { DispatchService } from '../dispatch/dispatch.service';
 import {
   CANCELLED_STATUSES,
   invalidStatus,
@@ -55,6 +57,8 @@ export class CancellationService {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly outbox: OutboxService,
+    private readonly deliveries: DeliveriesService,
+    private readonly dispatch: DispatchService,
   ) {}
 
   async cancel(
@@ -86,6 +90,9 @@ export class CancellationService {
           data: { status: 'CANCELLED' },
         });
       }
+      // Stop dispatch and release the rider (DISPATCH_RULES §38, CANCELLATION_RULES §24).
+      await this.dispatch.cancelOffersForOrder(tx, orderId);
+      await this.deliveries.cancelForOrder(tx, orderId);
       const role = actor.kind === 'CUSTOMER' ? 'CUSTOMER' : actor.role;
       await tx.orderCancellation.create({
         data: {

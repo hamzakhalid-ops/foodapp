@@ -79,5 +79,80 @@ export function orderFixtures(h: Harness) {
     return { restaurant, customer, orderId: order.id, orderNumber: order.orderNumber };
   }
 
-  return { configurePricing, menuItem, address, placeOrder };
+  async function dispatchSettings(
+    overrides: Partial<{
+      initialRadius: number;
+      radiusIncrement: number;
+      maximumRadius: number;
+      offerTimeoutSeconds: number;
+      maxOfferAttempts: number;
+      locationMaxAgeSeconds: number;
+    }> = {},
+  ) {
+    await h.prisma.dispatchSettings.deleteMany();
+    await h.prisma.dispatchSettings.create({
+      data: {
+        initialRadius: 2,
+        radiusIncrement: 2,
+        maximumRadius: 6,
+        offerTimeoutSeconds: 60,
+        maxOfferAttempts: 5,
+        locationMaxAgeSeconds: 300,
+        ...overrides,
+      },
+    });
+  }
+
+  /** An approved rider with an approved document; online at the given point unless `online: false`. */
+  async function rider(options: { latitude?: number; longitude?: number; online?: boolean } = {}) {
+    const actor = await h.actor('RIDER');
+    const profile = await h.prisma.riderProfile.create({
+      data: {
+        userId: actor.userId,
+        firstName: 'Bilal',
+        lastName: 'Rider',
+        phone: `+9230${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}`,
+        vehicleType: 'MOTORCYCLE',
+        vehicleNumber: 'LEA-1234',
+        approvalStatus: 'APPROVED',
+        documents: {
+          create: {
+            documentType: 'DRIVING_LICENSE',
+            fileUrl: 'riders/test.pdf',
+            status: 'APPROVED',
+          },
+        },
+      },
+    });
+    if (options.online !== false) {
+      await h
+        .http()
+        .post('/api/v1/rider/availability/online')
+        .set('Authorization', actor.auth)
+        .expect(200);
+      await h
+        .http()
+        .post('/api/v1/rider/location')
+        .set('Authorization', actor.auth)
+        .send({ latitude: options.latitude ?? 31.5204, longitude: options.longitude ?? 74.3587 })
+        .expect(204);
+    }
+    return { ...actor, riderId: profile.id };
+  }
+
+  /** Places a cash order and walks it to READY_FOR_PICKUP through the restaurant API. */
+  async function readyOrder(options: Parameters<typeof placeOrder>[0] = {}) {
+    const placed = await placeOrder(options);
+    for (const action of ['accept', 'preparing', 'ready']) {
+      await h
+        .http()
+        .post(`/api/v1/restaurant/orders/${placed.orderId}/${action}`)
+        .set('Authorization', placed.restaurant.owner.auth)
+        .send({})
+        .expect(200);
+    }
+    return placed;
+  }
+
+  return { configurePricing, menuItem, address, placeOrder, dispatchSettings, rider, readyOrder };
 }

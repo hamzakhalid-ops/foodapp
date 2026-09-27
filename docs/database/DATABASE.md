@@ -419,6 +419,20 @@ refunds.status            PENDING | PROCESSING | SUCCEEDED | FAILED | CANCELLED 
 (`Σ refunds in PENDING/PROCESSING/SUCCEEDED ≤ payments.amount`) is enforced under the payment row
 lock.
 
+Slices 8–9 (riders, deliveries, dispatch):
+
+```text
+rider_profiles.submitted_at, reviewed_at, reviewed_by, rejection_reason   application review data
+rider_profiles.status          ACTIVE | SUSPENDED (operational); approval_status per §32
+deliveries.dispatch_failed_at  set once when max offer attempts are reached (DISPATCH_RULES §35)
+dispatch_settings.location_max_age_seconds   staleness limit for rider locations (DISPATCH_RULES §32)
+```
+
+`rider_location_events` (§34) is not created: current locations live in Redis and no historical
+location use is specified yet. Constraints: one active delivery per rider, one open offer per
+order and per rider, one open assignment per delivery (partial unique indexes); a single
+`dispatch_settings` row with positive values and `maximum_radius >= initial_radius`.
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

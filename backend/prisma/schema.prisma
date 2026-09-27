@@ -78,6 +78,9 @@ model User {
   orderStatusChanges     OrderStatusHistory[]
   orderCancellations     OrderCancellation[]
   initiatedRefunds       Refund[]
+  riderProfile           RiderProfile?
+  reviewedRiders         RiderProfile[]          @relation("RiderReviewer")
+  reviewedRiderDocuments RiderDocument[]         @relation("RiderDocumentReviewer")
   payments               Payment[]
 
   @@map("users")
@@ -749,6 +752,8 @@ model Order {
   payments        Payment[]
   cancellation    OrderCancellation?
   refunds         Refund[]
+  delivery        Delivery?
+  dispatchOffers  DispatchOffer[]
 
   @@index([customerId, createdAt])
   @@index([restaurantId, status])
@@ -920,4 +925,188 @@ model PaymentWebhookEvent {
 
   @@unique([provider, providerEventId])
   @@map("payment_webhook_events")
+}
+
+// ----------------------------------------------------------------------------- Riders (DATABASE.md §31–34)
+
+enum RiderApprovalStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+
+  @@map("rider_approval_status")
+}
+
+enum RiderStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("rider_status")
+}
+
+/// `status` is the rider's operational account state; `approval_status` the application state.
+/// `is_online`/`is_available` are the authoritative presence flags (API_SPEC §67–68).
+model RiderProfile {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @unique @map("user_id") @db.Uuid
+  firstName       String              @map("first_name")
+  lastName        String              @map("last_name")
+  phone           String
+  profileImageUrl String?             @map("profile_image_url")
+  vehicleType     String?             @map("vehicle_type")
+  vehicleNumber   String?             @map("vehicle_number")
+  status          RiderStatus         @default(ACTIVE)
+  approvalStatus  RiderApprovalStatus @default(PENDING) @map("approval_status")
+  isOnline        Boolean             @default(false) @map("is_online")
+  isAvailable     Boolean             @default(false) @map("is_available")
+  /// Application review data. Gap fill: DATABASE.md §5.4.
+  submittedAt     DateTime?           @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt      DateTime?           @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy      String?             @map("reviewed_by") @db.Uuid
+  rejectionReason String?             @map("rejection_reason")
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reviewer    User?                @relation("RiderReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+  documents   RiderDocument[]
+  deliveries  Delivery[]
+  offers      DispatchOffer[]
+  assignments DeliveryAssignment[]
+
+  @@index([approvalStatus])
+  @@index([isOnline, isAvailable])
+  @@map("rider_profiles")
+}
+
+model RiderDocument {
+  id              String         @id @default(uuid()) @db.Uuid
+  riderId         String         @map("rider_id") @db.Uuid
+  documentType    String         @map("document_type")
+  /// Private object-storage key (never a public URL, API_SPEC §109).
+  fileUrl         String         @map("file_url")
+  status          DocumentStatus @default(PENDING)
+  uploadedAt      DateTime       @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+  reviewedAt      DateTime?      @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy      String?        @map("reviewed_by") @db.Uuid
+  rejectionReason String?        @map("rejection_reason")
+
+  rider    RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+  reviewer User?        @relation("RiderDocumentReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([riderId])
+  @@map("rider_documents")
+}
+
+// ----------------------------------------------------------------------------- Delivery & dispatch (DATABASE.md §35–38)
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  ARRIVING_AT_RESTAURANT
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+
+  @@map("delivery_status")
+}
+
+/// One delivery per order. At most one active delivery per rider (partial unique index).
+model Delivery {
+  id               String         @id @default(uuid()) @db.Uuid
+  orderId          String         @unique @map("order_id") @db.Uuid
+  riderId          String?        @map("rider_id") @db.Uuid
+  status           DeliveryStatus @default(PENDING)
+  /// When the rider reported arriving at the restaurant.
+  pickupAt         DateTime?      @map("pickup_at") @db.Timestamptz(6)
+  pickedUpAt       DateTime?      @map("picked_up_at") @db.Timestamptz(6)
+  deliveredAt      DateTime?      @map("delivered_at") @db.Timestamptz(6)
+  deliveryNotes    String?        @map("delivery_notes")
+  /// Set once when dispatch gives up (max attempts); the order stays recoverable for manual
+  /// assignment (DISPATCH_RULES §24, §35). Gap fill: DATABASE.md §5.4.
+  dispatchFailedAt DateTime?      @map("dispatch_failed_at") @db.Timestamptz(6)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order       Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  rider       RiderProfile?        @relation(fields: [riderId], references: [id], onDelete: Restrict)
+  assignments DeliveryAssignment[]
+
+  @@index([riderId, status])
+  @@index([status])
+  @@map("deliveries")
+}
+
+enum DispatchOfferStatus {
+  OFFERED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+
+  @@map("dispatch_offer_status")
+}
+
+/// Auditable dispatch history (DATABASE.md §36). One open offer per order and per rider
+/// (partial unique indexes).
+model DispatchOffer {
+  id                      String              @id @default(uuid()) @db.Uuid
+  orderId                 String              @map("order_id") @db.Uuid
+  riderId                 String              @map("rider_id") @db.Uuid
+  status                  DispatchOfferStatus @default(OFFERED)
+  offeredAt               DateTime            @default(now()) @map("offered_at") @db.Timestamptz(6)
+  expiresAt               DateTime            @map("expires_at") @db.Timestamptz(6)
+  respondedAt             DateTime?           @map("responded_at") @db.Timestamptz(6)
+  /// Straight-line km from the rider to the restaurant when offered.
+  distanceToRestaurant    Decimal             @map("distance_to_restaurant") @db.Decimal(8, 3)
+  estimatedArrivalSeconds Int?                @map("estimated_arrival_seconds")
+  rejectionReason         String?             @map("rejection_reason")
+  createdAt               DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  rider RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([riderId, status])
+  @@index([status, expiresAt])
+  @@map("dispatch_offers")
+}
+
+/// Assignment history; reassignment closes the previous row (DATABASE.md §37).
+model DeliveryAssignment {
+  id           String    @id @default(uuid()) @db.Uuid
+  deliveryId   String    @map("delivery_id") @db.Uuid
+  riderId      String    @map("rider_id") @db.Uuid
+  assignedAt   DateTime  @default(now()) @map("assigned_at") @db.Timestamptz(6)
+  unassignedAt DateTime? @map("unassigned_at") @db.Timestamptz(6)
+  reason       String?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  delivery Delivery     @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+  rider    RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+
+  @@index([deliveryId])
+  @@index([riderId])
+  @@map("delivery_assignments")
+}
+
+/// Singleton dispatch configuration (DATABASE.md §38). Radii in km. No row = dispatch paused.
+model DispatchSettings {
+  id                    String   @id @default(uuid()) @db.Uuid
+  initialRadius         Decimal  @map("initial_radius") @db.Decimal(6, 2)
+  radiusIncrement       Decimal  @map("radius_increment") @db.Decimal(6, 2)
+  maximumRadius         Decimal  @map("maximum_radius") @db.Decimal(6, 2)
+  offerTimeoutSeconds   Int      @map("offer_timeout_seconds")
+  maxOfferAttempts      Int      @map("max_offer_attempts")
+  /// Rider locations older than this are not used for dispatch (DISPATCH_RULES §32). Gap fill.
+  locationMaxAgeSeconds Int      @map("location_max_age_seconds")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("dispatch_settings")
 }
