@@ -119,3 +119,60 @@ city, status, isOrderableNow, minimumOrderAmount, estimatedPreparationMinutes, d
 (platform flat fee, `null` until configured), distanceKm and deliversToLocation (`null` without a
 caller location). Distance is straight-line (MAPS_LOCATION_RULES §13) and delivery reach compares
 it with the restaurant's delivery radius. Ratings are added with the reviews slice.
+
+---
+
+## Slice 5 — Cart, checkout and order creation (§32–41)
+
+**Cart (customer only).** Stored in PostgreSQL; selections only. Every response is recalculated
+from the current menu, restaurant state and pricing settings, so price and availability changes
+are always visible.
+
+| Endpoint | Notes |
+|----------|-------|
+| `GET /cart` | `Cart` (empty cart: `restaurant: null`, totals `0.00`) |
+| `POST /cart/items` | {restaurantId, menuItemId, quantity 1–99, variationIds (0–1), addOnIds (unique, ≤ 20)} → `201 Cart`. Item must be available and belong to the restaurant; `409 CART_RESTAURANT_MISMATCH` when the cart holds another restaurant's items; `422 ORDER_ITEM_UNAVAILABLE / INVALID_VARIATION / INVALID_ADD_ON` |
+| `PATCH /cart/items/{id}` | {quantity 1–99} → `Cart` |
+| `DELETE /cart/items/{id}` | → `Cart` (the cart forgets its restaurant when it becomes empty) |
+| `DELETE /cart` | `204` |
+| `POST /cart/recalculate` | `200 Cart` (same as GET) |
+
+`Cart`: restaurant {id, name, isOrderableNow} or null, items [{id, menuItemId, name, imageUrl,
+quantity, unitPrice, lineTotal, variations [{id, name, price}], addOns [...], isAvailable}],
+subtotal, deliveryFee, serviceFee, tax, total, currency, minimumOrderAmount, issues [{code,
+message, cartItemId}], isCheckoutReady. Issues: `ORDER_ITEM_UNAVAILABLE`, `INVALID_VARIATION`,
+`INVALID_ADD_ON`, `RESTAURANT_NOT_AVAILABLE`, `ORDER_MINIMUM_NOT_MET`.
+
+**Variations** are mutually exclusive choices (DATABASE.md §19 "Small / Medium / Large"): an item
+with active variations requires exactly one; an item without variations accepts none. Add-ons are
+optional, each at most once per unit.
+
+**Pricing** (ADR-0014 §1): unit price = base + variation + add-ons; subtotal = Σ unit × quantity;
+tax = `pricing.tax_percent` of (subtotal − discount), rounded half-up to 2 dp once; total =
+subtotal − discount + delivery fee + tax + service fee. Unconfigured pricing settings fail with
+`503 INTERNAL_ERROR` rather than an invented value.
+
+| Endpoint | Notes |
+|----------|-------|
+| `POST /checkout/preview` | {addressId, paymentMethod `ONLINE_PAYMENT`\|`CASH_ON_DELIVERY`, promotionCode?} → `200` {restaurantId, addressId, subtotal, discount, deliveryFee, tax, serviceFee, total, currency, paymentMethod, promotionCode}. Not an order. |
+| `POST /orders` | `Idempotency-Key` required; {addressId, paymentMethod, promotionCode?, instructions? ≤ 500} → `201 Order` |
+| `GET /orders/{id}` | customer (own), restaurant staff (own restaurant, once released), admin; others `404 ORDER_NOT_FOUND`. Riders are added with the delivery slice. |
+| `GET /orders/{id}/status` | {orderId, status, paymentStatus, history [{fromStatus, toStatus, reason, createdAt}]} |
+| `GET /customer/orders` | query: status?, from?, to? (ISO 8601), cursor?, limit 1–100 (default 20); newest first; `meta.pagination` {limit, nextCursor, hasMore} |
+
+Payment method values are the frozen vocabulary (`ONLINE_PAYMENT`, `CASH_ON_DELIVERY`), not the
+`"COD"` shorthand in the §37 example.
+
+Checkout failures: `422 INVALID_REQUEST` (empty cart), the first cart issue code with
+`details.issues`, `404` for an address that is not the caller's, `422 ADDRESS_NOT_SERVICEABLE`
+when the straight-line distance exceeds the restaurant delivery radius, `422 PROMOTION_NOT_FOUND`
+for an unknown code.
+
+Order creation runs in one transaction (cart row locked `FOR UPDATE`, so concurrent checkouts
+create one order): order + item/option snapshots + delivery-address snapshot + `PENDING` status
+history + `PENDING` payment record + outbox `order.created`, then the cart is emptied. Risk checks
+join this transaction with the risk slice.
+
+**Release to the restaurant.** Cash-on-delivery orders are visible to the restaurant immediately.
+Online-payment orders are visible (and actionable) only once the payment is `AUTHORIZED` or
+`SUCCEEDED` (PAYMENT_RULES §4, §8: the order continues after the provider confirms payment).

@@ -382,6 +382,35 @@ restaurant); one default payment account per restaurant; one default address per
 `restaurants.minimum_order_amount` (§8) is not implemented; the single source is
 `restaurant_delivery_settings.minimum_order_amount` (§14) to avoid two conflicting values.
 
+Slice 5 (cart, checkout, orders):
+
+```text
+carts(id, customer_id UNIQUE, restaurant_id NULL, created_at, updated_at)
+cart_items(id, cart_id, menu_item_id, quantity 1–99, created_at, updated_at)
+cart_item_variations(cart_item_id, variation_id)       PK (cart_item_id, variation_id)
+cart_item_add_ons(cart_item_id, add_on_id)             PK (cart_item_id, add_on_id)
+    PostgreSQL cart storage (ADR-0014 §4); selections only, never prices. Deleting a menu
+    item/option removes it from carts.
+
+orders.delivery_recipient_name, delivery_recipient_phone, delivery_address_text, delivery_area,
+orders.delivery_city, delivery_postal_code, delivery_latitude, delivery_longitude,
+orders.delivery_instructions
+    delivery destination snapshot (MAPS_LOCATION_RULES §25); delivery_address_id becomes NULL if
+    the saved address is deleted
+
+orders.order_number   DEFAULT 'QB-' || nextval('order_number_seq') (starts at 100001)
+```
+
+Order snapshot semantics: `order_items.unit_price` is the item base price; `order_items.subtotal`
+is `(unit_price + variation adjustments + add-on prices) × quantity`; option `quantity` is per
+unit (1). Snapshot rows keep their names/prices when menu rows are deleted (`menu_item_id`,
+`variation_id`, `add_on_id` become NULL). `payments.provider` is NULL for cash on delivery.
+
+Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
+`total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
+quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,
+and an append-only trigger on `order_status_history`.
+
 ---
 
 # 6. `customer_profiles`

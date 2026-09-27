@@ -8,6 +8,7 @@ import {
   type VerificationSender,
 } from '../../src/modules/auth/delivery/verification-sender';
 import { PrismaService } from '../../src/infrastructure/database/prisma.service';
+import { AuthService } from '../../src/modules/auth/auth.service';
 import { PasswordService } from '../../src/modules/auth/password.service';
 import { type Role } from '../../src/generated/prisma/client';
 import { REDIS_CLIENT } from '../../src/infrastructure/redis/redis.module';
@@ -135,10 +136,13 @@ export async function createHarness(): Promise<Harness> {
           : {}),
       },
     });
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/auth/login')
-      .send({ identifier: identity.email, password: PASSWORD });
-    const token = (response.body as { data: { accessToken: string } }).data.accessToken;
+    // Logs in through the service so fixture setup does not consume the HTTP login rate limit.
+    const { accessToken: token } = await app.get(AuthService).login(identity.email, PASSWORD, {
+      ipAddress: null,
+      userAgent: null,
+      requestId: null,
+      correlationId: null,
+    });
     return { userId: user.id, token, auth: `Bearer ${token}` };
   };
 
