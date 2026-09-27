@@ -76,6 +76,7 @@ model User {
   cart                   Cart?
   orders                 Order[]
   orderStatusChanges     OrderStatusHistory[]
+  orderCancellations     OrderCancellation[]
   payments               Payment[]
 
   @@map("users")
@@ -745,6 +746,7 @@ model Order {
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   payments        Payment[]
+  cancellation    OrderCancellation?
 
   @@index([customerId, createdAt])
   @@index([restaurantId, status])
@@ -823,6 +825,24 @@ model OrderStatusHistory {
 
   @@index([orderId, createdAt])
   @@map("order_status_history")
+}
+
+/// DATABASE.md §27. One cancellation per order. `refund_amount` stays NULL until an administrator
+/// records the refund decision (ADR-0014 §9).
+model OrderCancellation {
+  id                String   @id @default(uuid()) @db.Uuid
+  orderId           String   @unique @map("order_id") @db.Uuid
+  cancelledByUserId String   @map("cancelled_by_user_id") @db.Uuid
+  cancelledByRole   Role     @map("cancelled_by_role")
+  reasonCode        String   @map("reason_code")
+  reasonText        String?  @map("reason_text")
+  refundAmount      Decimal? @map("refund_amount") @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  cancelledBy User  @relation(fields: [cancelledByUserId], references: [id], onDelete: Restrict)
+
+  @@map("order_cancellations")
 }
 
 // ----------------------------------------------------------------------------- Payments (DATABASE.md §28–29)

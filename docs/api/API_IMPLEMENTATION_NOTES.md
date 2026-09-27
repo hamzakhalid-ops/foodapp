@@ -176,3 +176,41 @@ join this transaction with the risk slice.
 **Release to the restaurant.** Cash-on-delivery orders are visible to the restaurant immediately.
 Online-payment orders are visible (and actionable) only once the payment is `AUTHORIZED` or
 `SUCCEEDED` (PAYMENT_RULES §4, §8: the order continues after the provider confirms payment).
+
+---
+
+## Slice 6 — Restaurant orders, lifecycle and cancellation (§42–43, §51–56, §101)
+
+**State machine.** `orders.status` changes only through one service: transitions follow
+ORDER_RULES §11 plus `RESTAURANT_ACCEPTED → CANCELLED_BY_CUSTOMER` within
+`orders.accepted_cancellation_window_seconds` (ADR-0014 §12). Each transition is a compare-and-set
+on the current status that appends `order_status_history` and an `order.status_changed` outbox
+event ({orderId, orderNumber, customerId, restaurantId, fromStatus, toStatus, occurredAt}).
+Status timestamps (`acceptedAt`, `preparingAt`, `readyAt`, `pickedUpAt`, `deliveredAt`,
+`cancelledAt`) are set by the transition.
+
+Errors: `409 ORDER_INVALID_STATUS` (transition not allowed from the current status, `details.status`),
+`409 ORDER_STATE_CHANGED` (lost a race), `409 ORDER_ALREADY_CANCELLED`, `409 ORDER_ALREADY_COMPLETED`,
+`409 ORDER_CANCELLATION_NOT_ALLOWED`.
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET /restaurant/orders/new` | member | released `PENDING` orders, oldest first (max 100) |
+| `GET /restaurant/orders` | member | query: status?, from?, to?, search? (order number), cursor?, limit; cursor meta |
+| `GET /restaurant/orders/{id}` | member | `Order` |
+| `POST /restaurant/orders/{id}/accept` | member | {estimatedPreparationMinutes? 1–240}; refused while the restaurant is `SUSPENDED`/`CLOSED` |
+| `POST /restaurant/orders/{id}/preparing` | member | `RESTAURANT_ACCEPTED → PREPARING` |
+| `POST /restaurant/orders/{id}/ready` | member | `PREPARING → READY_FOR_PICKUP` (starts dispatch via the outbox event) |
+| `POST /restaurant/orders/{id}/reject` and `/cancel` | member | {reasonCode `RESTAURANT_ITEM_UNAVAILABLE`\|`RESTAURANT_UNABLE_TO_FULFILL`\|`RESTAURANT_CLOSED`\|`OTHER`, reason? (required for OTHER)}; only `PENDING` orders (ORDER_RULES §11) |
+| `POST /orders/{id}/cancel` | customer | {reasonCode `CUSTOMER_CHANGED_MIND`\|`CUSTOMER_ORDERED_BY_MISTAKE`\|`OTHER`, reason?}; `PENDING`, or `RESTAURANT_ACCEPTED` inside the configured window |
+| `POST /admin/orders/{id}/cancel` | admin | {reasonCode (any §12 code), reason (required)}; any state except delivered/cancelled |
+
+Reason codes are the CANCELLATION_RULES §12 list (the API_SPEC examples `CHANGED_MIND` /
+`ITEM_UNAVAILABLE` map to `CUSTOMER_CHANGED_MIND` / `RESTAURANT_ITEM_UNAVAILABLE`).
+
+**Cancellation transaction.** Order row locked → eligibility → transition → `order_cancellations`
+row (refundAmount `null`) → an unpaid (`PENDING`) payment becomes `CANCELLED` → audit
+`ORDER_CANCELLED` (actor, role, previous/new state, reason) → outbox `order.cancelled`
+({…, reasonCode, refundDecisionRequired}). A captured online payment is left as is:
+`refundDecisionRequired: true` hands it to an administrator (ADR-0014 §9). There is no automatic
+refund and no cancellation-fee logic.

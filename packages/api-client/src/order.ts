@@ -1,11 +1,14 @@
 import {
+  type AcceptOrderRequest,
   type AddCartItemRequest,
+  type AdminCancelRequest,
   type Cart,
   cartSchema,
   type CheckoutPreview,
   type CheckoutPreviewRequest,
   checkoutPreviewSchema,
   type CreateOrderRequest,
+  type CustomerCancelRequest,
   type CustomerOrderListQuery,
   type Order,
   orderSchema,
@@ -13,6 +16,8 @@ import {
   orderStatusViewSchema,
   type OrderSummary,
   orderSummarySchema,
+  type RestaurantCancelRequest,
+  type RestaurantOrderListQuery,
 } from '@quickbite/validation';
 import { z } from 'zod';
 import { type ApiClient, type ApiResult } from './client';
@@ -88,6 +93,15 @@ export function createOrderApi(client: ApiClient) {
           schema: orderStatusViewSchema,
         })
       ).data,
+    cancelOrder: async (orderId: string, body: CustomerCancelRequest): Promise<Order> =>
+      (
+        await client.request({
+          method: 'POST',
+          path: `/orders/${id(orderId)}/cancel`,
+          body,
+          schema: orderSchema,
+        })
+      ).data,
     /** Cursor-paginated; `meta.pagination` carries `nextCursor` and `hasMore`. */
     listMyOrders: (
       query: Partial<CustomerOrderListQuery> = {},
@@ -98,5 +112,63 @@ export function createOrderApi(client: ApiClient) {
         schema: z.array(orderSummarySchema),
         query,
       }),
+  };
+}
+
+/** Restaurant App order handling (docs/api/API_SPEC.md §51–56). */
+export function createRestaurantOrderApi(client: ApiClient) {
+  const action = async (orderId: string, name: string, body?: unknown): Promise<Order> =>
+    (
+      await client.request({
+        method: 'POST',
+        path: `/restaurant/orders/${id(orderId)}/${name}`,
+        schema: orderSchema,
+        ...(body === undefined ? {} : { body }),
+      })
+    ).data;
+  return {
+    listNew: async (): Promise<OrderSummary[]> =>
+      (
+        await client.request({
+          method: 'GET',
+          path: '/restaurant/orders/new',
+          schema: z.array(orderSummarySchema),
+        })
+      ).data,
+    list: (query: Partial<RestaurantOrderListQuery> = {}): Promise<ApiResult<OrderSummary[]>> =>
+      client.request({
+        method: 'GET',
+        path: '/restaurant/orders',
+        schema: z.array(orderSummarySchema),
+        query,
+      }),
+    get: async (orderId: string): Promise<Order> =>
+      (
+        await client.request({
+          method: 'GET',
+          path: `/restaurant/orders/${id(orderId)}`,
+          schema: orderSchema,
+        })
+      ).data,
+    accept: (orderId: string, body: AcceptOrderRequest = {}) => action(orderId, 'accept', body),
+    reject: (orderId: string, body: RestaurantCancelRequest) => action(orderId, 'reject', body),
+    cancel: (orderId: string, body: RestaurantCancelRequest) => action(orderId, 'cancel', body),
+    startPreparing: (orderId: string) => action(orderId, 'preparing'),
+    markReady: (orderId: string) => action(orderId, 'ready'),
+  };
+}
+
+/** Admin order intervention (docs/api/API_SPEC.md §101). */
+export function createAdminOrderApi(client: ApiClient) {
+  return {
+    cancel: async (orderId: string, body: AdminCancelRequest): Promise<Order> =>
+      (
+        await client.request({
+          method: 'POST',
+          path: `/admin/orders/${id(orderId)}/cancel`,
+          body,
+          schema: orderSchema,
+        })
+      ).data,
   };
 }

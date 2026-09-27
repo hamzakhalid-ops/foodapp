@@ -178,15 +178,20 @@ export class OrdersService {
   }
 
   /** GET /customer/orders — newest first, cursor pagination (API_SPEC §10, §40). */
-  async listForCustomer(
-    customerId: string,
+  listForCustomer(customerId: string, query: CustomerOrderListQuery) {
+    return this.listPage({ customerId }, query);
+  }
+
+  /** Newest-first cursor page over `scope` with the common status/date filters. */
+  async listPage(
+    scope: Prisma.OrderWhereInput,
     query: CustomerOrderListQuery,
   ): Promise<{ rows: OrderSummary[]; nextCursor: string | null }> {
     const cursor = query.cursor ? decodeCursor(query.cursor) : null;
     if (query.cursor && !cursor) throw validationError({ cursor: 'Invalid cursor' });
     const rows = await this.prisma.order.findMany({
       where: {
-        customerId,
+        AND: [scope],
         ...(query.status ? { status: query.status } : {}),
         ...(query.from || query.to
           ? {
@@ -244,6 +249,14 @@ export class OrdersService {
  * Online orders reach the restaurant once payment is confirmed (PAYMENT_RULES §8 "payment marked
  * authoritative → order continues"); cash orders immediately.
  */
+/** Prisma filter equivalent of `isReleasedToRestaurant`. */
+export const RELEASED_TO_RESTAURANT: Prisma.OrderWhereInput = {
+  OR: [
+    { paymentMethod: 'CASH_ON_DELIVERY' },
+    { paymentStatus: { in: ['AUTHORIZED', 'SUCCEEDED', 'REFUNDED', 'PARTIALLY_REFUNDED'] } },
+  ],
+};
+
 export function isReleasedToRestaurant(
   order: Pick<OrderRow, 'paymentMethod' | 'paymentStatus'>,
 ): boolean {

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
+import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { OrderStateMachine } from './order-state-machine';
 import { CustomerOrdersController, OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
+import { RestaurantOrdersController } from './restaurant-orders.controller';
+import { RestaurantOrdersService } from './restaurant-orders.service';
 
 /**
  * Orders module — Order records, items, pricing snapshots and the backend-owned order state machine (ARCHITECTURE §10–13, ORDER_RULES).
@@ -9,8 +13,9 @@ import { OrdersService } from './orders.service';
  * Implemented in slice: 7 — Checkout / 9 — Restaurant Orders (docs/IMPLEMENTATION_PLAN.md).
  */
 @Module({
-  controllers: [OrdersController, CustomerOrdersController],
-  providers: [OrdersService],
-  exports: [OrdersService],
+  imports: [RestaurantsModule],
+  controllers: [OrdersController, CustomerOrdersController, RestaurantOrdersController],
+  providers: [OrdersService, OrderStateMachine, RestaurantOrdersService],
+  exports: [OrdersService, OrderStateMachine],
 })
 export class OrdersModule {}
