@@ -66,6 +66,7 @@ model User {
   auditLogs              AuditLog[]
   updatedSettings        SystemSetting[]         @relation("SystemSettingUpdater")
   idempotencyKeys        IdempotencyKey[]
+  addresses              Address[]
 
   @@map("users")
 }
@@ -95,6 +96,31 @@ model CustomerProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@map("customer_profiles")
+}
+
+/// DATABASE.md §7. At most one default address per user (partial unique index in migration).
+model Address {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @map("user_id") @db.Uuid
+  label                String?
+  recipientName        String   @map("recipient_name")
+  phone                String
+  addressLine1         String   @map("address_line_1")
+  addressLine2         String?  @map("address_line_2")
+  area                 String?
+  city                 String
+  postalCode           String?  @map("postal_code")
+  latitude             Decimal  @db.Decimal(9, 6)
+  longitude            Decimal  @db.Decimal(9, 6)
+  deliveryInstructions String?  @map("delivery_instructions")
+  isDefault            Boolean  @default(false) @map("is_default")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("addresses")
 }
 
 // ---------------------------------------------------------------------------

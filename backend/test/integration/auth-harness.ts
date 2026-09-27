@@ -8,6 +8,8 @@ import {
   type VerificationSender,
 } from '../../src/modules/auth/delivery/verification-sender';
 import { PrismaService } from '../../src/infrastructure/database/prisma.service';
+import { PasswordService } from '../../src/modules/auth/password.service';
+import { type Role } from '../../src/generated/prisma/client';
 import { REDIS_CLIENT } from '../../src/infrastructure/redis/redis.module';
 import { createTestApp, type TestApp } from '../create-test-app';
 
@@ -73,8 +75,17 @@ export class IdempotencyProbeController {
   }
 }
 
+export interface Actor {
+  userId: string;
+  token: string;
+  /** `Authorization` header value. */
+  auth: string;
+}
+
 export interface Harness {
   app: TestApp;
+  /** Creates an ACTIVE, phone-verified user with the given roles and logs in. */
+  actor: (...roles: Role[]) => Promise<Actor>;
   sender: CapturingSender;
   prisma: PrismaService;
   redis: Redis;
@@ -91,8 +102,36 @@ export async function createHarness(): Promise<Harness> {
   const prisma = app.get(PrismaService);
   const redis = app.get<Redis>(REDIS_CLIENT);
 
+  const passwords = app.get(PasswordService);
+  const passwordHash = await passwords.hash(PASSWORD);
+
+  const actor = async (...roles: Role[]): Promise<Actor> => {
+    const identity = newCustomer();
+    const user = await prisma.user.create({
+      data: {
+        email: identity.email,
+        phone: identity.phone,
+        passwordHash,
+        status: 'ACTIVE',
+        phoneVerifiedAt: new Date(),
+        roles: {
+          create: (roles.length ? roles : (['CUSTOMER'] as Role[])).map((role) => ({ role })),
+        },
+        ...(roles.length === 0 || roles.includes('CUSTOMER')
+          ? { customerProfile: { create: { firstName: 'Test', lastName: 'Customer' } } }
+          : {}),
+      },
+    });
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ identifier: identity.email, password: PASSWORD });
+    const token = (response.body as { data: { accessToken: string } }).data.accessToken;
+    return { userId: user.id, token, auth: `Bearer ${token}` };
+  };
+
   return {
     app,
+    actor,
     sender,
     prisma,
     redis,
