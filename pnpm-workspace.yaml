@@ -1,0 +1,22 @@
+packages:
+  - apps/*
+  - backend
+  - packages/*
+
+# Dependencies allowed to run install scripts (pnpm blocks all others by default).
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - prisma
+  - msgpackr-extract
+  - unrs-resolver
+  - '@parcel/watcher'
+
+# One React version across the monorepo (Expo SDK 57 requires react 19.2.3; native builds must
+# not contain duplicate React copies).
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
+  '@types/react': 19.2.18
+  # Security: transitive dependencies of the Prisma CLI (GHSA-3f6p-5ww8-9rcr, GHSA-ggr8-5vv4-36mx).
+  mysql2: 3.24.4
+  deepmerge-ts: 8.0.2

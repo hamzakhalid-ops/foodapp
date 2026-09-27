@@ -374,7 +374,11 @@ AUTH_VERIFICATION_CODE_INVALID
 AUTH_VERIFICATION_CODE_EXPIRED
 AUTH_TOO_MANY_ATTEMPTS
 AUTH_PASSWORD_RESET_INVALID
+AUTH_ACCOUNT_ALREADY_EXISTS
+AUTH_PASSWORD_POLICY_VIOLATION
 ```
+
+`AUTH_ACCOUNT_ALREADY_EXISTS` and `AUTH_PASSWORD_POLICY_VIOLATION` were added in Phase 20 (Slice 1). `AUTH_TOKEN_INVALID` is also returned for revoked or expired sessions; `AUTH_ACCOUNT_DISABLED` corresponds to user status `DEACTIVATED`.
 
 ## Authorization
 
@@ -479,6 +483,15 @@ IDEMPOTENCY_KEY_REQUIRED
 IDEMPOTENCY_KEY_REUSED
 IDEMPOTENCY_REQUEST_MISMATCH
 ```
+
+## System
+
+```text
+RATE_LIMITED
+INTERNAL_ERROR
+```
+
+`RATE_LIMITED` (HTTP 429) may include `details.retryAfterSeconds` and a `Retry-After` header (AUTH_AUTHORIZATION §19). `INTERNAL_ERROR` is used for unexpected failures (HTTP 500) and for dependency unavailability (HTTP 503). Added in Phase 20 from ARCHITECTURE §48.
 
 ---
 
@@ -589,6 +602,14 @@ Validation:
 * unique phone
 * required name fields
 
+Behavior (Phase 20, Slice 1):
+
+* Creates the user with role `CUSTOMER`, status `PENDING_VERIFICATION`, and a `customer_profiles` record.
+* Sends a phone OTP and an email verification token.
+* Does **not** return tokens; the client logs in (§17) and then verifies the phone (§20).
+* `user` has the shape of §25.
+* Errors: `400 VALIDATION_ERROR`, `400 AUTH_PASSWORD_POLICY_VIOLATION`, `409 AUTH_ACCOUNT_ALREADY_EXISTS` (does not say which field matched), `429 RATE_LIMITED`.
+
 ---
 
 # 17. Login
@@ -622,6 +643,14 @@ Response:
 
 Never return password hashes.
 
+Behavior (Phase 20, Slice 1):
+
+* `identifier` is an email address or a phone number.
+* `expiresIn` is the access-token lifetime in seconds. `user` has the shape of §25.
+* Accounts in `PENDING_VERIFICATION` may log in (to verify their phone); `RESTRICTED` accounts may log in and are limited by business rules elsewhere.
+* Errors: `401 AUTH_INVALID_CREDENTIALS` (unknown account and wrong password are indistinguishable), `403 AUTH_ACCOUNT_SUSPENDED`, `403 AUTH_ACCOUNT_DISABLED`, `429 RATE_LIMITED`.
+* Protected requests send `Authorization: Bearer <accessToken>`.
+
 ---
 
 # 18. Refresh Token
@@ -637,6 +666,23 @@ Request:
   "refreshToken": "..."
 }
 ```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "...",
+    "refreshToken": "...",
+    "expiresIn": 900
+  }
+}
+```
+
+Every successful refresh rotates the refresh token; the presented token can never be used again. Reusing an already-rotated token revokes the whole session (AUTH_AUTHORIZATION §25).
+
+Errors: `401 AUTH_REFRESH_TOKEN_INVALID` (unknown, expired, reused or revoked), `403 AUTH_ACCOUNT_SUSPENDED`, `403 AUTH_ACCOUNT_DISABLED`, `429 RATE_LIMITED`.
 
 ---
 
@@ -654,6 +700,8 @@ Authenticated
 
 The session/refresh token must be invalidated according to the authentication architecture.
 
+Revokes the session of the presented access token. Response: `204 No Content`.
+
 ---
 
 # 20. Verify Phone
@@ -661,6 +709,16 @@ The session/refresh token must be invalidated according to the authentication ar
 ```http
 POST /api/v1/auth/verify-phone
 ```
+
+Auth:
+
+```text
+Authenticated
+```
+
+A code alone does not identify an account, so the caller must be logged in. Success sets `phone_verified_at` and activates a `PENDING_VERIFICATION` account (DATABASE.md §5.3); response data has the shape of §25.
+
+Errors: `400 AUTH_VERIFICATION_CODE_INVALID`, `400 AUTH_VERIFICATION_CODE_EXPIRED`, `429 AUTH_TOO_MANY_ATTEMPTS` (challenge attempt limit reached), `429 RATE_LIMITED`.
 
 Request:
 
@@ -678,7 +736,7 @@ Request:
 POST /api/v1/auth/verify-phone/resend
 ```
 
-Rate limited.
+Auth: Authenticated. Rate limited. Invalidates the previous code. Response: `202 Accepted`.
 
 ---
 
@@ -687,6 +745,8 @@ Rate limited.
 ```http
 POST /api/v1/auth/verify-email
 ```
+
+Auth: Public (the token identifies the challenge). Errors: `400 AUTH_VERIFICATION_CODE_INVALID`, `400 AUTH_VERIFICATION_CODE_EXPIRED`. Response: `204 No Content`.
 
 Request:
 
@@ -714,6 +774,8 @@ Request:
 
 Response should not reveal whether an account exists.
 
+Response: always `202 Accepted` for a well-formed request. When the account exists, a reset token is sent to the channel matching the identifier (email or phone).
+
 ---
 
 # 24. Reset Password
@@ -730,6 +792,10 @@ Request:
   "newPassword": "NewStrongPassword"
 }
 ```
+
+Success sets the new password, consumes the token and revokes **all** sessions of the user. Response: `204 No Content`.
+
+Errors: `400 AUTH_PASSWORD_RESET_INVALID` (unknown, used or expired token), `400 AUTH_PASSWORD_POLICY_VIOLATION`, `429 RATE_LIMITED`.
 
 ---
 

@@ -1,0 +1,9 @@
+{
+  "extends": "@quickbite/config/typescript/library.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "lib": ["ES2023", "DOM"],
+    "types": ["jest"]
+  },
+  "include": ["src", "test"]
+}

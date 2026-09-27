@@ -1289,7 +1289,7 @@ The operation should retain sufficient identifiers to diagnose failures at each 
 This specification depends on and must remain consistent with:
 
 ```text
-docs/CLAUDE.md
+CLAUDE.md
 docs/product/PRD.md
 docs/architecture/ARCHITECTURE.md
 docs/database/DATABASE.md

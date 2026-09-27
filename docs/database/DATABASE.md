@@ -205,6 +205,161 @@ SUPER_ADMIN
 
 A user may eventually have more than one role.
 
+A user holds each role at most once:
+
+```text
+UNIQUE (user_id, role)
+```
+
+---
+
+## 5.1 Authentication Storage
+
+Added in Phase 20 (Slice 1 — Authentication), approved by the project owner.
+
+These tables implement the server-side session model, refresh-token rotation, one-time verification codes and password-reset tokens required by `docs/security/AUTH_AUTHORIZATION.md` §14–33. They are owned by the **Auth** module.
+
+Secrets are **never stored in plaintext**:
+
+```text
+refresh tokens, email-verification tokens, password-reset tokens
+    → high-entropy random values, stored as SHA-256 hashes
+
+phone OTP codes (low entropy)
+    → stored as HMAC-SHA-256 with a server-side secret (never a plain hash)
+```
+
+### `user_sessions`
+
+One row per login. The session is the authoritative revocation unit (AUTH_AUTHORIZATION §20, §26–27) and the refresh-token family.
+
+```text
+user_sessions
+-------------
+id
+user_id
+created_at
+last_used_at
+expires_at
+revoked_at
+revoked_reason
+ip_address
+user_agent
+```
+
+Rules:
+
+* `expires_at` is the absolute maximum session lifetime; a session cannot be extended beyond it (AUTH_AUTHORIZATION §67).
+* A session with `revoked_at` set, or past `expires_at`, cannot be refreshed or used.
+* `revoked_reason` values:
+
+```text
+LOGOUT
+PASSWORD_RESET
+PASSWORD_CHANGED
+REFRESH_TOKEN_REUSE
+ACCOUNT_SUSPENDED
+ADMIN_ACTION
+```
+
+Indexes:
+
+```text
+user_sessions.user_id
+```
+
+### `refresh_tokens`
+
+Every issued refresh token of a session. Rotation marks the presented token as used and issues a new one.
+
+```text
+refresh_tokens
+--------------
+id
+session_id
+token_hash
+expires_at
+used_at
+created_at
+```
+
+Rules:
+
+* `token_hash` is unique.
+* A token can be used exactly once (`used_at`).
+* Presenting a token whose `used_at` is already set is **refresh-token reuse**: the whole session is revoked with `REFRESH_TOKEN_REUSE` (AUTH_AUTHORIZATION §25).
+
+Constraints / indexes:
+
+```text
+UNIQUE refresh_tokens.token_hash
+refresh_tokens.session_id
+refresh_tokens.session_id → user_sessions.id (cascade on session delete)
+```
+
+### `verification_challenges`
+
+One-time challenges for phone verification, email verification and password reset.
+
+```text
+verification_challenges
+-----------------------
+id
+user_id
+type
+target
+secret_hash
+attempts
+max_attempts
+expires_at
+consumed_at
+invalidated_at
+created_at
+```
+
+`type` values:
+
+```text
+PHONE_VERIFICATION      6-digit OTP sent by SMS
+EMAIL_VERIFICATION      random token sent by email
+PASSWORD_RESET          random token sent to the account's email or phone
+```
+
+Rules:
+
+* `target` is the normalized phone number or email address the challenge was sent to. If the user's contact detail changes, the challenge no longer applies.
+* A challenge is valid only while `consumed_at` and `invalidated_at` are null, `expires_at` is in the future and `attempts < max_attempts`.
+* Creating a new challenge of the same type for a user invalidates the previous active one.
+* Successful use sets `consumed_at` (single use).
+* Lifetimes and attempt limits are configuration (AUTH_AUTHORIZATION §16).
+
+Constraints / indexes:
+
+```text
+verification_challenges.user_id → users.id
+UNIQUE verification_challenges.secret_hash   (token-based types are looked up by hash)
+verification_challenges (user_id, type)
+```
+
+## 5.2 Identity Column Types
+
+```text
+ids                         UUID
+users.email                 text, unique, nullable (stored normalized: trimmed, lower-case)
+users.phone                 text, unique, nullable (stored normalized: E.164, e.g. +923001234567)
+users.status                enum (§4.1)
+user_roles.role             enum (§5)
+timestamps                  timestamptz (UTC)
+```
+
+`email` and `phone` are nullable at the database level so that non-customer accounts (e.g. administrators created by a Super Admin) are not forced to have both. Customer registration requires both (`API_SPEC.md` §16).
+
+## 5.3 Account Activation
+
+Customer accounts are created with status `PENDING_VERIFICATION`.
+
+Successful **phone verification** sets `phone_verified_at` and moves the account to `ACTIVE`. Email verification sets `email_verified_at` and does not change `status`.
+
 ---
 
 # 6. `customer_profiles`
@@ -2055,6 +2210,14 @@ Dispatch:
 ```text
 dispatch_offers
 delivery_assignments
+```
+
+Auth:
+
+```text
+user_sessions
+refresh_tokens
+verification_challenges
 ```
 
 This keeps the modular-monolith architecture clean.

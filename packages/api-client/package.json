@@ -1,0 +1,38 @@
+{
+  "name": "@quickbite/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typed HTTP transport for the QuickBite /api/v1 REST API, shared by all four client applications.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "jest",
+    "test:unit": "jest",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@quickbite/types": "workspace:*",
+    "@quickbite/validation": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@quickbite/config": "workspace:*",
+    "@types/jest": "30.0.0",
+    "eslint": "10.11.0",
+    "jest": "30.5.2",
+    "ts-jest": "29.4.14",
+    "typescript": "6.0.3"
+  }
+}

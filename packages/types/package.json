@@ -1,0 +1,33 @@
+{
+  "name": "@quickbite/types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared QuickBite domain vocabulary (frozen roles and states) and API envelope types.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "jest --passWithNoTests",
+    "test:unit": "jest --passWithNoTests",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@quickbite/config": "workspace:*",
+    "@types/jest": "30.0.0",
+    "eslint": "10.11.0",
+    "jest": "30.5.2",
+    "ts-jest": "29.4.14",
+    "typescript": "6.0.3"
+  }
+}

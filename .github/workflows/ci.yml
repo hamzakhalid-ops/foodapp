@@ -1,0 +1,120 @@
+# QuickBite CI (docs/devops/CI_CD_RULES.md, docs/devops/DEVOPS_SPEC.md §6–24).
+#
+# Validation only. Staging/production deployment pipelines are intentionally not defined yet:
+# they require the deployment targets and approval controls from DEPLOYMENT_SPEC to be provisioned.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: '1'
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  validate:
+    name: Format, lint, typecheck, unit/API tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm docs:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  backend-integration:
+    name: Backend integration (PostgreSQL + Redis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: quickbite
+          POSTGRES_PASSWORD: quickbite_ci_only
+          POSTGRES_DB: quickbite_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U quickbite -d quickbite_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://quickbite:quickbite_ci_only@localhost:5432/quickbite_test
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@quickbite/backend^...
+      - name: Validate Prisma schema
+        run: pnpm --filter @quickbite/backend db:validate
+      - name: Apply migrations
+        run: pnpm --filter @quickbite/backend db:generate && pnpm --filter @quickbite/backend db:migrate:deploy
+      - name: Integration tests
+        run: pnpm --filter @quickbite/backend test:integration
+
+  admin-e2e:
+    name: Admin E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run build --filter=@quickbite/admin...
+      - run: pnpm --filter @quickbite/admin exec playwright install --with-deps chromium
+      - run: pnpm --filter @quickbite/admin test:e2e
+        env:
+          CI: 'true'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: admin-playwright-report
+          path: apps/admin/playwright-report
+          retention-days: 7
+
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      # No install in this job, so no pnpm store cache (its post-step fails on a missing path).
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Audit production dependencies (high and critical block the build)
+        run: pnpm audit --prod --audit-level high

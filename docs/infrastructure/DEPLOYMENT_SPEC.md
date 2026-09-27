@@ -1079,7 +1079,7 @@ unless a documented requirement justifies it.
 This deployment specification must remain consistent with:
 
 ```text id="w4p8td"
-docs/CLAUDE.md
+CLAUDE.md
 docs/product/PRD.md
 docs/architecture/ARCHITECTURE.md
 docs/database/DATABASE.md
