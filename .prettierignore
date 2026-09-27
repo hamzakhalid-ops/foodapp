@@ -1,0 +1,15 @@
+# Specifications are authored documents; do not reformat them automatically.
+docs/
+CLAUDE.md
+apps/*/SCREEN_PLAN.md
+apps/*/design/
+
+node_modules/
+dist/
+build/
+coverage/
+.next/
+.expo/
+.turbo/
+pnpm-lock.yaml
+backend/src/generated/
