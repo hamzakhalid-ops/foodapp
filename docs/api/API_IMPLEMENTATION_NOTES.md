@@ -1,0 +1,79 @@
+# QuickBite API — Implementation Notes
+
+**File:** `docs/api/API_IMPLEMENTATION_NOTES.md`
+**Status:** Living document, Phase 20
+
+`docs/api/API_SPEC.md` remains authoritative for routes and behavior. This document records how
+the implementation fills details the specification leaves open (request/response shapes,
+interpretations). The executable contracts are the Zod schemas in `packages/validation` and the
+typed functions in `packages/api-client`; they are kept identical to the backend.
+
+Conventions for every endpoint:
+
+* Envelope, errors, request IDs and pagination: API_SPEC §8–14.
+* Money: decimal strings with 2 places (e.g. `"1250.00"`). Coordinates: JSON numbers (WGS 84).
+* Timestamps: ISO 8601 UTC strings. Business-local times (`HH:MM`) use `Asia/Karachi` (ADR-0014 §6).
+* Request bodies are **strict**: unknown fields are rejected with `400 VALIDATION_ERROR`
+  (mass-assignment protection).
+* Resources the caller may not access return `404` (enumeration protection, AUTH_AUTHORIZATION §83).
+* Invalid path ids (not a UUID) return `400 INVALID_REQUEST`.
+
+---
+
+## Slice 2 — Customer profile and addresses (§26–27)
+
+| Endpoint | Auth | Request | Response |
+|----------|------|---------|----------|
+| `GET /customer/profile` | CUSTOMER | — | `CustomerProfile` {id, firstName, lastName, profileImageUrl, dateOfBirth, email, phone} |
+| `PATCH /customer/profile` | CUSTOMER | {firstName?, lastName?, profileImageUrl? (https)} | `CustomerProfile` |
+| `GET /customer/addresses` | CUSTOMER | — | `Address[]` (default first) |
+| `POST /customer/addresses` | CUSTOMER | §27 body; phone normalized to E.164; lat/lng ranges enforced | `201 Address` |
+| `PATCH /customer/addresses/{id}` | CUSTOMER (owner) | any subset of the create body | `Address` |
+| `DELETE /customer/addresses/{id}` | CUSTOMER (owner) | — | `204` |
+| `POST /customer/addresses/{id}/default` | CUSTOMER (owner) | — | `Address` |
+
+`isDefault: true` on create/update makes that address the only default (enforced by a database
+index). Deleting the default address leaves no default.
+
+## Slice 3 — Restaurants (§44–49, §57, §96–97)
+
+**Tenant model.** `/restaurant/*` routes carry no restaurant id: they act on the caller's single
+ACTIVE membership (`restaurant_staff`). V1: one restaurant per user.
+
+**Roles.** Owner-only: onboarding, profile update, operating-hours update, payment account, staff.
+Owner or operator: profile/hours/delivery-settings read, availability (online/offline/pause).
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `POST /restaurant/auth/register` | public | {email, phone, password, ownerFirstName, ownerLastName}; creates `RESTAURANT_OWNER` (PENDING_VERIFICATION); same verification flow as customers |
+| `POST /restaurant/onboarding` | owner (verified) | {name, description?, phone?, email?, cuisineDescription?}; one restaurant per owner (`409`) |
+| `GET /restaurant/onboarding` | owner | `Onboarding` aggregate incl. `missing[]` sections |
+| `GET /restaurant/application` | owner | application status part of `Onboarding` |
+| `PATCH /restaurant/onboarding/basic-information` | owner | {name?, description?, phone?, email?, cuisineDescription?, logoUrl?, coverImageUrl?} |
+| `PATCH /restaurant/onboarding/address` | owner | {addressLine1, addressLine2?, area?, city, postalCode?} |
+| `PATCH /restaurant/onboarding/location` | owner | {latitude, longitude} |
+| `PATCH /restaurant/onboarding/operating-hours` | owner | same body as `PUT /restaurant/operating-hours` |
+| `PATCH /restaurant/onboarding/delivery` | owner | {deliveryEnabled, minimumOrderAmount, estimatedPreparationMinutes 1–240, deliveryRadius km ≤ 100} |
+| `PATCH /restaurant/onboarding/business` | owner | {legalName, registrationNumber?, taxNumber?} |
+| `POST /restaurant/onboarding/documents` | owner | `multipart/form-data`: `documentType` (e.g. `BUSINESS_LICENSE`), `file` (PDF/PNG/JPEG detected from content, ≤ 10 MB); stored privately |
+| `PATCH /restaurant/onboarding/payment` | owner | {provider, accountReference, accountHolderName}; references only; responses show `accountReferenceMasked` |
+| `POST /restaurant/onboarding/submit` | owner | `200`; `422 VALIDATION_ERROR` with `details.missing` when incomplete |
+| `GET/PATCH /restaurant/profile` | member / owner | after approval only presentational fields; name/address/location change through admin |
+| `GET/PUT /restaurant/operating-hours` | member / owner | `{hours: [7 entries: {dayOfWeek 1(Mon)–7(Sun), opensAt, closesAt, isClosed}]}`; overnight hours not supported in V1 |
+| `GET /restaurant/delivery-settings` | member | delivery settings or `null` |
+| `GET /restaurant/availability` | member | {status, pausedUntil, isOrderableNow} |
+| `POST /restaurant/availability/online\|offline\|pause` | member | pause: {durationMinutes 1–240, reason?} |
+| `GET/POST /restaurant/staff`, `GET/PATCH/DELETE /restaurant/staff/{id}` | owner | add: {email, role: "OPERATOR"} — the email must belong to an existing ACTIVE account; PATCH: {status}; DELETE deactivates (owner membership cannot be changed) |
+| `GET /admin/restaurants` | admin | query: approvalStatus?, status?, search?, page, pageSize |
+| `GET /admin/restaurants/{id}` | admin | `Onboarding` + owner + short-lived `documentUrls` |
+| `PATCH /admin/restaurants/{id}` | admin | {status: SUSPENDED\|OFFLINE\|CLOSED, reason} |
+| `POST /admin/restaurants/{id}/approve` | admin | from SUBMITTED/UNDER_REVIEW; approves pending documents |
+| `POST /admin/restaurants/{id}/reject` | admin | {reason} |
+| `POST /admin/restaurants/{id}/request-resubmission` | admin | {reason} — shown to the owner as `resubmissionNotes` |
+
+Onboarding sections (basic information, address, location, business, documents) are editable only
+while the application is `DRAFT` or `RESUBMISSION_REQUIRED`. Operating hours, delivery settings and
+the payment account can be changed by the owner at any time (audited).
+
+**Orderable** (ARCHITECTURE §59, ADR-0014 §12): approved, effectively `ONLINE` (an expired pause
+counts as online), delivery enabled, and inside today's operating hours in the business timezone.

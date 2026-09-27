@@ -82,8 +82,20 @@ export interface Actor {
   auth: string;
 }
 
+export interface TestRestaurant {
+  restaurantId: string;
+  owner: Actor;
+}
+
 export interface Harness {
   app: TestApp;
+  /** Creates an APPROVED, ONLINE restaurant open every day 00:00–23:59, with its owner actor. */
+  restaurant: (overrides?: {
+    latitude?: number;
+    longitude?: number;
+    deliveryRadius?: number;
+    minimumOrderAmount?: string;
+  }) => Promise<TestRestaurant>;
   /** Creates an ACTIVE, phone-verified user with the given roles and logs in. */
   actor: (...roles: Role[]) => Promise<Actor>;
   sender: CapturingSender;
@@ -129,9 +141,55 @@ export async function createHarness(): Promise<Harness> {
     return { userId: user.id, token, auth: `Bearer ${token}` };
   };
 
+  const restaurant = async (
+    overrides: {
+      latitude?: number;
+      longitude?: number;
+      deliveryRadius?: number;
+      minimumOrderAmount?: string;
+    } = {},
+  ): Promise<TestRestaurant> => {
+    const owner = await actor('RESTAURANT_OWNER');
+    const created = await prisma.restaurant.create({
+      data: {
+        ownerUserId: owner.userId,
+        name: 'Test Kitchen',
+        slug: `test-kitchen-${owner.userId.slice(0, 8)}`,
+        phone: '+923001112233',
+        email: 'kitchen@example.com',
+        status: 'ONLINE',
+        approvalStatus: 'APPROVED',
+        addressLine1: 'Main Boulevard 1',
+        city: 'Lahore',
+        latitude: overrides.latitude ?? 31.5204,
+        longitude: overrides.longitude ?? 74.3587,
+        application: {
+          create: { status: 'APPROVED', submittedAt: new Date(), reviewedAt: new Date() },
+        },
+        staff: { create: { userId: owner.userId, role: 'OWNER' } },
+        operatingHours: {
+          create: [1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => ({
+            dayOfWeek,
+            opensAt: '00:00',
+            closesAt: '23:59',
+          })),
+        },
+        deliverySettings: {
+          create: {
+            minimumOrderAmount: overrides.minimumOrderAmount ?? '0',
+            estimatedPreparationMinutes: 20,
+            deliveryRadius: overrides.deliveryRadius ?? 10,
+          },
+        },
+      },
+    });
+    return { restaurantId: created.id, owner };
+  };
+
   return {
     app,
     actor,
+    restaurant,
     sender,
     prisma,
     redis,

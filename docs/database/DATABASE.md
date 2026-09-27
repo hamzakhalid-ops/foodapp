@@ -360,6 +360,28 @@ Customer accounts are created with status `PENDING_VERIFICATION`.
 
 Successful **phone verification** sets `phone_verified_at` and moves the account to `ACTIVE`. Email verification sets `email_verified_at` and does not change `status`.
 
+## 5.4 Phase 20 Gap Fills
+
+Columns/tables added during implementation where the specifications required data but defined no
+storage. They carry data only; no new business behavior.
+
+```text
+restaurant_owner_profiles(id, user_id UNIQUE, first_name, last_name, created_at, updated_at)
+    owner name captured at restaurant registration (API_SPEC §44)
+
+restaurant_applications.business_information   JSONB {legalName, registrationNumber?, taxNumber?}
+    business information for admin review (PRD §9, API_SPEC §45 "Update Business Information")
+
+restaurants.paused_until, restaurants.status_reason
+    end of a temporary pause (API_SPEC §49 durationMinutes) and reason for pause/suspension
+```
+
+Constraints added: one ACTIVE `restaurant_staff` membership per user (V1: a user belongs to one
+restaurant); one default payment account per restaurant; one default address per user.
+
+`restaurants.minimum_order_amount` (§8) is not implemented; the single source is
+`restaurant_delivery_settings.minimum_order_amount` (§14) to avoid two conflicting values.
+
 ---
 
 # 6. `customer_profiles`

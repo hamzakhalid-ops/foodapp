@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AppConfigService } from '../../config/app-config.service';
 import { CustomersModule } from '../customers/customers.module';
+import { RestaurantsModule } from '../restaurants/restaurants.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
@@ -10,6 +11,7 @@ import { ChallengeService } from './challenge.service';
 import { LogVerificationSender } from './delivery/log-verification-sender';
 import { VERIFICATION_SENDER } from './delivery/verification-sender';
 import { PasswordService } from './password.service';
+import { RestaurantAuthController } from './restaurant-auth.controller';
 import { RolesGuard } from './roles.guard';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
@@ -24,8 +26,8 @@ import { TokenService } from './token.service';
  * Registers the global AuthGuard (authentication required by default) and RolesGuard.
  */
 @Module({
-  imports: [UsersModule, CustomersModule],
-  controllers: [AuthController],
+  imports: [UsersModule, CustomersModule, RestaurantsModule],
+  controllers: [AuthController, RestaurantAuthController],
   providers: [
     AuthService,
     PasswordService,

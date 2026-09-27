@@ -50,7 +50,38 @@ export class AuthService {
     @Inject(VERIFICATION_SENDER) private readonly sender: VerificationSender,
   ) {}
 
-  async register(input: RegisterRequest, meta: RequestMeta): Promise<RegisterResponse> {
+  /** Customer registration (API_SPEC §16). */
+  register(input: RegisterRequest, meta: RequestMeta): Promise<RegisterResponse> {
+    return this.registerAccount(
+      {
+        email: input.email,
+        phone: input.phone,
+        password: input.password,
+        role: Role.CUSTOMER,
+        createProfile: (tx, userId) =>
+          this.customers.createProfile(tx, userId, {
+            firstName: input.firstName,
+            lastName: input.lastName,
+          }),
+      },
+      meta,
+    );
+  }
+
+  /**
+   * Shared account creation. The role is decided by the calling backend workflow, never by the
+   * client (AUTH_AUTHORIZATION §120–121).
+   */
+  async registerAccount(
+    input: {
+      email: string;
+      phone: string;
+      password: string;
+      role: Role;
+      createProfile: (tx: Prisma.TransactionClient, userId: string) => Promise<void>;
+    },
+    meta: RequestMeta,
+  ): Promise<RegisterResponse> {
     const email = normalizeEmail(input.email);
     const phone = normalizePhone(input.phone);
     if (!phone) {
@@ -79,12 +110,9 @@ export class AuthService {
           email,
           phone,
           passwordHash,
-          role: Role.CUSTOMER,
+          role: input.role,
         });
-        await this.customers.createProfile(tx, user.id, {
-          firstName: input.firstName,
-          lastName: input.lastName,
-        });
+        await input.createProfile(tx, user.id);
         const phoneCode = await this.challenges.createPhoneChallenge(tx, user.id, phone);
         const emailToken = await this.challenges.createTokenChallenge(
           tx,
@@ -98,7 +126,7 @@ export class AuthService {
             actorUserId: user.id,
             entityType: 'USER',
             entityId: user.id,
-            metadata: { role: Role.CUSTOMER },
+            metadata: { role: input.role },
             meta,
           },
           tx,

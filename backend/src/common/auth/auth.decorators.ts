@@ -41,3 +41,9 @@ export const CurrentAuth = createParamDecorator((_data: unknown, context: Execut
   }
   return auth;
 });
+
+/**
+ * Administrative routes (ADMIN_RULES §4–6). Every admin route uses this single decorator so that
+ * admin-wide requirements (e.g. MFA, ADR-0014 §8) are enforced in one place.
+ */
+export const AdminOnly = () => Roles('ADMIN', 'SUPER_ADMIN');

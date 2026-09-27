@@ -1,6 +1,8 @@
 # QuickBite V1 — API Specification
 
 **Document:** `docs/api/API_SPEC.md`
+
+Implementation details for open points: `docs/api/API_IMPLEMENTATION_NOTES.md`.
 **Version:** 1.0
 **Status:** Approved for Implementation
 **Product:** QuickBite Food Delivery Platform

@@ -67,6 +67,12 @@ model User {
   updatedSettings        SystemSetting[]         @relation("SystemSettingUpdater")
   idempotencyKeys        IdempotencyKey[]
   addresses              Address[]
+  restaurantOwnerProfile RestaurantOwnerProfile?
+  ownedRestaurants       Restaurant[]            @relation("RestaurantOwner")
+  restaurantMemberships  RestaurantStaff[]
+  reviewedApplications   RestaurantApplication[] @relation("ApplicationReviewer")
+  uploadedDocuments      RestaurantDocument[]    @relation("DocumentUploader")
+  reviewedDocuments      RestaurantDocument[]    @relation("DocumentReviewer")
 
   @@map("users")
 }
@@ -287,4 +293,222 @@ model OutboxEvent {
   @@index([status, availableAt])
   @@index([aggregateType, aggregateId])
   @@map("outbox_events")
+}
+
+// ---------------------------------------------------------------------------
+// Restaurants — DATABASE.md §8–15 (Slice 3)
+// ---------------------------------------------------------------------------
+
+enum RestaurantStatus {
+  OFFLINE
+  ONLINE
+  TEMPORARILY_PAUSED
+  CLOSED
+  SUSPENDED
+
+  @@map("restaurant_status")
+}
+
+enum RestaurantApprovalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESUBMISSION_REQUIRED
+
+  @@map("restaurant_approval_status")
+}
+
+/// Owner name captured at restaurant registration (API_SPEC §44). Gap fill: DATABASE.md §5.4.
+model RestaurantOwnerProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("restaurant_owner_profiles")
+}
+
+model Restaurant {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  ownerUserId        String                   @map("owner_user_id") @db.Uuid
+  name               String
+  slug               String                   @unique
+  description        String?
+  phone              String?
+  email              String?
+  logoUrl            String?                  @map("logo_url")
+  coverImageUrl      String?                  @map("cover_image_url")
+  status             RestaurantStatus         @default(OFFLINE)
+  approvalStatus     RestaurantApprovalStatus @default(DRAFT) @map("approval_status")
+  pausedUntil        DateTime?                @map("paused_until") @db.Timestamptz(6)
+  statusReason       String?                  @map("status_reason")
+  latitude           Decimal?                 @db.Decimal(9, 6)
+  longitude          Decimal?                 @db.Decimal(9, 6)
+  addressLine1       String?                  @map("address_line_1")
+  addressLine2       String?                  @map("address_line_2")
+  area               String?
+  city               String?
+  postalCode         String?                  @map("postal_code")
+  cuisineDescription String?                  @map("cuisine_description")
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner            User                        @relation("RestaurantOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  application      RestaurantApplication?
+  staff            RestaurantStaff[]
+  documents        RestaurantDocument[]
+  operatingHours   RestaurantOperatingHours[]
+  deliverySettings RestaurantDeliverySettings?
+  paymentAccounts  RestaurantPaymentAccount[]
+
+  @@index([status])
+  @@index([approvalStatus])
+  @@map("restaurants")
+}
+
+model RestaurantApplication {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  restaurantId        String                   @unique @map("restaurant_id") @db.Uuid
+  status              RestaurantApprovalStatus @default(DRAFT)
+  /// Business information submitted for admin review (PRD §9). Gap fill: DATABASE.md §5.4.
+  businessInformation Json?                    @map("business_information")
+  submittedAt         DateTime?                @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt          DateTime?                @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy          String?                  @map("reviewed_by") @db.Uuid
+  rejectionReason     String?                  @map("rejection_reason")
+  resubmissionNotes   String?                  @map("resubmission_notes")
+  createdAt           DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  reviewer   User?      @relation("ApplicationReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@map("restaurant_applications")
+}
+
+enum RestaurantStaffRole {
+  OWNER
+  OPERATOR
+
+  @@map("restaurant_staff_role")
+}
+
+enum RestaurantStaffStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("restaurant_staff_status")
+}
+
+/// V1: a user has at most one ACTIVE membership (partial unique index in migration).
+model RestaurantStaff {
+  id           String                @id @default(uuid()) @db.Uuid
+  restaurantId String                @map("restaurant_id") @db.Uuid
+  userId       String                @map("user_id") @db.Uuid
+  role         RestaurantStaffRole
+  status       RestaurantStaffStatus @default(ACTIVE)
+  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+  @@map("restaurant_staff")
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("document_status")
+}
+
+model RestaurantDocument {
+  id              String         @id @default(uuid()) @db.Uuid
+  restaurantId    String         @map("restaurant_id") @db.Uuid
+  documentType    String         @map("document_type")
+  /// Private object-storage key (never a public URL, API_SPEC §109).
+  fileUrl         String         @map("file_url")
+  status          DocumentStatus @default(PENDING)
+  uploadedBy      String         @map("uploaded_by") @db.Uuid
+  reviewedBy      String?        @map("reviewed_by") @db.Uuid
+  reviewedAt      DateTime?      @map("reviewed_at") @db.Timestamptz(6)
+  rejectionReason String?        @map("rejection_reason")
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  uploader   User       @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Restrict)
+  reviewer   User?      @relation("DocumentReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId])
+  @@map("restaurant_documents")
+}
+
+/// ISO day of week 1 (Monday) … 7 (Sunday); times in the business timezone (ADR-0014 §6).
+model RestaurantOperatingHours {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  dayOfWeek    Int      @map("day_of_week") @db.SmallInt
+  opensAt      String?  @map("opens_at") @db.Char(5)
+  closesAt     String?  @map("closes_at") @db.Char(5)
+  isClosed     Boolean  @default(false) @map("is_closed")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+  @@map("restaurant_operating_hours")
+}
+
+model RestaurantDeliverySettings {
+  id                          String   @id @default(uuid()) @db.Uuid
+  restaurantId                String   @unique @map("restaurant_id") @db.Uuid
+  deliveryEnabled             Boolean  @default(true) @map("delivery_enabled")
+  minimumOrderAmount          Decimal  @default(0) @map("minimum_order_amount") @db.Decimal(12, 2)
+  estimatedPreparationMinutes Int      @map("estimated_preparation_minutes")
+  /// Kilometres (MAPS_LOCATION_RULES §12).
+  deliveryRadius              Decimal  @map("delivery_radius") @db.Decimal(6, 2)
+  createdAt                   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("restaurant_delivery_settings")
+}
+
+enum PaymentAccountStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("payment_account_status")
+}
+
+/// Stores provider references only, never raw credentials (DATABASE.md §15).
+model RestaurantPaymentAccount {
+  id                String               @id @default(uuid()) @db.Uuid
+  restaurantId      String               @map("restaurant_id") @db.Uuid
+  provider          String
+  accountReference  String               @map("account_reference")
+  accountHolderName String               @map("account_holder_name")
+  status            PaymentAccountStatus @default(ACTIVE)
+  isDefault         Boolean              @default(false) @map("is_default")
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId])
+  @@map("restaurant_payment_accounts")
 }

@@ -183,7 +183,7 @@ describe('Shared infrastructure', () => {
       await expect(settings.require('pricing.delivery_fee')).rejects.toMatchObject({
         code: 'INTERNAL_ERROR',
       });
-      await expect(settings.set('pricing.delivery_fee', '-5' as never, null)).rejects.toThrow();
+      await expect(settings.set('pricing.delivery_fee', '-5', null)).rejects.toThrow();
       await settings.set('pricing.delivery_fee', '150.00', null);
       await expect(settings.require('pricing.delivery_fee')).resolves.toBe('150.00');
     });

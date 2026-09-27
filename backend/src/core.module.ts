@@ -8,6 +8,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { QueueModule } from './infrastructure/queue/queue.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { ScheduledTasksModule } from './infrastructure/scheduler/scheduled-tasks.module';
+import { StorageModule } from './infrastructure/storage/storage.module';
 import { DOMAIN_MODULES } from './modules';
 
 /** Infrastructure + domain modules shared by the API and the worker process. */
@@ -22,6 +23,7 @@ import { DOMAIN_MODULES } from './modules';
     SettingsModule,
     OutboxModule,
     ScheduledTasksModule,
+    StorageModule,
     ...DOMAIN_MODULES,
   ],
 })

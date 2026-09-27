@@ -59,6 +59,22 @@ export const envSchema = z.object({
   SENTRY_DSN: z.union([z.url(), z.literal('')]).default(''),
   SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
 
+  // --- Object storage (S3-compatible; DEPLOYMENT_SPEC §12, API_SPEC §109) -------------------
+  /** `local` is a development/test adapter writing to the local disk; refused in staging/production. */
+  STORAGE_DRIVER: z.enum(['s3', 'local']).default('local'),
+  STORAGE_ENDPOINT: z.string().default(''),
+  STORAGE_REGION: z.string().default('us-east-1'),
+  STORAGE_BUCKET_PRIVATE: z.string().default(''),
+  STORAGE_ACCESS_KEY_ID: z.string().default(''),
+  STORAGE_SECRET_ACCESS_KEY: z.string().default(''),
+  STORAGE_FORCE_PATH_STYLE: booleanFromString.default(false),
+  STORAGE_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
+  STORAGE_MAX_UPLOAD_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024),
+
   // --- Authentication (Slice 1, AUTH_AUTHORIZATION.md §8–33) -------------------------------
   JWT_ACCESS_SECRET: secret('JWT_ACCESS_SECRET'),
   /** Comma-separated previous signing secrets still accepted for verification (key rotation, §80). */
@@ -115,6 +131,20 @@ const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['VERIFICATION_DELIVERY'],
       message: 'The development "log" delivery adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && env.STORAGE_DRIVER === 'local') {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['STORAGE_DRIVER'],
+      message: 'The local storage adapter is not allowed in staging/production',
+    });
+  }
+  if (env.STORAGE_DRIVER === 's3' && !env.STORAGE_BUCKET_PRIVATE) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['STORAGE_BUCKET_PRIVATE'],
+      message: 'Required when STORAGE_DRIVER=s3',
     });
   }
   if (env.AUTH_PASSWORD_MAX_LENGTH < env.AUTH_PASSWORD_MIN_LENGTH) {
