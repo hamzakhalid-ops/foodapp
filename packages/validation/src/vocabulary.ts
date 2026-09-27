@@ -6,6 +6,7 @@ import {
   PROMOTION_TYPES,
   REVIEW_STATUSES,
   ROLES,
+  USER_STATUSES,
 } from '@quickbite/types';
 import { z } from 'zod';
 
@@ -17,3 +18,4 @@ export const paymentStatusSchema = z.enum(PAYMENT_STATUSES);
 export const promotionTypeSchema = z.enum(PROMOTION_TYPES);
 export const promotionStatusSchema = z.enum(PROMOTION_STATUSES);
 export const reviewStatusSchema = z.enum(REVIEW_STATUSES);
+export const userStatusSchema = z.enum(USER_STATUSES);

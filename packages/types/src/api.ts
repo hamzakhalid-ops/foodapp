@@ -70,9 +70,7 @@ export type ApiResponse<TData> = ApiSuccessResponse<TData> | ApiErrorResponse;
 /**
  * Standard error codes.
  *
- * Source: docs/api/API_SPEC.md §13, plus the SYSTEM group taken from
- * docs/architecture/ARCHITECTURE.md §48 and docs/security/AUTH_AUTHORIZATION.md §19
- * (not yet listed in API_SPEC §13 — tracked in REPOSITORY_CONSISTENCY_REPORT).
+ * Source: docs/api/API_SPEC.md §13.
  *
  * New codes must be added to API_SPEC.md first.
  */
@@ -90,6 +88,8 @@ export const API_ERROR_CODES = {
     'AUTH_VERIFICATION_CODE_EXPIRED',
     'AUTH_TOO_MANY_ATTEMPTS',
     'AUTH_PASSWORD_RESET_INVALID',
+    'AUTH_ACCOUNT_ALREADY_EXISTS',
+    'AUTH_PASSWORD_POLICY_VIOLATION',
   ],
   AUTHORIZATION: [
     'AUTHZ_FORBIDDEN',
