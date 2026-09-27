@@ -1340,7 +1340,7 @@ where applicable.
 This testing specification must remain consistent with:
 
 ```text
-docs/CLAUDE.md
+CLAUDE.md
 docs/product/PRD.md
 docs/architecture/ARCHITECTURE.md
 docs/database/DATABASE.md
