@@ -406,6 +406,19 @@ is `(unit_price + variation adjustments + add-on prices) × quantity`; option `q
 unit (1). Snapshot rows keep their names/prices when menu rows are deleted (`menu_item_id`,
 `variation_id`, `add_on_id` become NULL). `payments.provider` is NULL for cash on delivery.
 
+Slice 7 (payments):
+
+```text
+payments.failure_reason   safe, customer-presentable failure reason (PAYMENT_RULES §17)
+payment_webhook_events(id, provider, provider_event_id, event_type, payload, received_at)
+    UNIQUE (provider, provider_event_id) — webhook replay protection (API_SPEC §81, §116)
+refunds.status            PENDING | PROCESSING | SUCCEEDED | FAILED | CANCELLED (PAYMENT_RULES §28)
+```
+
+`refunds.amount > 0`; `refunds.provider_refund_id` unique when present. The refundable remainder
+(`Σ refunds in PENDING/PROCESSING/SUCCEEDED ≤ payments.amount`) is enforced under the payment row
+lock.
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

@@ -7,6 +7,7 @@ import {
 } from '@quickbite/validation';
 import { type AuthContext } from '../../common/auth/auth.decorators';
 import { notFound, validationError } from '../../common/http/errors';
+import { decodeCursor, encodeCursor } from '../../common/http/pagination';
 import { formatMoney, type Money, money } from '../../common/money/money';
 import {
   type Order as OrderRow,
@@ -203,10 +204,7 @@ export class OrdersService {
           : {}),
         ...(cursor
           ? {
-              OR: [
-                { placedAt: { lt: cursor.placedAt } },
-                { placedAt: cursor.placedAt, id: { lt: cursor.id } },
-              ],
+              OR: [{ placedAt: { lt: cursor.at } }, { placedAt: cursor.at, id: { lt: cursor.id } }],
             }
           : {}),
       },
@@ -228,7 +226,7 @@ export class OrdersService {
         currency: row.currency,
         placedAt: row.placedAt.toISOString(),
       })),
-      nextCursor: rows.length > query.limit && last ? encodeCursor(last) : null,
+      nextCursor: rows.length > query.limit && last ? encodeCursor(last.placedAt, last.id) : null,
     };
   }
 
@@ -267,17 +265,6 @@ export function isReleasedToRestaurant(
     order.paymentStatus === 'REFUNDED' ||
     order.paymentStatus === 'PARTIALLY_REFUNDED'
   );
-}
-
-function encodeCursor(row: { placedAt: Date; id: string }): string {
-  return Buffer.from(`${row.placedAt.toISOString()}|${row.id}`).toString('base64url');
-}
-
-function decodeCursor(cursor: string): { placedAt: Date; id: string } | null {
-  const [iso, id] = Buffer.from(cursor, 'base64url').toString().split('|');
-  const placedAt = new Date(iso ?? '');
-  if (!id || Number.isNaN(placedAt.getTime()) || !/^[0-9a-f-]{36}$/.test(id)) return null;
-  return { placedAt, id };
 }
 
 const iso = (value: Date | null) => value?.toISOString() ?? null;

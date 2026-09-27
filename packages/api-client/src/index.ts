@@ -4,5 +4,6 @@ export * from './customer';
 export * from './errors';
 export * from './menu';
 export * from './order';
+export * from './payment';
 export * from './restaurant';
 export * from './retry';

@@ -4,5 +4,6 @@ export * from './common';
 export * from './customer';
 export * from './menu';
 export * from './order';
+export * from './payment';
 export * from './restaurant';
 export * from './vocabulary';

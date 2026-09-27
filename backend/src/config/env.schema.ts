@@ -75,6 +75,12 @@ export const envSchema = z.object({
     .positive()
     .default(10 * 1024 * 1024),
 
+  // --- Payments (ADR-0008, ADR-0014 §5) ---------------------------------------------------
+  /** `sandbox` simulates a provider for development/test only; refused in staging/production. */
+  PAYMENT_PROVIDER: z.enum(['sandbox']).default('sandbox'),
+  /** Sandbox webhook signing secret; a random per-process secret is used when empty. */
+  PAYMENT_SANDBOX_WEBHOOK_SECRET: z.string().default(''),
+
   // --- Authentication (Slice 1, AUTH_AUTHORIZATION.md §8–33) -------------------------------
   JWT_ACCESS_SECRET: secret('JWT_ACCESS_SECRET'),
   /** Comma-separated previous signing secrets still accepted for verification (key rotation, §80). */
@@ -123,6 +129,8 @@ export type Env = z.infer<typeof envSchema>;
 
 /** Delivery adapters that must never run in a deployed environment. */
 const DEV_ONLY_DELIVERY: ReadonlySet<string> = new Set(['log']);
+/** Payment adapters that must never run in a deployed environment (ADR-0014 §5). */
+const DEV_ONLY_PAYMENT: ReadonlySet<string> = new Set(['sandbox']);
 
 const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
   const deployed = env.APP_ENV === 'staging' || env.APP_ENV === 'production';
@@ -138,6 +146,13 @@ const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['STORAGE_DRIVER'],
       message: 'The local storage adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_PAYMENT.has(env.PAYMENT_PROVIDER)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['PAYMENT_PROVIDER'],
+      message: 'The sandbox payment provider is not allowed in staging/production',
     });
   }
   if (env.STORAGE_DRIVER === 's3' && !env.STORAGE_BUCKET_PRIVATE) {

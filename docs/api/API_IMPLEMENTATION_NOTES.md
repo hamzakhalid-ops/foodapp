@@ -214,3 +214,41 @@ row (refundAmount `null`) → an unpaid (`PENDING`) payment becomes `CANCELLED` 
 ({…, reasonCode, refundDecisionRequired}). A captured online payment is left as is:
 `refundDecisionRequired: true` hands it to an administrator (ADR-0014 §9). There is no automatic
 refund and no cancellation-fee logic.
+
+---
+
+## Slice 7 — Payments and refunds (§77–82, §102)
+
+**Provider.** `PaymentProvider` port with one adapter, `sandbox` (ADR-0014 §5): simulated provider
+state in Redis, HMAC-SHA256 signed webhooks (`x-sandbox-signature: t=<unix>,v1=<hex>` over
+`<t>.<raw body>`, 5-minute tolerance). Configuration refuses `PAYMENT_PROVIDER=sandbox` in
+staging/production, so those environments need a real adapter before they can start.
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET /payment-methods` | customer | `[{method, available}]` for `ONLINE_PAYMENT`, `CASH_ON_DELIVERY` (COD availability narrows with risk restrictions) |
+| `POST /payments` | customer, `Idempotency-Key` | {orderId, paymentMethod: `ONLINE_PAYMENT`} → `201 Payment`. Amount comes from the order. Resumes a pending attempt; after `FAILED` creates a new attempt. `422` for COD or a mismatched method, `409 ORDER_INVALID_STATUS` unless the order is `PENDING`, `409 PAYMENT_ALREADY_PROCESSED` once paid, `502 PAYMENT_PROVIDER_ERROR` |
+| `GET /payments/{id}` | owner customer, admin | `Payment` {id, orderId, method, status, amount, currency, provider, failureReason, paidAt, createdAt, nextAction {type: REDIRECT, url} \| null, refundedAmount} |
+| `POST /payments/{id}/confirm` | owner customer, admin | asks the provider for the payment state and records it; the request body is ignored |
+| `POST /webhooks/payments/{provider}` | provider signature | `200 {received, duplicate}`; invalid/stale signature `400`; unknown provider `404`; each provider event id is processed once |
+| `POST /payments/{id}/refund` | admin, `Idempotency-Key` | {amount, reasonCode (UPPER_CASE), reason?} → `201 Refund`; only captured online payments (`409 REFUND_NOT_ALLOWED`); `422 PAYMENT_INVALID_AMOUNT` above the remaining refundable amount; `502 REFUND_FAILED` |
+| `POST /admin/orders/{id}/refund-decision` | admin, `Idempotency-Key` | {decision `FULL_REFUND`\|`PARTIAL_REFUND` (+amount)\|`NO_REFUND`, reason} → `{decision, refund \| null}`; cancelled orders with a captured payment, one decision per order |
+| `GET /admin/payments`, `/admin/payments/{id}` | admin | query: status?, method?, orderId?, cursor?, limit |
+| `GET /admin/refunds`, `/admin/refunds/{id}` | admin | query: status?, orderId?, cursor?, limit |
+| `POST /sandbox/payments/{providerPaymentId}/outcome` | development/test only | {outcome `SUCCEEDED`\|`FAILED`\|`AUTHORIZED`}; simulates the customer at the provider and delivers the signed webhook |
+
+**Recording provider results.** The provider reference must map to a QuickBite payment and the
+provider amount/currency must equal the payment's, otherwise the payment becomes `FAILED`
+("could not be verified", audited `PAYMENT_VERIFICATION_FAILED`). Allowed verified changes:
+`PENDING → AUTHORIZED/SUCCEEDED/FAILED`, `AUTHORIZED → SUCCEEDED/FAILED`, and
+`FAILED/CANCELLED → AUTHORIZED/SUCCEEDED` (money captured after a local failure/cancellation is
+recorded and flagged `refundDecisionRequired`). The order's `paymentStatus` mirrors the payment;
+each change is audited and emits `payment.status_changed`.
+
+**Refunds.** Separate records; the payment amount is never changed. Payment status becomes
+`PARTIALLY_REFUNDED` or `REFUNDED` from the total of succeeded refunds, the cancelled order's
+`order_cancellations.refund_amount` holds that total, and `refund.succeeded` is emitted. Cash on
+delivery has no online refund path in V1.
+
+**Not automated:** unpaid online orders are not expired automatically (no timeout rule is
+specified); they stay `PENDING` until paid or cancelled.

@@ -56,4 +56,16 @@ describe('validateEnv', () => {
     }
     expect(validateEnv({ ...valid, APP_ENV: 'development' }).VERIFICATION_DELIVERY).toBe('log');
   });
+
+  it('refuses the sandbox payment provider in staging and production', () => {
+    const deployed = {
+      ...valid,
+      STORAGE_DRIVER: 's3',
+      STORAGE_BUCKET_PRIVATE: 'docs',
+    };
+    for (const APP_ENV of ['staging', 'production']) {
+      expect(() => validateEnv({ ...deployed, APP_ENV })).toThrow(/PAYMENT_PROVIDER/);
+    }
+    expect(validateEnv({ ...valid, APP_ENV: 'test' }).PAYMENT_PROVIDER).toBe('sandbox');
+  });
 });
