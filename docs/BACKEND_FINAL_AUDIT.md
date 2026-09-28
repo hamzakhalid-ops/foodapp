@@ -184,7 +184,27 @@ cannot silently fake success.
 
 ## 10. Test Results
 
-<!-- RESULTS -->
+Commands are the repository's own (`package.json` / `backend/package.json`), run against real
+PostgreSQL 16 and Redis. Results after the fixes:
+
+| Check | Command | Result |
+|-------|---------|--------|
+| Format | `pnpm format:check` | clean |
+| Doc links | `pnpm docs:check` | OK |
+| Lint | `pnpm lint` (packages, backend, 4 apps) | 12/12 tasks |
+| Typecheck | `pnpm typecheck` | 12/12 tasks |
+| Unit + API + app tests | `pnpm test` | 11/11 tasks; backend unit 63, API 12, each app 1 |
+| Integration | `pnpm --filter @quickbite/backend test:integration` | **185 passed, 20 suites** |
+| E2E (golden flow) | `pnpm --filter @quickbite/backend test:e2e` | 1 passed |
+| Build | `pnpm build` | 9/9 tasks |
+| Prisma | `prisma validate`; fresh database `migrate deploy` + `migrate diff` | valid; no drift |
+
+New or changed tests:
+* `customer-api-contract.int-spec.ts` (new).
+* The settlement redelivery regression in `finance.int-spec.ts` (failed before the fix).
+
+Baseline before the fixes was also fully green. The existing suites did not cover the §5.1 and
+§6.2 defects.
 
 ## 11. Customer Frontend Readiness
 
