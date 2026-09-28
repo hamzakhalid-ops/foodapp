@@ -138,12 +138,12 @@ Branches: `feature/<scope>-<description>`, `fix/...`, `docs/...`, `chore/...` (`
 
 ## Testing
 
-| Command                                     | What it runs                                                                                       |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `pnpm test`                                 | Unit tests (packages, backend), backend API tests (Supertest, no services), mobile component tests |
-| `pnpm test:integration`                     | Backend integration tests (requires PostgreSQL + Redis)                                            |
-| `pnpm --filter @quickbite/backend test:e2e` | Golden E2E flow through the HTTP API (requires PostgreSQL + Redis)                                 |
-| `pnpm test:e2e`                             | Admin Playwright E2E (requires `pnpm build` first)                                                 |
+| Command                                                         | What it runs                                                                                       |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `pnpm test`                                                     | Unit tests (packages, backend), backend API tests (Supertest, no services), mobile component tests |
+| `pnpm test:integration`                                         | Backend integration tests (requires PostgreSQL + Redis)                                            |
+| `pnpm db:generate && pnpm --filter @quickbite/backend test:e2e` | Golden E2E flow through the HTTP API (requires PostgreSQL + Redis)                                 |
+| `pnpm test:e2e`                                                 | Admin Playwright E2E (requires `pnpm build` first)                                                 |
 
 Testing strategy: `docs/testing/TESTING_RULES.md`, `docs/testing/TESTING_SPEC.md`, `tests/README.md`.
 

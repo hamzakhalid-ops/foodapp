@@ -99,10 +99,23 @@ openssl rand -base64 48   # run once per secret
 
 ## Commands
 
+The Prisma client (`src/generated/prisma`) is generated once per Turbo run by the `db:generate`
+task, which `build`, `lint`, `typecheck` and the `test*` tasks depend on (`turbo.json`). Running
+through Turbo generates it automatically:
+
 ```bash
+pnpm turbo run lint typecheck test --filter=@quickbite/backend
+```
+
+When running a script directly with `pnpm --filter`, run `pnpm db:generate` first (and again after
+changing `prisma/schema.prisma`). `test:api` is not a Turbo task and still generates the client
+itself.
+
+```bash
+pnpm db:generate                                  # prisma generate (run before direct scripts)
 pnpm --filter @quickbite/backend dev              # API with watch
 pnpm --filter @quickbite/backend dev:worker       # worker with watch
-pnpm --filter @quickbite/backend build            # prisma generate + nest build
+pnpm --filter @quickbite/backend build            # nest build
 pnpm --filter @quickbite/backend lint
 pnpm --filter @quickbite/backend typecheck
 pnpm --filter @quickbite/backend test             # unit + API (no services required)
