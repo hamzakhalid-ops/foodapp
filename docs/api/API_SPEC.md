@@ -1,6 +1,8 @@
 # QuickBite V1 — API Specification
 
 **Document:** `docs/api/API_SPEC.md`
+
+Implementation details for open points: `docs/api/API_IMPLEMENTATION_NOTES.md`.
 **Version:** 1.0
 **Status:** Approved for Implementation
 **Product:** QuickBite Food Delivery Platform
@@ -439,7 +441,75 @@ ORDER_ITEM_UNAVAILABLE
 ORDER_MINIMUM_NOT_MET
 ORDER_RECALCULATION_REQUIRED
 ORDER_DUPLICATE
+ORDER_STATE_CHANGED
 ```
+
+## Cart / Location
+
+```text
+CART_RESTAURANT_MISMATCH
+INVALID_VARIATION
+INVALID_ADD_ON
+ADDRESS_NOT_SERVICEABLE
+```
+
+`ORDER_STATE_CHANGED`, `CART_RESTAURANT_MISMATCH`, `INVALID_VARIATION` and `INVALID_ADD_ON` come from
+ORDER_RULES §4.1, §23, §35 and `ADDRESS_NOT_SERVICEABLE` from MAPS_LOCATION_SPEC; they were added
+to this catalogue in Phase 20 (Slice 5). Where ORDER_RULES uses a different spelling for an existing
+code, this catalogue wins: `ORDER_MINIMUM_NOT_MET` (not `MINIMUM_ORDER_NOT_MET`),
+`ORDER_ITEM_UNAVAILABLE` (not `MENU_ITEM_UNAVAILABLE`), `RESTAURANT_NOT_AVAILABLE` (not
+`RESTAURANT_NOT_ORDERABLE`).
+
+## Promotion
+
+```text
+PROMOTION_INACTIVE
+PROMOTION_NOT_STARTED
+PROMOTION_EXPIRED
+PROMOTION_NOT_ELIGIBLE
+PROMOTION_USAGE_LIMIT_REACHED
+```
+
+Added in Phase 20 (promotions slice) from PROMOTION_RULES §50 / PROMOTION_SPEC. Unknown codes and
+codes of another restaurant return `PROMOTION_NOT_FOUND`; an unmet promotion minimum returns
+`PROMOTION_NOT_ELIGIBLE` with `details.reason = MINIMUM_ORDER_NOT_MET`; the per-customer limit
+returns `PROMOTION_USAGE_LIMIT_REACHED` with `details.scope = CUSTOMER`.
+
+## Review
+
+```text
+REVIEW_NOT_ELIGIBLE
+REVIEW_ALREADY_EXISTS
+REVIEW_ALREADY_REMOVED
+REVIEW_REPORT_INVALID
+```
+
+Added in Phase 20 (reviews slice) from REVIEW_RULES §44. Other review cases use the existing codes:
+`REVIEW_NOT_FOUND`, `ORDER_NOT_FOUND` (not the caller's order), `VALIDATION_ERROR` (rating/content).
+
+## MFA
+
+```text
+AUTH_MFA_REQUIRED
+AUTH_MFA_INVALID
+```
+
+Added in Phase 20 (admin slice) for AUTH_AUTHORIZATION §36–38 (`MFA_REQUIRED` / `MFA_INVALID`
+there, prefixed like the other authentication codes). `AUTH_MFA_REQUIRED` carries
+`details.reason`: `MFA_NOT_ENROLLED`, `MFA_NOT_VERIFIED` or `STEP_UP_REQUIRED`.
+
+## Financial
+
+```text
+SETTLEMENT_NOT_FOUND
+SETTLEMENT_INVALID_STATUS
+SETTLEMENT_RECONCILIATION_FAILED
+```
+
+Added in Phase 20 (financial slice) from FINANCIAL_SPEC §27, §33. `SETTLEMENT_INVALID_STATUS` is
+returned when approve/process is requested in a state that does not allow it;
+`SETTLEMENT_RECONCILIATION_FAILED` when the settlement items no longer add up to the settlement net
+(automatic completion is blocked and an operational alert is logged).
 
 ## Payment
 

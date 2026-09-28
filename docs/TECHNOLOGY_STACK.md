@@ -166,7 +166,7 @@ Redis is **never** the durable source of truth for business records.
 # 10. Realtime
 
 * Socket.IO gateway attached to the API process at path `/realtime`.
-* Current state: **fail-closed** — all connections are rejected until authentication (Slice 1) and channel authorization exist.
+* Connections authenticate with the HTTP access token (session checked like HTTP, re-validated every 30 s); channel subscriptions are authorized server-side. Worker and API publish through Redis pub/sub (`RealtimePublisher`); each API instance fans out to its sockets. See `docs/api/API_IMPLEMENTATION_NOTES.md` (Slice 12).
 * Channels, envelope, ordering, reconnection and resynchronization follow `REALTIME_SPEC.md`.
 
 ---

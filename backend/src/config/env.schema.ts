@@ -31,6 +31,12 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   APP_ENV: z.enum(['development', 'test', 'staging', 'production']).default('development'),
   APP_VERSION: z.string().min(1).default('0.0.0-local'),
+  /** V1 single market (ADR-0014 §6). */
+  APP_CURRENCY: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .default('PKR'),
+  APP_TIMEZONE: z.string().min(1).default('Asia/Karachi'),
 
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   API_CORS_ORIGINS: z
@@ -53,6 +59,37 @@ export const envSchema = z.object({
   SENTRY_DSN: z.union([z.url(), z.literal('')]).default(''),
   SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
 
+  // --- Object storage (S3-compatible; DEPLOYMENT_SPEC §12, API_SPEC §109) -------------------
+  /** `local` is a development/test adapter writing to the local disk; refused in staging/production. */
+  STORAGE_DRIVER: z.enum(['s3', 'local']).default('local'),
+  STORAGE_ENDPOINT: z.string().default(''),
+  STORAGE_REGION: z.string().default('us-east-1'),
+  STORAGE_BUCKET_PRIVATE: z.string().default(''),
+  STORAGE_ACCESS_KEY_ID: z.string().default(''),
+  STORAGE_SECRET_ACCESS_KEY: z.string().default(''),
+  STORAGE_FORCE_PATH_STYLE: booleanFromString.default(false),
+  STORAGE_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
+  STORAGE_MAX_UPLOAD_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024),
+
+  // --- Payments (ADR-0008, ADR-0014 §5) ---------------------------------------------------
+  /** `sandbox` simulates a provider for development/test only; refused in staging/production. */
+  PAYMENT_PROVIDER: z.enum(['sandbox']).default('sandbox'),
+  /** Sandbox webhook signing secret; a random per-process secret is used when empty. */
+  PAYMENT_SANDBOX_WEBHOOK_SECRET: z.string().default(''),
+
+  // --- Payouts (FINANCIAL_SPEC §34–39) ---------------------------------------------------
+  /** `sandbox` simulates a payout provider for development/test only; refused in staging/production. */
+  PAYOUT_PROVIDER: z.enum(['sandbox']).default('sandbox'),
+
+  // --- Notifications (NOTIFICATION_RULES §17, §32) ----------------------------------------
+  /** Push/SMS/email delivery adapter. `log` is development/test only; refused in staging/production. */
+  NOTIFICATION_DELIVERY: z.enum(['log']).default('log'),
+  NOTIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
+
   // --- Authentication (Slice 1, AUTH_AUTHORIZATION.md §8–33) -------------------------------
   JWT_ACCESS_SECRET: secret('JWT_ACCESS_SECRET'),
   /** Comma-separated previous signing secrets still accepted for verification (key rotation, §80). */
@@ -72,6 +109,10 @@ export const envSchema = z.object({
   SESSION_MAX_LIFETIME_SECONDS: seconds.default(90 * 24 * 3600),
   /** HMAC key for low-entropy secrets (phone OTP codes). */
   AUTH_SECRET_HASH_KEY: secret('AUTH_SECRET_HASH_KEY'),
+  /** Encrypts TOTP secrets at rest (AUTH_AUTHORIZATION §77). Rotating it invalidates enrollments. */
+  MFA_ENCRYPTION_KEY: secret('MFA_ENCRYPTION_KEY'),
+  /** Step-up freshness for sensitive admin actions (AUTH_AUTHORIZATION §38, MFA_RECENT_AUTH_WINDOW). */
+  MFA_RECENT_AUTH_WINDOW_SECONDS: seconds.default(300),
 
   AUTH_PASSWORD_MIN_LENGTH: z.coerce.number().int().min(8).default(8),
   AUTH_PASSWORD_MAX_LENGTH: z.coerce.number().int().max(1024).default(128),
@@ -93,6 +134,7 @@ export const envSchema = z.object({
   RATE_LIMIT_REFRESH: rateLimitRule.prefault('60/300'),
   RATE_LIMIT_OTP_SEND: rateLimitRule.prefault('3/900'),
   RATE_LIMIT_OTP_VERIFY: rateLimitRule.prefault('10/900'),
+  RATE_LIMIT_MFA_VERIFY: rateLimitRule.prefault('5/300'),
   RATE_LIMIT_EMAIL_VERIFY: rateLimitRule.prefault('20/3600'),
   RATE_LIMIT_PASSWORD_RESET: rateLimitRule.prefault('5/3600'),
 });
@@ -101,6 +143,8 @@ export type Env = z.infer<typeof envSchema>;
 
 /** Delivery adapters that must never run in a deployed environment. */
 const DEV_ONLY_DELIVERY: ReadonlySet<string> = new Set(['log']);
+/** Payment/payout adapters that must never run in a deployed environment (ADR-0014 §5). */
+const DEV_ONLY_PAYMENT: ReadonlySet<string> = new Set(['sandbox']);
 
 const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
   const deployed = env.APP_ENV === 'staging' || env.APP_ENV === 'production';
@@ -109,6 +153,41 @@ const guardedEnvSchema = envSchema.superRefine((env, ctx) => {
       code: 'custom',
       path: ['VERIFICATION_DELIVERY'],
       message: 'The development "log" delivery adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && env.STORAGE_DRIVER === 'local') {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['STORAGE_DRIVER'],
+      message: 'The local storage adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_DELIVERY.has(env.NOTIFICATION_DELIVERY)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['NOTIFICATION_DELIVERY'],
+      message: 'The development "log" notification adapter is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_PAYMENT.has(env.PAYMENT_PROVIDER)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['PAYMENT_PROVIDER'],
+      message: 'The sandbox payment provider is not allowed in staging/production',
+    });
+  }
+  if (deployed && DEV_ONLY_PAYMENT.has(env.PAYOUT_PROVIDER)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['PAYOUT_PROVIDER'],
+      message: 'The sandbox payout provider is not allowed in staging/production',
+    });
+  }
+  if (env.STORAGE_DRIVER === 's3' && !env.STORAGE_BUCKET_PRIVATE) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['STORAGE_BUCKET_PRIVATE'],
+      message: 'Required when STORAGE_DRIVER=s3',
     });
   }
   if (env.AUTH_PASSWORD_MAX_LENGTH < env.AUTH_PASSWORD_MIN_LENGTH) {

@@ -1,18 +1,14 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { LoggingModule } from './common/logging/logging.module';
-import { AppConfigModule } from './config/config.module';
-import { DatabaseModule } from './infrastructure/database/database.module';
-import { QueueModule } from './infrastructure/queue/queue.module';
-import { RedisModule } from './infrastructure/redis/redis.module';
+import { CoreModule } from './core.module';
+import { SCHEDULER_QUEUE, SchedulerProcessor } from './infrastructure/scheduler/scheduler';
 
 /**
- * Background worker process (ARCHITECTURE §33, DEPLOYMENT_SPEC §8–9).
- *
- * Runs BullMQ processors and outbox dispatching. No processors exist yet; they are added by
- * the slices that introduce asynchronous work (outbox, notifications, dispatch timeouts,
- * financial jobs).
+ * Background worker process (ARCHITECTURE §33, DEPLOYMENT_SPEC §8–9): outbox dispatch and
+ * recurring tasks registered by domain modules, executed through BullMQ job schedulers.
  */
 @Module({
-  imports: [AppConfigModule, LoggingModule, DatabaseModule, RedisModule, QueueModule],
+  imports: [CoreModule, BullModule.registerQueue({ name: SCHEDULER_QUEUE })],
+  providers: [SchedulerProcessor],
 })
 export class WorkerModule {}

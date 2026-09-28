@@ -2,7 +2,7 @@
 
 QuickBite is a production-oriented **food delivery marketplace** connecting customers, restaurants and riders, operated by platform administrators.
 
-> **Status:** Phase 20 — Implementation. Foundation complete; **Slice 1 (Authentication) backend implemented**. No product screens yet. See [Current implementation status](#current-implementation-status).
+> **Status:** Phase 20 — Implementation. **Backend complete for all 18 slices** (API, database, tests, golden E2E flow). No product screens yet. See [Current implementation status](#current-implementation-status).
 
 ---
 
@@ -138,11 +138,12 @@ Branches: `feature/<scope>-<description>`, `fix/...`, `docs/...`, `chore/...` (`
 
 ## Testing
 
-| Command                 | What it runs                                                                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| `pnpm test`             | Unit tests (packages, backend), backend API tests (Supertest, no services), mobile component tests |
-| `pnpm test:integration` | Backend integration tests (requires PostgreSQL + Redis)                                            |
-| `pnpm test:e2e`         | Admin Playwright E2E (requires `pnpm build` first)                                                 |
+| Command                                     | What it runs                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `pnpm test`                                 | Unit tests (packages, backend), backend API tests (Supertest, no services), mobile component tests |
+| `pnpm test:integration`                     | Backend integration tests (requires PostgreSQL + Redis)                                            |
+| `pnpm --filter @quickbite/backend test:e2e` | Golden E2E flow through the HTTP API (requires PostgreSQL + Redis)                                 |
+| `pnpm test:e2e`                             | Admin Playwright E2E (requires `pnpm build` first)                                                 |
 
 Testing strategy: `docs/testing/TESTING_RULES.md`, `docs/testing/TESTING_SPEC.md`, `tests/README.md`.
 
@@ -174,15 +175,15 @@ Secrets are never committed. Staging/production configuration comes from the dep
 
 ## Current implementation status
 
-| Area                                                                                                                         | Status                                            |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Specifications (Phases 1–19)                                                                                                 | Complete and frozen                               |
-| Repository foundation (monorepo, tooling, CI, docs normalization, ADRs)                                                      | **Done**                                          |
-| Backend foundation (config, logging, error envelope, request IDs, Prisma/Redis/BullMQ wiring, fail-closed Socket.IO, health) | **Done**                                          |
-| App foundations (Customer, Restaurant, Rider, Admin)                                                                         | **Done** — placeholder route only                 |
-| Database schema / migrations                                                                                                 | **Not started** — Prisma schema has no models yet |
-| Product features (all 18 slices)                                                                                             | **Not started**                                   |
-| Product screens (all apps)                                                                                                   | **Not started** — all screens `TODO`              |
-| Deployment pipelines (staging/production)                                                                                    | **Not started**                                   |
+| Area                                                                                                                           | Status                                                |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Specifications (Phases 1–19)                                                                                                   | Complete and frozen                                   |
+| Repository foundation (monorepo, tooling, CI, docs normalization, ADRs)                                                        | **Done**                                              |
+| Backend foundation (config, logging, error envelope, request IDs, Prisma/Redis/BullMQ wiring, authenticated Socket.IO, health) | **Done**                                              |
+| App foundations (Customer, Restaurant, Rider, Admin)                                                                           | **Done** — placeholder route only                     |
+| Database schema / migrations                                                                                                   | **Done** — all slices, versioned migrations           |
+| Product features (all 18 slices) — backend                                                                                     | **Done** — see `docs/api/API_IMPLEMENTATION_NOTES.md` |
+| Product screens (all apps)                                                                                                     | **Not started** — all screens `TODO`                  |
+| Deployment pipelines (staging/production)                                                                                      | **Not started**                                       |
 
 Known gaps and open decisions: [`docs/REPOSITORY_CONSISTENCY_REPORT.md`](docs/REPOSITORY_CONSISTENCY_REPORT.md).

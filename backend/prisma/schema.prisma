@@ -62,8 +62,41 @@ model User {
   roles                  UserRole[]
   customerProfile        CustomerProfile?
   sessions               UserSession[]
+  mfaFactor              UserMfaFactor?
   verificationChallenges VerificationChallenge[]
   auditLogs              AuditLog[]
+  updatedSettings        SystemSetting[]          @relation("SystemSettingUpdater")
+  idempotencyKeys        IdempotencyKey[]
+  addresses              Address[]
+  restaurantOwnerProfile RestaurantOwnerProfile?
+  ownedRestaurants       Restaurant[]             @relation("RestaurantOwner")
+  restaurantMemberships  RestaurantStaff[]
+  reviewedApplications   RestaurantApplication[]  @relation("ApplicationReviewer")
+  uploadedDocuments      RestaurantDocument[]     @relation("DocumentUploader")
+  reviewedDocuments      RestaurantDocument[]     @relation("DocumentReviewer")
+  cart                   Cart?
+  orders                 Order[]
+  orderStatusChanges     OrderStatusHistory[]
+  orderCancellations     OrderCancellation[]
+  initiatedRefunds       Refund[]
+  promotionUsages        PromotionUsage[]
+  notifications          Notification[]
+  notificationPrefs      NotificationPreference[]
+  deviceTokens           DeviceToken[]
+  reviews                Review[]
+  reviewResponses        ReviewResponse[]
+  reviewReports          ReviewReport[]           @relation("ReviewReporter")
+  resolvedReviewReports  ReviewReport[]           @relation("ReviewReportResolver")
+  riderProfile           RiderProfile?
+  reviewedRiders         RiderProfile[]           @relation("RiderReviewer")
+  reviewedRiderDocuments RiderDocument[]          @relation("RiderDocumentReviewer")
+  payments               Payment[]
+  supportTickets         SupportTicket[]          @relation("TicketRequester")
+  assignedSupportTickets SupportTicket[]          @relation("TicketAssignee")
+  supportMessages        SupportMessage[]
+
+  approvedSettlements  Settlement[]
+  financialAdjustments FinancialAdjustment[]
 
   @@map("users")
 }
@@ -95,6 +128,32 @@ model CustomerProfile {
   @@map("customer_profiles")
 }
 
+/// DATABASE.md §7. At most one default address per user (partial unique index in migration).
+model Address {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @map("user_id") @db.Uuid
+  label                String?
+  recipientName        String   @map("recipient_name")
+  phone                String
+  addressLine1         String   @map("address_line_1")
+  addressLine2         String?  @map("address_line_2")
+  area                 String?
+  city                 String
+  postalCode           String?  @map("postal_code")
+  latitude             Decimal  @db.Decimal(9, 6)
+  longitude            Decimal  @db.Decimal(9, 6)
+  deliveryInstructions String?  @map("delivery_instructions")
+  isDefault            Boolean  @default(false) @map("is_default")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  orders Order[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
 // ---------------------------------------------------------------------------
 // Authentication storage — DATABASE.md §5.1 (Slice 1)
 // ---------------------------------------------------------------------------
@@ -120,6 +179,8 @@ model UserSession {
   revokedReason SessionRevokedReason? @map("revoked_reason")
   ipAddress     String?               @map("ip_address")
   userAgent     String?               @map("user_agent")
+  /// Last successful MFA verification on this session (AUTH_AUTHORIZATION §36–38; gap fill).
+  mfaVerifiedAt DateTime?             @map("mfa_verified_at") @db.Timestamptz(6)
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   refreshTokens RefreshToken[]
@@ -192,4 +253,1627 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([action, createdAt])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// System — DATABASE.md §60–62 (cross-cutting infrastructure)
+// ---------------------------------------------------------------------------
+
+model SystemSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  value       Json
+  valueType   String   @map("value_type")
+  description String?
+  isSensitive Boolean  @default(false) @map("is_sensitive")
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  updater User? @relation("SystemSettingUpdater", fields: [updatedBy], references: [id], onDelete: Restrict)
+
+  @@map("system_settings")
+}
+
+model IdempotencyKey {
+  id             String   @id @default(uuid()) @db.Uuid
+  key            String
+  userId         String   @map("user_id") @db.Uuid
+  endpoint       String
+  requestHash    String   @map("request_hash")
+  responseStatus Int?     @map("response_status")
+  responseBody   Json?    @map("response_body")
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, endpoint, key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+
+  @@map("outbox_status")
+}
+
+model OutboxEvent {
+  id            String       @id @default(uuid()) @db.Uuid
+  /// Monotonic order of creation (events of one transaction share created_at).
+  sequence      BigInt       @unique @default(autoincrement())
+  eventType     String       @map("event_type")
+  aggregateType String       @map("aggregate_type")
+  aggregateId   String       @map("aggregate_id")
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  lastError     String?      @map("last_error")
+  availableAt   DateTime     @default(now()) @map("available_at") @db.Timestamptz(6)
+  processedAt   DateTime?    @map("processed_at") @db.Timestamptz(6)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, availableAt])
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_events")
+}
+
+// ---------------------------------------------------------------------------
+// Restaurants — DATABASE.md §8–15 (Slice 3)
+// ---------------------------------------------------------------------------
+
+enum RestaurantStatus {
+  OFFLINE
+  ONLINE
+  TEMPORARILY_PAUSED
+  CLOSED
+  SUSPENDED
+
+  @@map("restaurant_status")
+}
+
+enum RestaurantApprovalStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RESUBMISSION_REQUIRED
+
+  @@map("restaurant_approval_status")
+}
+
+/// Owner name captured at restaurant registration (API_SPEC §44). Gap fill: DATABASE.md §5.4.
+model RestaurantOwnerProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("restaurant_owner_profiles")
+}
+
+model Restaurant {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  ownerUserId        String                   @map("owner_user_id") @db.Uuid
+  name               String
+  slug               String                   @unique
+  description        String?
+  phone              String?
+  email              String?
+  logoUrl            String?                  @map("logo_url")
+  coverImageUrl      String?                  @map("cover_image_url")
+  status             RestaurantStatus         @default(OFFLINE)
+  approvalStatus     RestaurantApprovalStatus @default(DRAFT) @map("approval_status")
+  pausedUntil        DateTime?                @map("paused_until") @db.Timestamptz(6)
+  statusReason       String?                  @map("status_reason")
+  latitude           Decimal?                 @db.Decimal(9, 6)
+  longitude          Decimal?                 @db.Decimal(9, 6)
+  addressLine1       String?                  @map("address_line_1")
+  addressLine2       String?                  @map("address_line_2")
+  area               String?
+  city               String?
+  postalCode         String?                  @map("postal_code")
+  cuisineDescription String?                  @map("cuisine_description")
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner            User                        @relation("RestaurantOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  application      RestaurantApplication?
+  staff            RestaurantStaff[]
+  documents        RestaurantDocument[]
+  operatingHours   RestaurantOperatingHours[]
+  deliverySettings RestaurantDeliverySettings?
+  paymentAccounts  RestaurantPaymentAccount[]
+  menuCategories   MenuCategory[]
+  menuItems        MenuItem[]
+  carts            Cart[]
+  orders           Order[]
+  promotions       Promotion[]
+  reviews          Review[]
+  supportTickets   SupportTicket[]
+
+  earnings RestaurantEarning[]
+
+  @@index([status])
+  @@index([approvalStatus])
+  @@map("restaurants")
+}
+
+model RestaurantApplication {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  restaurantId        String                   @unique @map("restaurant_id") @db.Uuid
+  status              RestaurantApprovalStatus @default(DRAFT)
+  /// Business information submitted for admin review (PRD §9). Gap fill: DATABASE.md §5.4.
+  businessInformation Json?                    @map("business_information")
+  submittedAt         DateTime?                @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt          DateTime?                @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy          String?                  @map("reviewed_by") @db.Uuid
+  rejectionReason     String?                  @map("rejection_reason")
+  resubmissionNotes   String?                  @map("resubmission_notes")
+  createdAt           DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  reviewer   User?      @relation("ApplicationReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@map("restaurant_applications")
+}
+
+enum RestaurantStaffRole {
+  OWNER
+  OPERATOR
+
+  @@map("restaurant_staff_role")
+}
+
+enum RestaurantStaffStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("restaurant_staff_status")
+}
+
+/// V1: a user has at most one ACTIVE membership (partial unique index in migration).
+model RestaurantStaff {
+  id           String                @id @default(uuid()) @db.Uuid
+  restaurantId String                @map("restaurant_id") @db.Uuid
+  userId       String                @map("user_id") @db.Uuid
+  role         RestaurantStaffRole
+  status       RestaurantStaffStatus @default(ACTIVE)
+  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+  @@map("restaurant_staff")
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("document_status")
+}
+
+model RestaurantDocument {
+  id              String         @id @default(uuid()) @db.Uuid
+  restaurantId    String         @map("restaurant_id") @db.Uuid
+  documentType    String         @map("document_type")
+  /// Private object-storage key (never a public URL, API_SPEC §109).
+  fileUrl         String         @map("file_url")
+  status          DocumentStatus @default(PENDING)
+  uploadedBy      String         @map("uploaded_by") @db.Uuid
+  reviewedBy      String?        @map("reviewed_by") @db.Uuid
+  reviewedAt      DateTime?      @map("reviewed_at") @db.Timestamptz(6)
+  rejectionReason String?        @map("rejection_reason")
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  uploader   User       @relation("DocumentUploader", fields: [uploadedBy], references: [id], onDelete: Restrict)
+  reviewer   User?      @relation("DocumentReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId])
+  @@map("restaurant_documents")
+}
+
+/// ISO day of week 1 (Monday) … 7 (Sunday); times in the business timezone (ADR-0014 §6).
+model RestaurantOperatingHours {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  dayOfWeek    Int      @map("day_of_week") @db.SmallInt
+  opensAt      String?  @map("opens_at") @db.Char(5)
+  closesAt     String?  @map("closes_at") @db.Char(5)
+  isClosed     Boolean  @default(false) @map("is_closed")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+  @@map("restaurant_operating_hours")
+}
+
+model RestaurantDeliverySettings {
+  id                          String   @id @default(uuid()) @db.Uuid
+  restaurantId                String   @unique @map("restaurant_id") @db.Uuid
+  deliveryEnabled             Boolean  @default(true) @map("delivery_enabled")
+  minimumOrderAmount          Decimal  @default(0) @map("minimum_order_amount") @db.Decimal(12, 2)
+  estimatedPreparationMinutes Int      @map("estimated_preparation_minutes")
+  /// Kilometres (MAPS_LOCATION_RULES §12).
+  deliveryRadius              Decimal  @map("delivery_radius") @db.Decimal(6, 2)
+  createdAt                   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("restaurant_delivery_settings")
+}
+
+enum PaymentAccountStatus {
+  ACTIVE
+  INACTIVE
+
+  @@map("payment_account_status")
+}
+
+/// Stores provider references only, never raw credentials (DATABASE.md §15).
+model RestaurantPaymentAccount {
+  id                String               @id @default(uuid()) @db.Uuid
+  restaurantId      String               @map("restaurant_id") @db.Uuid
+  provider          String
+  accountReference  String               @map("account_reference")
+  accountHolderName String               @map("account_holder_name")
+  status            PaymentAccountStatus @default(ACTIVE)
+  isDefault         Boolean              @default(false) @map("is_default")
+  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId])
+  @@map("restaurant_payment_accounts")
+}
+
+// ---------------------------------------------------------------------------
+// Menu — DATABASE.md §16–20 (Slice 4)
+// ---------------------------------------------------------------------------
+
+model MenuCategory {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  name         String
+  description  String?
+  sortOrder    Int      @default(0) @map("sort_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  items      MenuItem[]
+
+  @@index([restaurantId])
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  categoryId   String   @map("category_id") @db.Uuid
+  name         String
+  description  String?
+  imageUrl     String?  @map("image_url")
+  basePrice    Decimal  @map("base_price") @db.Decimal(12, 2)
+  isAvailable  Boolean  @default(true) @map("is_available")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  category   MenuCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variations ItemVariation[]
+  addOns     ItemAddOn[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([restaurantId])
+  @@index([categoryId])
+  @@map("menu_items")
+}
+
+model ItemVariation {
+  id              String   @id @default(uuid()) @db.Uuid
+  menuItemId      String   @map("menu_item_id") @db.Uuid
+  name            String
+  priceAdjustment Decimal  @default(0) @map("price_adjustment") @db.Decimal(12, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  menuItem       MenuItem             @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  cartSelections CartItemVariation[]
+  orderSnapshots OrderItemVariation[]
+
+  @@index([menuItemId])
+  @@map("item_variations")
+}
+
+model ItemAddOn {
+  id         String   @id @default(uuid()) @db.Uuid
+  menuItemId String   @map("menu_item_id") @db.Uuid
+  name       String
+  price      Decimal  @db.Decimal(12, 2)
+  isActive   Boolean  @default(true) @map("is_active")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  menuItem       MenuItem         @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  cartSelections CartItemAddOn[]
+  orderSnapshots OrderItemAddOn[]
+
+  @@index([menuItemId])
+  @@map("item_add_ons")
+}
+
+// ----------------------------------------------------------------------------- Cart (ADR-0014 §4)
+
+/// One active cart per customer, holding items of a single restaurant (ORDER_RULES §4.1).
+/// Carts never store prices; totals are recalculated on every read and at checkout.
+model Cart {
+  id           String   @id @default(uuid()) @db.Uuid
+  customerId   String   @unique @map("customer_id") @db.Uuid
+  restaurantId String?  @map("restaurant_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  customer   User        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  items      CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  cartId     String   @map("cart_id") @db.Uuid
+  menuItemId String   @map("menu_item_id") @db.Uuid
+  quantity   Int
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  cart       Cart                @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem            @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  variations CartItemVariation[]
+  addOns     CartItemAddOn[]
+
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+model CartItemVariation {
+  cartItemId  String @map("cart_item_id") @db.Uuid
+  variationId String @map("variation_id") @db.Uuid
+
+  cartItem  CartItem      @relation(fields: [cartItemId], references: [id], onDelete: Cascade)
+  variation ItemVariation @relation(fields: [variationId], references: [id], onDelete: Cascade)
+
+  @@id([cartItemId, variationId])
+  @@map("cart_item_variations")
+}
+
+model CartItemAddOn {
+  cartItemId String @map("cart_item_id") @db.Uuid
+  addOnId    String @map("add_on_id") @db.Uuid
+
+  cartItem CartItem  @relation(fields: [cartItemId], references: [id], onDelete: Cascade)
+  addOn    ItemAddOn @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([cartItemId, addOnId])
+  @@map("cart_item_add_ons")
+}
+
+// ----------------------------------------------------------------------------- Orders (DATABASE.md §21–27)
+
+enum OrderStatus {
+  PENDING
+  RESTAURANT_ACCEPTED
+  PREPARING
+  READY_FOR_PICKUP
+  RIDER_ASSIGNED
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED_BY_CUSTOMER
+  CANCELLED_BY_RESTAURANT
+  CANCELLED_BY_ADMIN
+
+  @@map("order_status")
+}
+
+enum PaymentMethod {
+  ONLINE_PAYMENT
+  CASH_ON_DELIVERY
+
+  @@map("payment_method")
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+
+  @@map("payment_status")
+}
+
+model Order {
+  id                          String        @id @default(uuid()) @db.Uuid
+  /// Customer-facing number, e.g. QB-100042 (DATABASE.md §22); never the primary key.
+  orderNumber                 String        @unique @default(dbgenerated("('QB-'::text || nextval('order_number_seq'::regclass))")) @map("order_number")
+  customerId                  String        @map("customer_id") @db.Uuid
+  restaurantId                String        @map("restaurant_id") @db.Uuid
+  deliveryAddressId           String?       @map("delivery_address_id") @db.Uuid
+  status                      OrderStatus
+  paymentMethod               PaymentMethod @map("payment_method")
+  paymentStatus               PaymentStatus @map("payment_status")
+  subtotal                    Decimal       @db.Decimal(12, 2)
+  discountAmount              Decimal       @map("discount_amount") @db.Decimal(12, 2)
+  deliveryFee                 Decimal       @map("delivery_fee") @db.Decimal(12, 2)
+  taxAmount                   Decimal       @map("tax_amount") @db.Decimal(12, 2)
+  serviceFee                  Decimal       @map("service_fee") @db.Decimal(12, 2)
+  totalAmount                 Decimal       @map("total_amount") @db.Decimal(12, 2)
+  currency                    String        @db.Char(3)
+  promotionId                 String?       @map("promotion_id") @db.Uuid
+  specialInstructions         String?       @map("special_instructions")
+  estimatedPreparationMinutes Int           @map("estimated_preparation_minutes")
+  // Delivery destination snapshot (MAPS_LOCATION_RULES §25).
+  deliveryRecipientName       String        @map("delivery_recipient_name")
+  deliveryRecipientPhone      String        @map("delivery_recipient_phone")
+  deliveryAddressText         String        @map("delivery_address_text")
+  deliveryArea                String?       @map("delivery_area")
+  deliveryCity                String        @map("delivery_city")
+  deliveryPostalCode          String?       @map("delivery_postal_code")
+  deliveryLatitude            Decimal       @map("delivery_latitude") @db.Decimal(9, 6)
+  deliveryLongitude           Decimal       @map("delivery_longitude") @db.Decimal(9, 6)
+  deliveryInstructions        String?       @map("delivery_instructions")
+  placedAt                    DateTime      @map("placed_at") @db.Timestamptz(6)
+  acceptedAt                  DateTime?     @map("accepted_at") @db.Timestamptz(6)
+  preparingAt                 DateTime?     @map("preparing_at") @db.Timestamptz(6)
+  readyAt                     DateTime?     @map("ready_at") @db.Timestamptz(6)
+  pickedUpAt                  DateTime?     @map("picked_up_at") @db.Timestamptz(6)
+  deliveredAt                 DateTime?     @map("delivered_at") @db.Timestamptz(6)
+  cancelledAt                 DateTime?     @map("cancelled_at") @db.Timestamptz(6)
+  createdAt                   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  customer        User                 @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  restaurant      Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  deliveryAddress Address?             @relation(fields: [deliveryAddressId], references: [id], onDelete: SetNull)
+  promotion       Promotion?           @relation(fields: [promotionId], references: [id], onDelete: Restrict)
+  promotionUsage  PromotionUsage?
+  review          Review?
+  supportTickets  SupportTicket[]
+  items           OrderItem[]
+  statusHistory   OrderStatusHistory[]
+  payments        Payment[]
+  cancellation    OrderCancellation?
+  refunds         Refund[]
+  delivery        Delivery?
+  dispatchOffers  DispatchOffer[]
+
+  restaurantEarning RestaurantEarning?
+
+  @@index([customerId, createdAt])
+  @@index([restaurantId, status])
+  @@index([status])
+  @@map("orders")
+}
+
+/// `unit_price` is the item's base price; `subtotal` = (unit_price + variation adjustments +
+/// add-on prices) × quantity. All names and prices are snapshots (DATABASE.md §23–25).
+model OrderItem {
+  id         String   @id @default(uuid()) @db.Uuid
+  orderId    String   @map("order_id") @db.Uuid
+  menuItemId String?  @map("menu_item_id") @db.Uuid
+  itemName   String   @map("item_name")
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(12, 2)
+  quantity   Int
+  subtotal   Decimal  @db.Decimal(12, 2)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  order      Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  menuItem   MenuItem?            @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  variations OrderItemVariation[]
+  addOns     OrderItemAddOn[]
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+/// `quantity` is per unit of the order item (1 in V1).
+model OrderItemVariation {
+  id              String   @id @default(uuid()) @db.Uuid
+  orderItemId     String   @map("order_item_id") @db.Uuid
+  variationId     String?  @map("variation_id") @db.Uuid
+  name            String
+  priceAdjustment Decimal  @map("price_adjustment") @db.Decimal(12, 2)
+  quantity        Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  orderItem OrderItem      @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  variation ItemVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
+
+  @@index([orderItemId])
+  @@map("order_item_variations")
+}
+
+/// `quantity` is per unit of the order item (1 in V1).
+model OrderItemAddOn {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderItemId String   @map("order_item_id") @db.Uuid
+  addOnId     String?  @map("add_on_id") @db.Uuid
+  name        String
+  price       Decimal  @db.Decimal(12, 2)
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  orderItem OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+  addOn     ItemAddOn? @relation(fields: [addOnId], references: [id], onDelete: SetNull)
+
+  @@index([orderItemId])
+  @@map("order_item_add_ons")
+}
+
+/// Append-only (ORDER_RULES §24); enforced by a trigger.
+model OrderStatusHistory {
+  id              String       @id @default(uuid()) @db.Uuid
+  orderId         String       @map("order_id") @db.Uuid
+  fromStatus      OrderStatus? @map("from_status")
+  toStatus        OrderStatus  @map("to_status")
+  changedByUserId String?      @map("changed_by_user_id") @db.Uuid
+  reason          String?
+  metadata        Json?
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  changedBy User? @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+/// DATABASE.md §27. One cancellation per order. `refund_amount` stays NULL until an administrator
+/// records the refund decision (ADR-0014 §9).
+model OrderCancellation {
+  id                String   @id @default(uuid()) @db.Uuid
+  orderId           String   @unique @map("order_id") @db.Uuid
+  cancelledByUserId String   @map("cancelled_by_user_id") @db.Uuid
+  cancelledByRole   Role     @map("cancelled_by_role")
+  reasonCode        String   @map("reason_code")
+  reasonText        String?  @map("reason_text")
+  refundAmount      Decimal? @map("refund_amount") @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  cancelledBy User  @relation(fields: [cancelledByUserId], references: [id], onDelete: Restrict)
+
+  @@map("order_cancellations")
+}
+
+// ----------------------------------------------------------------------------- Payments (DATABASE.md §28–29)
+
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  orderId           String        @map("order_id") @db.Uuid
+  customerId        String        @map("customer_id") @db.Uuid
+  /// Provider adapter name; null for cash on delivery.
+  provider          String?
+  providerPaymentId String?       @map("provider_payment_id")
+  method            PaymentMethod
+  status            PaymentStatus
+  amount            Decimal       @db.Decimal(12, 2)
+  currency          String        @db.Char(3)
+  idempotencyKey    String?       @map("idempotency_key")
+  /// Safe, customer-presentable failure reason (PAYMENT_RULES §17). Gap fill: DATABASE.md §5.4.
+  failureReason     String?       @map("failure_reason")
+  paidAt            DateTime?     @map("paid_at") @db.Timestamptz(6)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer User     @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  refunds  Refund[]
+
+  @@unique([provider, providerPaymentId])
+  @@index([orderId])
+  @@map("payments")
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+
+  @@map("refund_status")
+}
+
+/// DATABASE.md §30, PAYMENT_RULES §27–31. Refunds never modify the original payment amount.
+model Refund {
+  id               String       @id @default(uuid()) @db.Uuid
+  paymentId        String       @map("payment_id") @db.Uuid
+  orderId          String       @map("order_id") @db.Uuid
+  providerRefundId String?      @map("provider_refund_id")
+  amount           Decimal      @db.Decimal(12, 2)
+  reason           String
+  status           RefundStatus
+  initiatedBy      String       @map("initiated_by") @db.Uuid
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt      DateTime?    @map("completed_at") @db.Timestamptz(6)
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  initiator User    @relation(fields: [initiatedBy], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+  @@index([orderId])
+  @@map("refunds")
+}
+
+/// Provider webhook deliveries, one row per provider event id (API_SPEC §81, §116, PAYMENT_RULES
+/// §13). Gap fill: DATABASE.md §5.4.
+model PaymentWebhookEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  provider        String
+  providerEventId String   @map("provider_event_id")
+  eventType       String   @map("event_type")
+  payload         Json
+  receivedAt      DateTime @default(now()) @map("received_at") @db.Timestamptz(6)
+
+  @@unique([provider, providerEventId])
+  @@map("payment_webhook_events")
+}
+
+// ----------------------------------------------------------------------------- Riders (DATABASE.md §31–34)
+
+enum RiderApprovalStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+
+  @@map("rider_approval_status")
+}
+
+enum RiderStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("rider_status")
+}
+
+/// `status` is the rider's operational account state; `approval_status` the application state.
+/// `is_online`/`is_available` are the authoritative presence flags (API_SPEC §67–68).
+model RiderProfile {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @unique @map("user_id") @db.Uuid
+  firstName       String              @map("first_name")
+  lastName        String              @map("last_name")
+  phone           String
+  profileImageUrl String?             @map("profile_image_url")
+  vehicleType     String?             @map("vehicle_type")
+  vehicleNumber   String?             @map("vehicle_number")
+  status          RiderStatus         @default(ACTIVE)
+  approvalStatus  RiderApprovalStatus @default(PENDING) @map("approval_status")
+  isOnline        Boolean             @default(false) @map("is_online")
+  isAvailable     Boolean             @default(false) @map("is_available")
+  /// Application review data. Gap fill: DATABASE.md §5.4.
+  submittedAt     DateTime?           @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt      DateTime?           @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy      String?             @map("reviewed_by") @db.Uuid
+  rejectionReason String?             @map("rejection_reason")
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reviewer    User?                @relation("RiderReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+  documents   RiderDocument[]
+  deliveries  Delivery[]
+  offers      DispatchOffer[]
+  assignments DeliveryAssignment[]
+
+  earnings RiderEarning[]
+
+  @@index([approvalStatus])
+  @@index([isOnline, isAvailable])
+  @@map("rider_profiles")
+}
+
+model RiderDocument {
+  id              String         @id @default(uuid()) @db.Uuid
+  riderId         String         @map("rider_id") @db.Uuid
+  documentType    String         @map("document_type")
+  /// Private object-storage key (never a public URL, API_SPEC §109).
+  fileUrl         String         @map("file_url")
+  status          DocumentStatus @default(PENDING)
+  uploadedAt      DateTime       @default(now()) @map("uploaded_at") @db.Timestamptz(6)
+  reviewedAt      DateTime?      @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy      String?        @map("reviewed_by") @db.Uuid
+  rejectionReason String?        @map("rejection_reason")
+
+  rider    RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+  reviewer User?        @relation("RiderDocumentReviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([riderId])
+  @@map("rider_documents")
+}
+
+// ----------------------------------------------------------------------------- Delivery & dispatch (DATABASE.md §35–38)
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  ARRIVING_AT_RESTAURANT
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+
+  @@map("delivery_status")
+}
+
+/// One delivery per order. At most one active delivery per rider (partial unique index).
+model Delivery {
+  id               String         @id @default(uuid()) @db.Uuid
+  orderId          String         @unique @map("order_id") @db.Uuid
+  riderId          String?        @map("rider_id") @db.Uuid
+  status           DeliveryStatus @default(PENDING)
+  /// When the rider reported arriving at the restaurant.
+  pickupAt         DateTime?      @map("pickup_at") @db.Timestamptz(6)
+  pickedUpAt       DateTime?      @map("picked_up_at") @db.Timestamptz(6)
+  deliveredAt      DateTime?      @map("delivered_at") @db.Timestamptz(6)
+  deliveryNotes    String?        @map("delivery_notes")
+  /// Set once when dispatch gives up (max attempts); the order stays recoverable for manual
+  /// assignment (DISPATCH_RULES §24, §35). Gap fill: DATABASE.md §5.4.
+  dispatchFailedAt DateTime?      @map("dispatch_failed_at") @db.Timestamptz(6)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order       Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  rider       RiderProfile?        @relation(fields: [riderId], references: [id], onDelete: Restrict)
+  assignments DeliveryAssignment[]
+
+  riderEarning RiderEarning?
+
+  @@index([riderId, status])
+  @@index([status])
+  @@map("deliveries")
+}
+
+enum DispatchOfferStatus {
+  OFFERED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+
+  @@map("dispatch_offer_status")
+}
+
+/// Auditable dispatch history (DATABASE.md §36). One open offer per order and per rider
+/// (partial unique indexes).
+model DispatchOffer {
+  id                      String              @id @default(uuid()) @db.Uuid
+  orderId                 String              @map("order_id") @db.Uuid
+  riderId                 String              @map("rider_id") @db.Uuid
+  status                  DispatchOfferStatus @default(OFFERED)
+  offeredAt               DateTime            @default(now()) @map("offered_at") @db.Timestamptz(6)
+  expiresAt               DateTime            @map("expires_at") @db.Timestamptz(6)
+  respondedAt             DateTime?           @map("responded_at") @db.Timestamptz(6)
+  /// Straight-line km from the rider to the restaurant when offered.
+  distanceToRestaurant    Decimal             @map("distance_to_restaurant") @db.Decimal(8, 3)
+  estimatedArrivalSeconds Int?                @map("estimated_arrival_seconds")
+  rejectionReason         String?             @map("rejection_reason")
+  createdAt               DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  rider RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([riderId, status])
+  @@index([status, expiresAt])
+  @@map("dispatch_offers")
+}
+
+/// Assignment history; reassignment closes the previous row (DATABASE.md §37).
+model DeliveryAssignment {
+  id           String    @id @default(uuid()) @db.Uuid
+  deliveryId   String    @map("delivery_id") @db.Uuid
+  riderId      String    @map("rider_id") @db.Uuid
+  assignedAt   DateTime  @default(now()) @map("assigned_at") @db.Timestamptz(6)
+  unassignedAt DateTime? @map("unassigned_at") @db.Timestamptz(6)
+  reason       String?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  delivery Delivery     @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+  rider    RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+
+  @@index([deliveryId])
+  @@index([riderId])
+  @@map("delivery_assignments")
+}
+
+/// Singleton dispatch configuration (DATABASE.md §38). Radii in km. No row = dispatch paused.
+model DispatchSettings {
+  id                    String   @id @default(uuid()) @db.Uuid
+  initialRadius         Decimal  @map("initial_radius") @db.Decimal(6, 2)
+  radiusIncrement       Decimal  @map("radius_increment") @db.Decimal(6, 2)
+  maximumRadius         Decimal  @map("maximum_radius") @db.Decimal(6, 2)
+  offerTimeoutSeconds   Int      @map("offer_timeout_seconds")
+  maxOfferAttempts      Int      @map("max_offer_attempts")
+  /// Rider locations older than this are not used for dispatch (DISPATCH_RULES §32). Gap fill.
+  locationMaxAgeSeconds Int      @map("location_max_age_seconds")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("dispatch_settings")
+}
+
+// ----------------------------------------------------------------------------- Risk (DATABASE.md §39–43)
+
+enum RiskSubjectType {
+  CUSTOMER
+  RESTAURANT
+  RIDER
+
+  @@map("risk_subject_type")
+}
+
+enum RiskEventType {
+  COD_NON_RECEIPT
+  REPEATED_ORDER_CANCELLATION
+  REPEATED_PAYMENT_FAILURE
+  SUSPICIOUS_ORDER_PATTERN
+  MULTIPLE_FAILED_DELIVERIES
+  EXCESSIVE_REFUNDS
+  ABNORMAL_ORDER_FREQUENCY
+  SUSPICIOUS_ACCOUNT_ACTIVITY
+  REPEATED_FALSE_COMPLAINT
+
+  @@map("risk_event_type")
+}
+
+enum RiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@map("risk_severity")
+}
+
+enum RiskAction {
+  NORMAL
+  MONITORED
+  COD_RESTRICTED
+  ADDITIONAL_VERIFICATION
+  ORDER_RESTRICTED
+  ACCOUNT_RESTRICTED
+
+  @@map("risk_action")
+}
+
+enum RiskFlagStatus {
+  ACTIVE
+  RESOLVED
+  DISMISSED
+  EXPIRED
+
+  @@map("risk_flag_status")
+}
+
+enum RiskRestrictionType {
+  COD_RESTRICTED
+  ORDER_RESTRICTED
+  ADDITIONAL_VERIFICATION
+  ACCOUNT_RESTRICTED
+
+  @@map("risk_restriction_type")
+}
+
+enum RiskRestrictionStatus {
+  ACTIVE
+  REMOVED
+  EXPIRED
+
+  @@map("risk_restriction_status")
+}
+
+/// Immutable historical evidence (RISK_RULES §13). `subject_id`: user id (CUSTOMER), restaurant
+/// id (RESTAURANT) or rider profile id (RIDER).
+model RiskEvent {
+  id          String          @id @default(uuid()) @db.Uuid
+  subjectType RiskSubjectType @map("subject_type")
+  subjectId   String          @map("subject_id") @db.Uuid
+  eventType   RiskEventType   @map("event_type")
+  severity    RiskSeverity
+  metadata    Json?
+  occurredAt  DateTime        @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([subjectType, subjectId, eventType, occurredAt])
+  @@map("risk_events")
+}
+
+model RiskRule {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  subjectType   RiskSubjectType @map("subject_type")
+  eventType     RiskEventType   @map("event_type")
+  threshold     Int
+  windowSeconds Int             @map("window_seconds")
+  action        RiskAction
+  severity      RiskSeverity
+  isEnabled     Boolean         @default(true) @map("is_enabled")
+  createdBy     String?         @map("created_by") @db.Uuid
+  updatedBy     String?         @map("updated_by") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  flags RiskFlag[]
+
+  @@index([subjectType, eventType, isEnabled])
+  @@map("risk_rules")
+}
+
+model RiskFlag {
+  id          String          @id @default(uuid()) @db.Uuid
+  subjectType RiskSubjectType @map("subject_type")
+  subjectId   String          @map("subject_id") @db.Uuid
+  riskRuleId  String?         @map("risk_rule_id") @db.Uuid
+  status      RiskFlagStatus  @default(ACTIVE)
+  severity    RiskSeverity
+  reason      String
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?       @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy  String?         @map("resolved_by") @db.Uuid
+
+  rule         RiskRule?         @relation(fields: [riskRuleId], references: [id], onDelete: Restrict)
+  restrictions RiskRestriction[]
+
+  @@index([subjectType, subjectId, status])
+  @@map("risk_flags")
+}
+
+/// `risk_flag_id` traces an automatic restriction to its flag (API_SPEC §87 "traceable to its
+/// source"); NULL for restrictions created by an administrator. Gap fill: DATABASE.md §5.4.
+model RiskRestriction {
+  id              String                @id @default(uuid()) @db.Uuid
+  subjectType     RiskSubjectType       @map("subject_type")
+  subjectId       String                @map("subject_id") @db.Uuid
+  restrictionType RiskRestrictionType   @map("restriction_type")
+  status          RiskRestrictionStatus @default(ACTIVE)
+  startsAt        DateTime              @default(now()) @map("starts_at") @db.Timestamptz(6)
+  expiresAt       DateTime?             @map("expires_at") @db.Timestamptz(6)
+  reason          String
+  riskFlagId      String?               @map("risk_flag_id") @db.Uuid
+  createdBy       String?               @map("created_by") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  flag RiskFlag? @relation(fields: [riskFlagId], references: [id], onDelete: Restrict)
+
+  @@index([subjectType, subjectId, status])
+  @@map("risk_restrictions")
+}
+
+// ----------------------------------------------------------------------------- Promotions (DATABASE.md §44–45)
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+
+  @@map("promotion_type")
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  EXPIRED
+  DISABLED
+
+  @@map("promotion_status")
+}
+
+/// Restaurant-funded (ADR-0014 §3). `code` and `per_customer_usage_limit` come from
+/// PROMOTION_SPEC §5 (gap fill: DATABASE.md §5.4). `usage_count` mirrors `promotion_usages` and
+/// is updated in the same transaction under a row lock.
+model Promotion {
+  id                    String          @id @default(uuid()) @db.Uuid
+  restaurantId          String          @map("restaurant_id") @db.Uuid
+  name                  String
+  description           String?
+  code                  String
+  type                  PromotionType
+  value                 Decimal         @db.Decimal(12, 2)
+  minimumOrderAmount    Decimal?        @map("minimum_order_amount") @db.Decimal(12, 2)
+  maximumDiscountAmount Decimal?        @map("maximum_discount_amount") @db.Decimal(12, 2)
+  usageLimit            Int?            @map("usage_limit")
+  usageCount            Int             @default(0) @map("usage_count")
+  perCustomerUsageLimit Int?            @map("per_customer_usage_limit")
+  startsAt              DateTime        @map("starts_at") @db.Timestamptz(6)
+  endsAt                DateTime        @map("ends_at") @db.Timestamptz(6)
+  status                PromotionStatus @default(DRAFT)
+  createdAt             DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  usages     PromotionUsage[]
+  orders     Order[]
+
+  @@unique([restaurantId, code])
+  @@index([status, endsAt])
+  @@map("promotions")
+}
+
+model PromotionUsage {
+  id             String   @id @default(uuid()) @db.Uuid
+  promotionId    String   @map("promotion_id") @db.Uuid
+  customerId     String   @map("customer_id") @db.Uuid
+  orderId        String   @unique @map("order_id") @db.Uuid
+  discountAmount Decimal  @map("discount_amount") @db.Decimal(12, 2)
+  usedAt         DateTime @default(now()) @map("used_at") @db.Timestamptz(6)
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Restrict)
+  customer  User      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([promotionId, customerId])
+  @@map("promotion_usages")
+}
+
+// ----------------------------------------------------------------------------- Notifications (DATABASE.md §49–50, NOTIFICATION_RULES)
+
+enum NotificationCategory {
+  AUTHENTICATION
+  SECURITY
+  ORDER
+  PAYMENT
+  DELIVERY
+  DISPATCH
+  RESTAURANT
+  RIDER
+  EARNINGS
+  SETTLEMENT
+  PROMOTION
+  REVIEW
+  SUPPORT
+  SYSTEM
+
+  @@map("notification_category")
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+
+  @@map("notification_priority")
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+
+  @@map("notification_channel")
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  DELIVERED
+  FAILED
+  EXPIRED
+
+  @@map("notification_delivery_status")
+}
+
+/// In-app notification record. `category`, `priority` and `dedup_key` are gap fills
+/// (NOTIFICATION_RULES §4–5, §16; DATABASE.md §5.4).
+model Notification {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  type      String
+  category  NotificationCategory
+  priority  NotificationPriority
+  title     String
+  body      String
+  data      Json?
+  dedupKey  String               @unique @map("dedup_key")
+  readAt    DateTime?            @map("read_at") @db.Timestamptz(6)
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  deliveries NotificationDelivery[]
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+/// Channel-level delivery state (NOTIFICATION_RULES §17–19). `attempts`, `next_attempt_at` and
+/// `last_error` support the retry policy (gap fill).
+model NotificationDelivery {
+  id                String                     @id @default(uuid()) @db.Uuid
+  notificationId    String                     @map("notification_id") @db.Uuid
+  channel           NotificationChannel
+  provider          String?
+  status            NotificationDeliveryStatus @default(PENDING)
+  providerMessageId String?                    @map("provider_message_id")
+  attempts          Int                        @default(0)
+  nextAttemptAt     DateTime                   @default(now()) @map("next_attempt_at") @db.Timestamptz(6)
+  lastError         String?                    @map("last_error")
+  sentAt            DateTime?                  @map("sent_at") @db.Timestamptz(6)
+  deliveredAt       DateTime?                  @map("delivered_at") @db.Timestamptz(6)
+  failedAt          DateTime?                  @map("failed_at") @db.Timestamptz(6)
+  createdAt         DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Restrict)
+
+  @@unique([notificationId, channel])
+  @@index([status, nextAttemptAt])
+  @@map("notification_deliveries")
+}
+
+/// Per-user opt-outs by category and channel (API_SPEC §91). Absent row = enabled.
+model NotificationPreference {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String               @map("user_id") @db.Uuid
+  category  NotificationCategory
+  channel   NotificationChannel
+  enabled   Boolean
+  updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, category, channel])
+  @@map("notification_preferences")
+}
+
+/// Registered push devices (NOTIFICATION_RULES §20).
+model DeviceToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  deviceId   String   @map("device_id")
+  platform   String
+  pushToken  String   @map("push_token")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, deviceId])
+  @@index([pushToken])
+  @@map("device_tokens")
+}
+
+// ----------------------------------------------------------------------------- Reviews (DATABASE.md §46–48, REVIEW_RULES)
+
+enum ReviewStatus {
+  PUBLISHED
+  PENDING_MODERATION
+  HIDDEN
+  REMOVED
+
+  @@map("review_status")
+}
+
+enum ReviewReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+
+  @@map("review_report_status")
+}
+
+/// One review per delivered order (REVIEW_RULES §7); records are never physically deleted (§14).
+model Review {
+  id           String       @id @default(uuid()) @db.Uuid
+  orderId      String       @unique @map("order_id") @db.Uuid
+  customerId   String       @map("customer_id") @db.Uuid
+  restaurantId String       @map("restaurant_id") @db.Uuid
+  rating       Int          @db.SmallInt
+  comment      String?
+  status       ReviewStatus @default(PUBLISHED)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  customer   User            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  restaurant Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  response   ReviewResponse?
+  reports    ReviewReport[]
+
+  @@index([restaurantId, status, createdAt])
+  @@map("reviews")
+}
+
+/// One restaurant response per review (REVIEW_RULES §15–17).
+model ReviewResponse {
+  id               String   @id @default(uuid()) @db.Uuid
+  reviewId         String   @unique @map("review_id") @db.Uuid
+  restaurantUserId String   @map("restaurant_user_id") @db.Uuid
+  response         String
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+  author User   @relation(fields: [restaurantUserId], references: [id], onDelete: Restrict)
+
+  @@map("review_responses")
+}
+
+/// `details` holds the optional description (REVIEW_RULES §18; gap fill DATABASE.md §5.4).
+model ReviewReport {
+  id         String             @id @default(uuid()) @db.Uuid
+  reviewId   String             @map("review_id") @db.Uuid
+  reportedBy String             @map("reported_by") @db.Uuid
+  reason     String
+  details    String?
+  status     ReviewReportStatus @default(OPEN)
+  resolvedBy String?            @map("resolved_by") @db.Uuid
+  resolvedAt DateTime?          @map("resolved_at") @db.Timestamptz(6)
+  createdAt  DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+  reporter User   @relation("ReviewReporter", fields: [reportedBy], references: [id], onDelete: Restrict)
+  resolver User?  @relation("ReviewReportResolver", fields: [resolvedBy], references: [id], onDelete: Restrict)
+
+  @@unique([reviewId, reportedBy])
+  @@index([status, createdAt])
+  @@map("review_reports")
+}
+
+// ----------------------------------------------------------------------------- Support (DATABASE.md §57–58, SUPPORT_RULES)
+
+/// SUPPORT_RULES §7 lifecycle (DATABASE.md §57 lists example statuses; see §5.4).
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  WAITING_FOR_INTERNAL
+  RESOLVED
+  CLOSED
+  REOPENED
+
+  @@map("support_ticket_status")
+}
+
+enum SupportTicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+
+  @@map("support_ticket_priority")
+}
+
+/// `ticket_number`, `requester_role`, `restaurant_id`, `order_id`, `first_response_at`,
+/// `closed_at` are gap fills (SUPPORT_SPEC ticket numbers, SUPPORT_RULES §4, §9, §20).
+model SupportTicket {
+  id              String                @id @default(uuid()) @db.Uuid
+  ticketNumber    String                @unique @default(dbgenerated("('QB-SUP-'::text || lpad((nextval('support_ticket_number_seq'::regclass))::text, 6, '0'::text))")) @map("ticket_number")
+  createdByUserId String                @map("created_by_user_id") @db.Uuid
+  requesterRole   Role                  @map("requester_role")
+  restaurantId    String?               @map("restaurant_id") @db.Uuid
+  orderId         String?               @map("order_id") @db.Uuid
+  subject         String
+  category        String
+  priority        SupportTicketPriority
+  status          SupportTicketStatus   @default(OPEN)
+  assignedTo      String?               @map("assigned_to") @db.Uuid
+  firstResponseAt DateTime?             @map("first_response_at") @db.Timestamptz(6)
+  resolvedAt      DateTime?             @map("resolved_at") @db.Timestamptz(6)
+  closedAt        DateTime?             @map("closed_at") @db.Timestamptz(6)
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  requester  User             @relation("TicketRequester", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  assignee   User?            @relation("TicketAssignee", fields: [assignedTo], references: [id], onDelete: Restrict)
+  restaurant Restaurant?      @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  order      Order?           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  messages   SupportMessage[]
+
+  @@index([createdByUserId, createdAt])
+  @@index([restaurantId, createdAt])
+  @@index([status, priority, createdAt])
+  @@map("support_tickets")
+}
+
+/// `is_internal` marks support-only notes (SUPPORT_RULES §17; gap fill). `attachments` holds
+/// private storage keys, served through short-lived signed URLs (§19).
+model SupportMessage {
+  id           String   @id @default(uuid()) @db.Uuid
+  ticketId     String   @map("ticket_id") @db.Uuid
+  senderUserId String   @map("sender_user_id") @db.Uuid
+  message      String
+  isInternal   Boolean  @default(false) @map("is_internal")
+  attachments  Json?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  sender User          @relation(fields: [senderUserId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+  @@map("support_messages")
+}
+
+// --- Slice 15: earnings, settlements, payouts, invoices (FINANCIAL_SPEC, DATABASE.md §51–56) ---
+
+/// Earning and adjustment lifecycle (FINANCIAL_SPEC §19–20, smaller explicit model): created
+/// AVAILABLE when financially eligible, IN_SETTLEMENT once grouped, SETTLED after the payout completes.
+enum EarningStatus {
+  AVAILABLE
+  IN_SETTLEMENT
+  SETTLED
+
+  @@map("earning_status")
+}
+
+enum SettlementRecipientType {
+  RESTAURANT
+  RIDER
+
+  @@map("settlement_recipient_type")
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("settlement_status")
+}
+
+enum SettlementSourceType {
+  RESTAURANT_EARNING
+  RIDER_EARNING
+  ADJUSTMENT
+
+  @@map("settlement_source_type")
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("payout_status")
+}
+
+enum InvoiceStatus {
+  ISSUED
+
+  @@map("invoice_status")
+}
+
+/// DATABASE.md §51, ADR-0014 §2. One per delivered order. `commission_percent`, `settlement_id`
+/// and `updated_at` are gap fills (rate snapshot, FINANCIAL_SPEC §11, §32).
+model RestaurantEarning {
+  id                String        @id @default(uuid()) @db.Uuid
+  restaurantId      String        @map("restaurant_id") @db.Uuid
+  orderId           String        @unique @map("order_id") @db.Uuid
+  grossAmount       Decimal       @map("gross_amount") @db.Decimal(12, 2)
+  commissionPercent Decimal       @map("commission_percent") @db.Decimal(7, 4)
+  commissionAmount  Decimal       @map("commission_amount") @db.Decimal(12, 2)
+  feeAmount         Decimal       @map("fee_amount") @db.Decimal(12, 2)
+  refundAmount      Decimal       @map("refund_amount") @db.Decimal(12, 2)
+  netAmount         Decimal       @map("net_amount") @db.Decimal(12, 2)
+  currency          String        @db.Char(3)
+  status            EarningStatus @default(AVAILABLE)
+  settlementId      String?       @map("settlement_id") @db.Uuid
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  settlement Settlement? @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([restaurantId, createdAt])
+  @@index([status, createdAt])
+  @@map("restaurant_earnings")
+}
+
+/// DATABASE.md §52, ADR-0014 §2 (flat base, no bonus in V1). `settlement_id`, `updated_at` are gap fills.
+model RiderEarning {
+  id               String        @id @default(uuid()) @db.Uuid
+  riderId          String        @map("rider_id") @db.Uuid
+  deliveryId       String        @unique @map("delivery_id") @db.Uuid
+  baseAmount       Decimal       @map("base_amount") @db.Decimal(12, 2)
+  bonusAmount      Decimal       @map("bonus_amount") @db.Decimal(12, 2)
+  adjustmentAmount Decimal       @map("adjustment_amount") @db.Decimal(12, 2)
+  totalAmount      Decimal       @map("total_amount") @db.Decimal(12, 2)
+  currency         String        @db.Char(3)
+  status           EarningStatus @default(AVAILABLE)
+  settlementId     String?       @map("settlement_id") @db.Uuid
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  rider      RiderProfile @relation(fields: [riderId], references: [id], onDelete: Restrict)
+  delivery   Delivery     @relation(fields: [deliveryId], references: [id], onDelete: Restrict)
+  settlement Settlement?  @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([riderId, createdAt])
+  @@index([status, createdAt])
+  @@map("rider_earnings")
+}
+
+/// Explicit manual adjustment (FINANCIAL_SPEC §17–18; gap fill table). Signed amount; never edits
+/// the original earning. `recipient_id` is a restaurant id or a rider profile id.
+model FinancialAdjustment {
+  id            String                  @id @default(uuid()) @db.Uuid
+  recipientType SettlementRecipientType @map("recipient_type")
+  recipientId   String                  @map("recipient_id") @db.Uuid
+  amount        Decimal                 @db.Decimal(12, 2)
+  currency      String                  @db.Char(3)
+  reason        String
+  reference     String?
+  status        EarningStatus           @default(AVAILABLE)
+  settlementId  String?                 @map("settlement_id") @db.Uuid
+  createdBy     String                  @map("created_by") @db.Uuid
+  createdAt     DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator    User        @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+  settlement Settlement? @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([recipientType, recipientId, createdAt])
+  @@index([status, createdAt])
+  @@map("financial_adjustments")
+}
+
+/// DATABASE.md §53. `net = gross − fees + adjustments` (FINANCIAL_SPEC §28). `currency`,
+/// `approved_by`, `approved_at`, `completed_at`, `updated_at` are gap fills (API_SPEC §103 approve).
+model Settlement {
+  id            String                  @id @default(uuid()) @db.Uuid
+  recipientType SettlementRecipientType @map("recipient_type")
+  recipientId   String                  @map("recipient_id") @db.Uuid
+  periodStart   DateTime                @map("period_start") @db.Timestamptz(6)
+  periodEnd     DateTime                @map("period_end") @db.Timestamptz(6)
+  grossAmount   Decimal                 @map("gross_amount") @db.Decimal(12, 2)
+  fees          Decimal                 @db.Decimal(12, 2)
+  adjustments   Decimal                 @db.Decimal(12, 2)
+  netAmount     Decimal                 @map("net_amount") @db.Decimal(12, 2)
+  currency      String                  @db.Char(3)
+  status        SettlementStatus        @default(PENDING)
+  approvedBy    String?                 @map("approved_by") @db.Uuid
+  approvedAt    DateTime?               @map("approved_at") @db.Timestamptz(6)
+  processedAt   DateTime?               @map("processed_at") @db.Timestamptz(6)
+  completedAt   DateTime?               @map("completed_at") @db.Timestamptz(6)
+  createdAt     DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  approver           User?                 @relation(fields: [approvedBy], references: [id], onDelete: Restrict)
+  items              SettlementItem[]
+  payouts            Payout[]
+  invoice            Invoice?
+  restaurantEarnings RestaurantEarning[]
+  riderEarnings      RiderEarning[]
+  adjustmentRecords  FinancialAdjustment[]
+
+  @@unique([recipientType, recipientId, periodStart])
+  @@index([status, createdAt])
+  @@index([recipientType, recipientId, createdAt])
+  @@map("settlements")
+}
+
+/// DATABASE.md §54. Append-only; a source record belongs to at most one settlement (§32).
+/// `amount` is the source's contribution to the settlement net.
+model SettlementItem {
+  id           String               @id @default(uuid()) @db.Uuid
+  settlementId String               @map("settlement_id") @db.Uuid
+  sourceType   SettlementSourceType @map("source_type")
+  sourceId     String               @map("source_id") @db.Uuid
+  amount       Decimal              @db.Decimal(12, 2)
+  createdAt    DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@unique([sourceType, sourceId])
+  @@index([settlementId])
+  @@map("settlement_items")
+}
+
+/// DATABASE.md §55. At most one non-FAILED payout per settlement (partial unique index in SQL).
+/// `currency`, `failure_reason`, `updated_at` are gap fills.
+model Payout {
+  id                String                  @id @default(uuid()) @db.Uuid
+  settlementId      String                  @map("settlement_id") @db.Uuid
+  recipientType     SettlementRecipientType @map("recipient_type")
+  recipientId       String                  @map("recipient_id") @db.Uuid
+  provider          String
+  providerReference String?                 @unique @map("provider_reference")
+  amount            Decimal                 @db.Decimal(12, 2)
+  currency          String                  @db.Char(3)
+  status            PayoutStatus            @default(PENDING)
+  failureReason     String?                 @map("failure_reason")
+  initiatedAt       DateTime?               @map("initiated_at") @db.Timestamptz(6)
+  completedAt       DateTime?               @map("completed_at") @db.Timestamptz(6)
+  createdAt         DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@index([recipientType, recipientId, createdAt])
+  @@map("payouts")
+}
+
+/// DATABASE.md §56. Backend-generated numbers `QB-INV-000001` (FINANCIAL_SPEC §45); one per
+/// completed settlement. `currency` is a gap fill.
+model Invoice {
+  id            String                  @id @default(uuid()) @db.Uuid
+  recipientType SettlementRecipientType @map("recipient_type")
+  recipientId   String                  @map("recipient_id") @db.Uuid
+  settlementId  String                  @unique @map("settlement_id") @db.Uuid
+  invoiceNumber String                  @unique @default(dbgenerated("('QB-INV-'::text || lpad((nextval('invoice_number_seq'::regclass))::text, 6, '0'::text))")) @map("invoice_number")
+  fileUrl       String?                 @map("file_url")
+  amount        Decimal                 @db.Decimal(12, 2)
+  currency      String                  @db.Char(3)
+  status        InvoiceStatus           @default(ISSUED)
+  issuedAt      DateTime                @default(now()) @map("issued_at") @db.Timestamptz(6)
+  createdAt     DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+
+  @@index([recipientType, recipientId, issuedAt])
+  @@map("invoices")
+}
+
+// --- Slice 16: admin MFA (AUTH_AUTHORIZATION §34–38, ADR-0014 §8) ---
+
+/// One TOTP authenticator per user (gap fill). The secret is AES-256-GCM encrypted with
+/// MFA_ENCRYPTION_KEY and never returned after enrollment; `last_used_step` blocks code replay.
+model UserMfaFactor {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @unique @map("user_id") @db.Uuid
+  secretEncrypted String    @map("secret_encrypted")
+  confirmedAt     DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  lastUsedStep    BigInt?   @map("last_used_step")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("user_mfa_factors")
 }

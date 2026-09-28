@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
+import { OrdersModule } from '../orders/orders.module';
+import { RidersModule } from '../riders/riders.module';
+import { DeliveriesController, RiderDeliveriesController } from './deliveries.controller';
+import { DeliveriesService } from './deliveries.service';
 
 /**
- * Deliveries module — Delivery lifecycle: arriving, pickup, out for delivery, completion (API_SPEC §73).
+ * Deliveries module — Delivery records, pickup/transit/completion, assignment history.
  *
- * Owns tables: deliveries.
- * Implemented in slice: 11 — Rider Delivery (docs/IMPLEMENTATION_PLAN.md).
- *
- * Status: BOUNDARY ONLY. No business logic is implemented yet.
+ * Owns tables: deliveries, delivery_assignments.
+ * Implemented in slice: 10 — Dispatch / 11 — Rider Delivery / 12 — Completion (docs/IMPLEMENTATION_PLAN.md).
  */
-@Module({})
+@Module({
+  imports: [OrdersModule, RidersModule],
+  controllers: [RiderDeliveriesController, DeliveriesController],
+  providers: [DeliveriesService],
+  exports: [DeliveriesService],
+})
 export class DeliveriesModule {}

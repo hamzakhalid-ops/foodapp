@@ -8,6 +8,8 @@ import { type Role, type UserStatus } from '@quickbite/types';
 export const IS_PUBLIC_KEY = 'quickbite:isPublic';
 export const ALLOW_UNVERIFIED_KEY = 'quickbite:allowUnverified';
 export const ROLES_KEY = 'quickbite:roles';
+export const MFA_ENROLLMENT_KEY = 'quickbite:mfaEnrollment';
+export const RECENT_MFA_KEY = 'quickbite:recentMfa';
 
 /** Route is reachable without authentication (still rate limited where abuse is possible). */
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
@@ -27,6 +29,8 @@ export interface AuthContext {
   sessionId: string;
   roles: Role[];
   status: UserStatus;
+  /** Last MFA verification on this session; admin routes require it (AUTH_AUTHORIZATION §36). */
+  mfaVerifiedAt: Date | null;
 }
 
 export interface RequestWithAuth {
@@ -41,3 +45,18 @@ export const CurrentAuth = createParamDecorator((_data: unknown, context: Execut
   }
   return auth;
 });
+
+/**
+ * Administrative routes (ADMIN_RULES §4–6). Every admin route uses this single decorator so that
+ * admin-wide requirements (e.g. MFA, ADR-0014 §8) are enforced in one place.
+ */
+export const AdminOnly = () => Roles('ADMIN', 'SUPER_ADMIN');
+
+/** Admin route reachable before MFA is verified on the session (enrolment and verification). */
+export const MfaEnrollment = () => SetMetadata(MFA_ENROLLMENT_KEY, true);
+
+/**
+ * Sensitive action requiring step-up: an MFA verification within MFA_RECENT_AUTH_WINDOW_SECONDS
+ * (AUTH_AUTHORIZATION §37–38, §127).
+ */
+export const RecentMfa = () => SetMetadata(RECENT_MFA_KEY, true);

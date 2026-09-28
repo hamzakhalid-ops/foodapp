@@ -2,14 +2,22 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AppConfigService } from '../../config/app-config.service';
 import { CustomersModule } from '../customers/customers.module';
+import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { RidersModule } from '../riders/riders.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
+import { SessionAuthenticator } from './session-authenticator';
 import { AuthService } from './auth.service';
 import { ChallengeService } from './challenge.service';
 import { LogVerificationSender } from './delivery/log-verification-sender';
 import { VERIFICATION_SENDER } from './delivery/verification-sender';
 import { PasswordService } from './password.service';
+import { RestaurantAuthController } from './restaurant-auth.controller';
+import { RiderAuthController } from './rider-auth.controller';
+import { AdminMfaController, MfaController } from './mfa.controller';
+import { MfaGuard } from './mfa.guard';
+import { MfaService } from './mfa.service';
 import { RolesGuard } from './roles.guard';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
@@ -21,12 +29,21 @@ import { TokenService } from './token.service';
  * Owns tables: user_sessions, refresh_tokens, verification_challenges (DATABASE.md §5.1).
  * Implemented in slice: 1 — Authentication (docs/IMPLEMENTATION_PLAN.md).
  *
- * Registers the global AuthGuard (authentication required by default) and RolesGuard.
+ * Registers the global AuthGuard (authentication required by default), RolesGuard and MfaGuard
+ * (admin MFA and step-up, ADR-0014 §8).
  */
 @Module({
-  imports: [UsersModule, CustomersModule],
-  controllers: [AuthController],
+  imports: [UsersModule, CustomersModule, RestaurantsModule, RidersModule],
+  controllers: [
+    AuthController,
+    RestaurantAuthController,
+    RiderAuthController,
+    MfaController,
+    AdminMfaController,
+  ],
   providers: [
+    MfaService,
+    SessionAuthenticator,
     AuthService,
     PasswordService,
     TokenService,
@@ -45,7 +62,8 @@ import { TokenService } from './token.service';
     },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: MfaGuard },
   ],
-  exports: [TokenService, SessionService],
+  exports: [TokenService, SessionService, SessionAuthenticator],
 })
 export class AuthModule {}

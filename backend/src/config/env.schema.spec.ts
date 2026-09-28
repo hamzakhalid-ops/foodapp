@@ -5,6 +5,7 @@ const valid = {
   REDIS_URL: 'redis://localhost:6379',
   JWT_ACCESS_SECRET: 'x'.repeat(32),
   AUTH_SECRET_HASH_KEY: 'y'.repeat(32),
+  MFA_ENCRYPTION_KEY: 'z'.repeat(32),
 };
 
 describe('validateEnv', () => {
@@ -55,5 +56,18 @@ describe('validateEnv', () => {
       expect(() => validateEnv({ ...valid, APP_ENV })).toThrow(/VERIFICATION_DELIVERY/);
     }
     expect(validateEnv({ ...valid, APP_ENV: 'development' }).VERIFICATION_DELIVERY).toBe('log');
+  });
+
+  it('refuses the sandbox payment provider in staging and production', () => {
+    const deployed = {
+      ...valid,
+      STORAGE_DRIVER: 's3',
+      STORAGE_BUCKET_PRIVATE: 'docs',
+    };
+    for (const APP_ENV of ['staging', 'production']) {
+      expect(() => validateEnv({ ...deployed, APP_ENV })).toThrow(/PAYMENT_PROVIDER/);
+      expect(() => validateEnv({ ...deployed, APP_ENV })).toThrow(/PAYOUT_PROVIDER/);
+    }
+    expect(validateEnv({ ...valid, APP_ENV: 'test' }).PAYMENT_PROVIDER).toBe('sandbox');
   });
 });

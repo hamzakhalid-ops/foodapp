@@ -18,7 +18,7 @@ export async function createTestApp(
   const moduleRef = await customize(
     Test.createTestingModule({ imports: [AppModule], controllers: extraControllers }),
   ).compile();
-  const app = moduleRef.createNestApplication<TestApp>({ bufferLogs: true });
+  const app = moduleRef.createNestApplication<TestApp>({ bufferLogs: true, rawBody: true });
   configureHttpApp(app);
   await app.init();
   return app;

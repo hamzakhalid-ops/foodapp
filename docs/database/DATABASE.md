@@ -360,6 +360,172 @@ Customer accounts are created with status `PENDING_VERIFICATION`.
 
 Successful **phone verification** sets `phone_verified_at` and moves the account to `ACTIVE`. Email verification sets `email_verified_at` and does not change `status`.
 
+## 5.4 Phase 20 Gap Fills
+
+Columns/tables added during implementation where the specifications required data but defined no
+storage. They carry data only; no new business behavior.
+
+```text
+restaurant_owner_profiles(id, user_id UNIQUE, first_name, last_name, created_at, updated_at)
+    owner name captured at restaurant registration (API_SPEC §44)
+
+restaurant_applications.business_information   JSONB {legalName, registrationNumber?, taxNumber?}
+    business information for admin review (PRD §9, API_SPEC §45 "Update Business Information")
+
+restaurants.paused_until, restaurants.status_reason
+    end of a temporary pause (API_SPEC §49 durationMinutes) and reason for pause/suspension
+```
+
+Constraints added: one ACTIVE `restaurant_staff` membership per user (V1: a user belongs to one
+restaurant); one default payment account per restaurant; one default address per user.
+
+`restaurants.minimum_order_amount` (§8) is not implemented; the single source is
+`restaurant_delivery_settings.minimum_order_amount` (§14) to avoid two conflicting values.
+
+Slice 5 (cart, checkout, orders):
+
+```text
+carts(id, customer_id UNIQUE, restaurant_id NULL, created_at, updated_at)
+cart_items(id, cart_id, menu_item_id, quantity 1–99, created_at, updated_at)
+cart_item_variations(cart_item_id, variation_id)       PK (cart_item_id, variation_id)
+cart_item_add_ons(cart_item_id, add_on_id)             PK (cart_item_id, add_on_id)
+    PostgreSQL cart storage (ADR-0014 §4); selections only, never prices. Deleting a menu
+    item/option removes it from carts.
+
+orders.delivery_recipient_name, delivery_recipient_phone, delivery_address_text, delivery_area,
+orders.delivery_city, delivery_postal_code, delivery_latitude, delivery_longitude,
+orders.delivery_instructions
+    delivery destination snapshot (MAPS_LOCATION_RULES §25); delivery_address_id becomes NULL if
+    the saved address is deleted
+
+orders.order_number   DEFAULT 'QB-' || nextval('order_number_seq') (starts at 100001)
+```
+
+Order snapshot semantics: `order_items.unit_price` is the item base price; `order_items.subtotal`
+is `(unit_price + variation adjustments + add-on prices) × quantity`; option `quantity` is per
+unit (1). Snapshot rows keep their names/prices when menu rows are deleted (`menu_item_id`,
+`variation_id`, `add_on_id` become NULL). `payments.provider` is NULL for cash on delivery.
+
+Slice 7 (payments):
+
+```text
+payments.failure_reason   safe, customer-presentable failure reason (PAYMENT_RULES §17)
+payment_webhook_events(id, provider, provider_event_id, event_type, payload, received_at)
+    UNIQUE (provider, provider_event_id) — webhook replay protection (API_SPEC §81, §116)
+refunds.status            PENDING | PROCESSING | SUCCEEDED | FAILED | CANCELLED (PAYMENT_RULES §28)
+```
+
+`refunds.amount > 0`; `refunds.provider_refund_id` unique when present. The refundable remainder
+(`Σ refunds in PENDING/PROCESSING/SUCCEEDED ≤ payments.amount`) is enforced under the payment row
+lock.
+
+Slices 8–9 (riders, deliveries, dispatch):
+
+```text
+rider_profiles.submitted_at, reviewed_at, reviewed_by, rejection_reason   application review data
+rider_profiles.status          ACTIVE | SUSPENDED (operational); approval_status per §32
+deliveries.dispatch_failed_at  set once when max offer attempts are reached (DISPATCH_RULES §35)
+dispatch_settings.location_max_age_seconds   staleness limit for rider locations (DISPATCH_RULES §32)
+```
+
+`rider_location_events` (§34) is not created: current locations live in Redis and no historical
+location use is specified yet. Constraints: one active delivery per rider, one open offer per
+order and per rider, one open assignment per delivery (partial unique indexes); a single
+`dispatch_settings` row with positive values and `maximum_radius >= initial_radius`.
+
+Slice 10 (risk):
+
+```text
+risk_restrictions.risk_flag_id   source flag of an automatic restriction (API_SPEC §87 traceability)
+risk_restrictions.status         ACTIVE | REMOVED | EXPIRED
+```
+
+`risk_*.subject_id` is the user id for CUSTOMER, the restaurant id for RESTAURANT and the rider
+profile id for RIDER. One ACTIVE flag per subject+rule and one ACTIVE restriction per
+subject+type (partial unique indexes).
+
+Slice 11 (promotions):
+
+```text
+promotions.code                       customer-entered code: trimmed, upper-cased, 3–20 of A–Z 0–9;
+                                      UNIQUE (restaurant_id, code)
+promotions.per_customer_usage_limit   PROMOTION_RULES §27
+```
+
+Both fields are listed in PROMOTION_SPEC §5. `promotions.usage_count` is incremented in the order
+transaction together with the `promotion_usages` row (`usage_count <= usage_limit` is a CHECK);
+`promotion_usages.order_id` is unique (one promotion per order). `orders.promotion_id` now
+references `promotions`.
+
+Slice 12 (notifications):
+
+```text
+notifications.category, priority, dedup_key (UNIQUE)     NOTIFICATION_RULES §4–5, §16
+notification_deliveries.attempts, next_attempt_at, last_error   retry policy (§17);
+    UNIQUE (notification_id, channel)
+notification_preferences(id, user_id, category, channel, enabled, updated_at)   API_SPEC §91
+device_tokens(id, user_id, device_id, platform, push_token, last_seen_at, active, created_at)
+    NOTIFICATION_RULES §20; UNIQUE (user_id, device_id)
+```
+
+Slice 13 (reviews): `reviews.rating` is a SMALLINT with CHECK 1–5 and `reviews.order_id` is
+UNIQUE; `review_responses.review_id` is UNIQUE (one response per review);
+`review_reports.details` holds the optional description (gap fill) and
+`UNIQUE (review_id, reported_by)` prevents duplicate reports; report status is
+`OPEN | RESOLVED | DISMISSED`.
+
+Slice 14 (support):
+
+```text
+support_tickets.status   OPEN | IN_PROGRESS | WAITING_FOR_CUSTOMER | WAITING_FOR_INTERNAL |
+                         RESOLVED | CLOSED | REOPENED
+support_tickets.ticket_number (QB-SUP-000001 sequence), requester_role, restaurant_id, order_id,
+support_tickets.first_response_at, closed_at
+support_messages.is_internal   support-only notes; attachments = private storage keys
+```
+
+**Status vocabulary conflict:** §57 lists `OPEN, IN_PROGRESS, WAITING_FOR_USER, RESOLVED, CLOSED`
+as possible statuses, while SUPPORT_RULES §7–8 defines the approved lifecycle with
+`WAITING_FOR_CUSTOMER`, `WAITING_FOR_INTERNAL` and `REOPENED` and explicit transitions. The
+implementation follows SUPPORT_RULES (the detailed business rule); §57 is read as illustrative.
+
+Slice 15 (financial, §51–56):
+
+```text
+earning_status                AVAILABLE | IN_SETTLEMENT | SETTLED   (earnings and adjustments)
+settlement_status             PENDING | PROCESSING | COMPLETED | FAILED
+payout_status                 PENDING | PROCESSING | COMPLETED | FAILED
+restaurant_earnings           + commission_percent (rate snapshot), settlement_id, updated_at;
+                              UNIQUE order_id; CHECK net = gross − commission − fee − refund
+rider_earnings                + settlement_id, updated_at; UNIQUE delivery_id;
+                              CHECK total = base + bonus + adjustment
+financial_adjustments         new table (FINANCIAL_SPEC §17–18): recipient_type, recipient_id,
+                              signed amount ≠ 0, currency, reason, reference, status,
+                              settlement_id, created_by
+settlements                   + currency, approved_by, approved_at, completed_at, updated_at;
+                              UNIQUE (recipient_type, recipient_id, period_start);
+                              CHECK net = gross − fees + adjustments, net > 0
+settlement_items              source_type RESTAURANT_EARNING | RIDER_EARNING | ADJUSTMENT;
+                              UNIQUE (source_type, source_id); append-only trigger
+payouts                       + currency, failure_reason, updated_at; UNIQUE provider_reference;
+                              partial UNIQUE settlement_id WHERE status <> 'FAILED'
+invoices                      + currency; invoice_number QB-INV-000001 (sequence);
+                              UNIQUE settlement_id; append-only trigger
+```
+
+Slice 16 (admin MFA, AUTH_AUTHORIZATION §34–38):
+
+```text
+user_sessions.mfa_verified_at   last MFA verification on the session (admin access, step-up)
+user_mfa_factors                new table: user_id UNIQUE, secret_encrypted (AES-256-GCM),
+                                confirmed_at, last_used_step (replay protection)
+```
+
+Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
+`total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
+quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,
+and an append-only trigger on `order_status_history`.
+
 ---
 
 # 6. `customer_profiles`
@@ -1807,6 +1973,15 @@ FAILED
 ```
 
 This supports reliable event processing.
+
+Implementation columns (Phase 20):
+
+```text
+sequence     monotonic creation order (events of one transaction share created_at)
+last_error   last handler error message, for monitoring failed events
+```
+
+`idempotency_keys` is unique on `(user_id, endpoint, key)`.
 
 ---
 

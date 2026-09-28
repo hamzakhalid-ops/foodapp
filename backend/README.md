@@ -42,7 +42,7 @@ backend/
 │   │   ├── http/              # error envelope, success envelope, request/correlation IDs
 │   │   └── logging/           # structured logging with redaction
 │   ├── infrastructure/        # database, redis, queue, realtime, health
-│   ├── modules/               # domain modules (auth, users, customers, audit implemented; others boundaries)
+│   ├── modules/               # domain modules — all implemented (see src/modules/README.md)
 │   └── generated/             # Prisma client (generated, git-ignored)
 └── test/
     ├── api/                   # Supertest suites, no external services
@@ -57,7 +57,7 @@ backend/
 - Structured JSON logs; authorization headers, cookies, passwords and tokens redacted
 - `/health/live` (process) and `/health/ready` (PostgreSQL + Redis) outside `/api/v1`
 - Prisma client wiring (lazy connection), Redis client, BullMQ root configuration
-- Socket.IO gateway that **rejects every connection** until realtime authentication is built (fail-closed)
+- Socket.IO gateway with session authentication, periodic re-validation and server-side channel authorization
 - Sentry initialisation with request bodies, headers, cookies, query strings and user info disabled
 - Redis rate limiter (fixed window, hashed keys, fails closed), append-only audit log writer
 
@@ -90,10 +90,11 @@ Security model:
 - **Verification delivery:** `VerificationSender` interface. Only a development/test **log** adapter
   exists (approved interim); staging/production refuse to start until real SMS/email providers are added.
 
-Local development needs `JWT_ACCESS_SECRET` and `AUTH_SECRET_HASH_KEY` (≥ 32 chars) in `.env`:
+Local development needs `JWT_ACCESS_SECRET`, `AUTH_SECRET_HASH_KEY` and `MFA_ENCRYPTION_KEY`
+(≥ 32 chars) in `.env`:
 
 ```bash
-openssl rand -base64 48   # run twice, once per secret
+openssl rand -base64 48   # run once per secret
 ```
 
 ## Commands

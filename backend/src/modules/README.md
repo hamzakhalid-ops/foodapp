@@ -40,7 +40,7 @@ Each folder below is a NestJS module inside the single backend application — n
 | `notifications`    | Notification records and channel delivery via provider abstractions (NOTIFICATION_RULES).                                                                | notifications, notification_deliveries                                                                                                            | Cross-slice (first use: 3 — Restaurant Onboarding) |
 | `support`          | Support tickets and messages (SUPPORT_RULES). Support cannot bypass business integrity.                                                                  | support_tickets, support_messages                                                                                                                 | 17 — Support                                       |
 | `earnings`         | Restaurant and rider earnings records (FINANCIAL_SPEC §7–22).                                                                                            | restaurant_earnings, rider_earnings                                                                                                               | 13 — Earnings                                      |
-| `settlements`      | Settlement generation, settlement items, reconciliation and invoices (FINANCIAL_SPEC §25–33, §44–46).                                                    | settlements, settlement_items, invoices                                                                                                           | 14 — Settlements                                   |
+| `settlements`      | Settlement generation, settlement items, reconciliation and invoices (FINANCIAL_SPEC §25–33, §44–46).                                                    | settlements, settlement_items, invoices, financial_adjustments                                                                                    | 14 — Settlements                                   |
 | `payouts`          | Payout initiation and state via provider abstraction; idempotent (FINANCIAL_SPEC §34–39).                                                                | payouts                                                                                                                                           | 14 — Settlements                                   |
 | `admin`            | Admin operations and system configuration. Acts only through domain modules' services; no direct table manipulation (ADMIN_SPEC §3, §67).                | system_settings                                                                                                                                   | 18 — Admin Operations                              |
 | `audit`            | Append-only audit logging for sensitive and financial actions.                                                                                           | audit_logs                                                                                                                                        | Cross-slice (first use: 1 — Authentication)        |
@@ -52,5 +52,11 @@ first slice that needs them (`docs/IMPLEMENTATION_PLAN.md` §24).
 
 ## Current status
 
-Implemented (Slice 1): `auth`, `users`, `audit`, and the registration part of `customers`.
-All other modules are **boundaries only**.
+Implemented: `auth`, `users`, `audit`, `customers` (Slices 1–2), `restaurants`,
+`restaurant-staff`, restaurant review in `admin` (Slice 3), `menu`, `discovery` (Slice 4), `cart`,
+`checkout`, `orders`, `cancellation` (Slices 5–6), `payments` (Slice 7), `riders`, `deliveries`,
+`dispatch` (Slices 8–9), `risk`, `promotions` (Slices 10–11), `notifications` (Slice 12),
+`reviews` (Slice 13), `support` (Slice 14), `earnings`, `settlements` (which also owns
+`financial_adjustments`) and `payouts` (Slice 15).
+Shared infrastructure in `src/common`: outbox, idempotency, settings, money, geo, business time.
+Modules not listed are **boundaries only** until their slice lands.

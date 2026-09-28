@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Idempotent } from '../../src/common/idempotency/idempotent.decorator';
 import { type Redis } from 'ioredis';
 import { type AuthContext, CurrentAuth, Roles } from '../../src/common/auth/auth.decorators';
 import request from 'supertest';
@@ -7,6 +8,9 @@ import {
   type VerificationSender,
 } from '../../src/modules/auth/delivery/verification-sender';
 import { PrismaService } from '../../src/infrastructure/database/prisma.service';
+import { AuthService } from '../../src/modules/auth/auth.service';
+import { PasswordService } from '../../src/modules/auth/password.service';
+import { type Role } from '../../src/generated/prisma/client';
 import { REDIS_CLIENT } from '../../src/infrastructure/redis/redis.module';
 import { createTestApp, type TestApp } from '../create-test-app';
 
@@ -58,8 +62,44 @@ export class GuardProbeController {
   }
 }
 
+/** Counts executions to prove idempotent replays do not re-run the handler. */
+@Controller('__test__/idempotent')
+export class IdempotencyProbeController {
+  static executions = 0;
+
+  @Post()
+  @Idempotent()
+  create(@Body() body: { value?: string }): { execution: number; value: string | null } {
+    IdempotencyProbeController.executions += 1;
+    if (body.value === 'fail') throw new Error('probe failure');
+    return { execution: IdempotencyProbeController.executions, value: body.value ?? null };
+  }
+}
+
+export interface Actor {
+  userId: string;
+  token: string;
+  /** `Authorization` header value. */
+  auth: string;
+}
+
+export interface TestRestaurant {
+  restaurantId: string;
+  owner: Actor;
+}
+
 export interface Harness {
   app: TestApp;
+  /** Creates an APPROVED, ONLINE restaurant open every day 00:00–23:59, with its owner actor. */
+  restaurant: (overrides?: {
+    name?: string;
+    latitude?: number;
+    longitude?: number;
+    deliveryRadius?: number;
+    minimumOrderAmount?: string;
+  }) => Promise<TestRestaurant>;
+  /** Creates an ACTIVE, phone-verified user with the given roles and logs in. */
+  actor: (...roles: Role[]) => Promise<Actor>;
   sender: CapturingSender;
   prisma: PrismaService;
   redis: Redis;
@@ -71,21 +111,109 @@ export async function createHarness(): Promise<Harness> {
   const sender = new CapturingSender();
   const app = await createTestApp(
     (builder) => builder.overrideProvider(VERIFICATION_SENDER).useValue(sender),
-    [GuardProbeController],
+    [GuardProbeController, IdempotencyProbeController],
   );
   const prisma = app.get(PrismaService);
   const redis = app.get<Redis>(REDIS_CLIENT);
 
+  const passwords = app.get(PasswordService);
+  const passwordHash = await passwords.hash(PASSWORD);
+
+  const actor = async (...roles: Role[]): Promise<Actor> => {
+    const identity = newCustomer();
+    const user = await prisma.user.create({
+      data: {
+        email: identity.email,
+        phone: identity.phone,
+        passwordHash,
+        status: 'ACTIVE',
+        phoneVerifiedAt: new Date(),
+        roles: {
+          create: (roles.length ? roles : (['CUSTOMER'] as Role[])).map((role) => ({ role })),
+        },
+        ...(roles.length === 0 || roles.includes('CUSTOMER')
+          ? { customerProfile: { create: { firstName: 'Test', lastName: 'Customer' } } }
+          : {}),
+      },
+    });
+    // Logs in through the service so fixture setup does not consume the HTTP login rate limit.
+    const { accessToken: token } = await app.get(AuthService).login(identity.email, PASSWORD, {
+      ipAddress: null,
+      userAgent: null,
+      requestId: null,
+      correlationId: null,
+    });
+    if (roles.includes('ADMIN') || roles.includes('SUPER_ADMIN')) {
+      // Fixture shortcut: admin actors start MFA-verified; mfa.int-spec exercises the real flow.
+      await prisma.userSession.updateMany({
+        where: { userId: user.id },
+        data: { mfaVerifiedAt: new Date() },
+      });
+    }
+    return { userId: user.id, token, auth: `Bearer ${token}` };
+  };
+
+  const restaurant = async (
+    overrides: {
+      name?: string;
+      latitude?: number;
+      longitude?: number;
+      deliveryRadius?: number;
+      minimumOrderAmount?: string;
+    } = {},
+  ): Promise<TestRestaurant> => {
+    const owner = await actor('RESTAURANT_OWNER');
+    const created = await prisma.restaurant.create({
+      data: {
+        ownerUserId: owner.userId,
+        name: overrides.name ?? 'Test Kitchen',
+        slug: `test-kitchen-${owner.userId.slice(0, 8)}`,
+        phone: '+923001112233',
+        email: 'kitchen@example.com',
+        status: 'ONLINE',
+        approvalStatus: 'APPROVED',
+        addressLine1: 'Main Boulevard 1',
+        city: 'Lahore',
+        latitude: overrides.latitude ?? 31.5204,
+        longitude: overrides.longitude ?? 74.3587,
+        application: {
+          create: { status: 'APPROVED', submittedAt: new Date(), reviewedAt: new Date() },
+        },
+        staff: { create: { userId: owner.userId, role: 'OWNER' } },
+        operatingHours: {
+          create: [1, 2, 3, 4, 5, 6, 7].map((dayOfWeek) => ({
+            dayOfWeek,
+            opensAt: '00:00',
+            closesAt: '23:59',
+          })),
+        },
+        deliverySettings: {
+          create: {
+            minimumOrderAmount: overrides.minimumOrderAmount ?? '0',
+            estimatedPreparationMinutes: 20,
+            deliveryRadius: overrides.deliveryRadius ?? 10,
+          },
+        },
+      },
+    });
+    return { restaurantId: created.id, owner };
+  };
+
   return {
     app,
+    actor,
+    restaurant,
     sender,
     prisma,
     redis,
     http: () => request(app.getHttpServer()),
     // Integration databases/Redis are disposable test services (TESTING_SPEC §71).
     reset: async () => {
+      const tables = await prisma.$queryRaw<{ tablename: string }[]>`
+        SELECT tablename FROM pg_tables
+        WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;
       await prisma.$executeRawUnsafe(
-        'TRUNCATE audit_logs, refresh_tokens, user_sessions, verification_challenges, customer_profiles, user_roles, users CASCADE',
+        `TRUNCATE ${tables.map((t) => `"${t.tablename}"`).join(', ')} RESTART IDENTITY CASCADE`,
       );
       await redis.flushdb();
       sender.clear();

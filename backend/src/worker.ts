@@ -7,7 +7,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.createApplicationContext(WorkerModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.enableShutdownHooks();
-  app.get(Logger).log('Worker started (no processors registered yet)');
+  app.get(Logger).log('Worker started');
 }
 
 void bootstrap();

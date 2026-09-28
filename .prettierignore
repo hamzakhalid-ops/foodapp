@@ -13,3 +13,6 @@ coverage/
 .turbo/
 pnpm-lock.yaml
 backend/src/generated/
+
+# Third-party Claude Code skills (vendored verbatim)
+.claude/skills/

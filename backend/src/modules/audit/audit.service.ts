@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { type AuditLog as AuditLogView, type AuditLogListQuery } from '@quickbite/validation';
+import { notFound } from '../../common/http/errors';
+import { createdBefore, keysetPage } from '../../common/http/pagination';
 import { type RequestMeta } from '../../common/http/request-meta';
-import { type Prisma } from '../../generated/prisma/client';
+import { type AuditLog, type Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { type AuditAction } from './audit.actions';
 
@@ -44,4 +47,46 @@ export class AuditService {
       },
     });
   }
+
+  /** API_SPEC §108 — read-only; the application never updates or deletes audit rows. */
+  async list(query: AuditLogListQuery) {
+    const rows = await this.prisma.auditLog.findMany({
+      where: {
+        ...(query.actorUserId ? { actorUserId: query.actorUserId } : {}),
+        ...(query.action ? { action: query.action } : {}),
+        ...(query.entityType ? { entityType: query.entityType } : {}),
+        ...(query.entityId ? { entityId: query.entityId } : {}),
+        createdAt: {
+          ...(query.from ? { gte: new Date(query.from) } : {}),
+          ...(query.to ? { lte: new Date(query.to) } : {}),
+        },
+        ...createdBefore(query.cursor),
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: query.limit + 1,
+    });
+    return keysetPage(rows, query.limit, toAuditLog);
+  }
+
+  async get(id: string): Promise<AuditLogView> {
+    const row = await this.prisma.auditLog.findUnique({ where: { id } });
+    if (!row) throw notFound();
+    return toAuditLog(row);
+  }
+}
+
+function toAuditLog(row: AuditLog): AuditLogView {
+  return {
+    id: row.id,
+    actorUserId: row.actorUserId,
+    action: row.action,
+    entityType: row.entityType,
+    entityId: row.entityId,
+    oldValues: row.oldValues ?? null,
+    newValues: row.newValues ?? null,
+    metadata: row.metadata ?? null,
+    ipAddress: row.ipAddress,
+    userAgent: row.userAgent,
+    createdAt: row.createdAt.toISOString(),
+  };
 }

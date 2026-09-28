@@ -12,7 +12,16 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', '.next', '.expo', '.turbo', 'coverage']);
+const SKIP_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.claude',
+  'dist',
+  '.next',
+  '.expo',
+  '.turbo',
+  'coverage',
+]);
 const REFERENCE =
   /(?<![\w/.-])((?:docs|apps|backend|packages|infrastructure|scripts|tests)\/[A-Za-z0-9_./-]+\.(?:md|ts|tsx|js|mjs|json|ya?ml|prisma|Dockerfile))/g;
 const PLACEHOLDER = /XXXX|NNNN|batch-XX|<|>|\*/;

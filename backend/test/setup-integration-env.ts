@@ -11,6 +11,7 @@ Object.assign(process.env, {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET ?? 'integration-only-jwt-secret-000000000000',
   AUTH_SECRET_HASH_KEY:
     process.env.AUTH_SECRET_HASH_KEY ?? 'integration-only-hash-key-0000000000000',
+  MFA_ENCRYPTION_KEY: process.env.MFA_ENCRYPTION_KEY ?? 'integration-only-mfa-key-00000000000000',
   // Small limits so rate limiting is observable; Redis is flushed between tests.
   RATE_LIMIT_LOGIN: '5/60',
   RATE_LIMIT_PASSWORD_RESET: '3/60',
