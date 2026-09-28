@@ -16,6 +16,11 @@ const MESSAGES: Record<string, string> = {
   AUTH_ACCOUNT_SUSPENDED: 'This account is suspended. Please contact QuickBite support.',
   AUTH_ACCOUNT_DISABLED: 'This account has been deactivated.',
   AUTH_ACCOUNT_ALREADY_EXISTS: 'An account with this email or phone number already exists.',
+  AUTH_VERIFICATION_CODE_INVALID: "That code isn't right. Check it and try again.",
+  AUTH_VERIFICATION_CODE_EXPIRED: 'This code has expired. Request a new one.',
+  AUTH_TOO_MANY_ATTEMPTS: 'Too many incorrect attempts. Request a new code.',
+  AUTH_PASSWORD_RESET_INVALID: 'This reset code is invalid or has expired. Request a new one.',
+  AUTH_PHONE_NOT_VERIFIED: 'Please verify your phone number to continue.',
   RATE_LIMITED: 'Too many attempts. Please wait a few minutes and try again.',
   VALIDATION_ERROR: 'Please check the highlighted details and try again.',
 };

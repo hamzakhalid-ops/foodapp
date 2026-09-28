@@ -31,10 +31,10 @@ Inventory taken 2026-09-28: 84 screens, 4 image assets, 1 design system file.
 | 2   | Welcome                             | `2._welcome_screen`                    | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
 | 3   | Login                               | `3._login_screen`                      | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
 | 4   | Create Account                      | `4._create_account_screen`             | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
-| 5   | Phone Verification                  | `1._phone_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
-| 6   | Email Verification                  | `2._email_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
-| 7   | Forgot Password                     | `3._forgot_password_screen`            | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
-| 8   | Reset Password                      | `4._reset_password_screen`             | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
+| 5   | Phone Verification                  | `1._phone_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | REVIEW |
+| 6   | Email Verification                  | `2._email_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | REVIEW |
+| 7   | Forgot Password                     | `3._forgot_password_screen`            | code.html, screen.png   | 02 — Account Verification    | PROVIDED | REVIEW |
+| 8   | Reset Password                      | `4._reset_password_screen`             | code.html, screen.png   | 02 — Account Verification    | PROVIDED | REVIEW |
 | 9   | Home                                | `1._home_screen`                       | code.html, screen.png   | 03 — Home & Discovery        | PROVIDED | TODO |
 | 10  | Restaurant Discovery                | `2._restaurant_discovery_screen`       | code.html, screen.png   | 03 — Home & Discovery        | PROVIDED | TODO |
 | 11  | Search                              | `3._search_screen`                     | code.html, screen.png   | 03 — Home & Discovery        | PROVIDED | TODO |

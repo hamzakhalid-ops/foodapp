@@ -18,8 +18,14 @@ export const apiClient = new ApiClient({
  */
 const publicClient = new ApiClient({ baseUrl: env.apiUrl });
 
+/** Auth endpoints that need the signed-in session (verify phone, resend code, me, logout). */
+export const authApi = createAuthApi(apiClient);
+
+/** Public auth endpoints (verify email, forgot / reset password, login, register, refresh). */
+export const publicAuthApi = createAuthApi(publicClient);
+
 export const session = createSession({
-  publicAuth: createAuthApi(publicClient),
-  auth: createAuthApi(apiClient),
+  publicAuth: publicAuthApi,
+  auth: authApi,
   storage: secureTokenStorage,
 });

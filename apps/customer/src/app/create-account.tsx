@@ -26,21 +26,10 @@ import {
   WordMark,
 } from '../components/ui';
 import { toAuthErrorMessage } from '../lib/auth/auth-errors';
+import { routeAfterSignIn } from '../lib/auth/routes';
 import { session } from '../lib/api';
+import { DIAL_CODE, isPlausibleLocalNumber, toE164 } from '../lib/phone';
 import { colors, radii, spacing, typography } from '../theme/tokens';
-
-/**
- * Dial code shown in the phone field. V1 is a single market (APP_CURRENCY PKR, APP_TIMEZONE
- * Asia/Karachi; API_SPEC examples use +92). The launch market is still an open decision
- * (REPOSITORY_CONSISTENCY_REPORT H5), so there is no country picker; the backend accepts any
- * valid E.164 number.
- */
-export const DIAL_CODE = { code: '+92', flag: '🇵🇰' } as const;
-
-/** Builds the E.164 number the API expects (API_SPEC §16.1) from the local number entered. */
-export function toE164(dialCode: string, localNumber: string): string {
-  return `${dialCode}${localNumber.replace(/\D/g, '').replace(/^0+/, '')}`;
-}
 
 /**
  * Client-side checks are presentation only. The password policy is owned by the backend
@@ -51,11 +40,9 @@ const createAccountSchema = z
     firstName: z.string().trim().min(1, 'Enter your first name').max(100),
     lastName: z.string().trim().min(1, 'Enter your last name').max(100),
     email: z.string().trim().pipe(z.email('Enter a valid email address')),
-    phone: z
-      .string()
-      .refine((value) => /^\d{6,14}$/.test(value.replace(/\D/g, '').replace(/^0+/, '')), {
-        message: 'Enter a valid phone number',
-      }),
+    phone: z.string().refine(isPlausibleLocalNumber, {
+      message: 'Enter a valid phone number',
+    }),
     password: z.string().min(1, 'Enter a password'),
     confirmPassword: z.string().min(1, 'Confirm your password'),
     acceptTerms: z.boolean().refine((value) => value, {
@@ -96,8 +83,8 @@ export default function CreateAccountScreen() {
 
   const register = useMutation({
     mutationFn: (request: RegisterRequest) => session.register(request),
-    onSuccess: () => {
-      router.replace('/signed-in');
+    onSuccess: (user) => {
+      router.replace(routeAfterSignIn(user));
     },
     onError: (error) => {
       for (const [field, message] of Object.entries(toAuthErrorMessage(error).fields)) {

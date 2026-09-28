@@ -1,20 +1,23 @@
 import { ApiError } from '@quickbite/api-client';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { type ReactElement } from 'react';
-import CreateAccountScreen, { toE164 } from '../app/create-account';
+import CreateAccountScreen from '../app/create-account';
 import SplashScreen, { MIN_SPLASH_MS } from '../app/index';
 import LoginScreen, { EMPTY_FIELDS_MESSAGE } from '../app/login';
 import WelcomeScreen from '../app/welcome';
+import { toE164 } from '../lib/phone';
 import { AppProviders } from '../providers/app-providers';
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: () => true };
 jest.mock('expo-router', () => ({
   useRouter: () => mockRouter,
+  useLocalSearchParams: () => ({}),
   Redirect: () => null,
 }));
 
 const mockSession = {
   restore: jest.fn(),
+  me: jest.fn(),
   login: jest.fn(),
   register: jest.fn(),
 };
@@ -43,8 +46,19 @@ describe('Splash', () => {
     expect(mockRouter.replace).toHaveBeenCalledWith('/welcome');
   });
 
+  it('sends an unverified restored session to phone verification', async () => {
+    mockSession.restore.mockResolvedValue('signedIn');
+    mockSession.me.mockResolvedValue({ status: 'PENDING_VERIFICATION' });
+    await renderScreen(<SplashScreen />);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(MIN_SPLASH_MS);
+    });
+    expect(mockRouter.replace).toHaveBeenCalledWith('/verify-phone');
+  });
+
   it('goes to the signed-in area when the session is restored', async () => {
     mockSession.restore.mockResolvedValue('signedIn');
+    mockSession.me.mockResolvedValue({ status: 'ACTIVE' });
     await renderScreen(<SplashScreen />);
     await act(async () => {
       await jest.advanceTimersByTimeAsync(MIN_SPLASH_MS);

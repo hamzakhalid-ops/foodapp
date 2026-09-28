@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { logoSource } from '../components/ui';
 import { splashCopy } from '../content/marketing-copy';
 import { session } from '../lib/api';
+import { routeAfterSignIn } from '../lib/auth/routes';
 import { colors, radii, shadows, spacing, typography } from '../theme/tokens';
 
 /** Keeps the brand moment visible on fast devices (Stitch splash). */
@@ -28,9 +29,15 @@ export default function SplashScreen() {
     let cancelled = false;
     setPhase('connecting');
     const minimumDelay = new Promise((resolve) => setTimeout(resolve, MIN_SPLASH_MS));
-    Promise.all([session.restore(), minimumDelay])
-      .then(([status]) => {
-        if (!cancelled) router.replace(status === 'signedIn' ? '/signed-in' : '/welcome');
+    // A restored session goes where the account status says (unverified → phone verification).
+    const destination = session
+      .restore()
+      .then(async (status) =>
+        status === 'signedIn' ? routeAfterSignIn(await session.me()) : ('/welcome' as const),
+      );
+    Promise.all([destination, minimumDelay])
+      .then(([route]) => {
+        if (!cancelled) router.replace(route);
       })
       .catch(() => {
         if (!cancelled) setPhase('offline');

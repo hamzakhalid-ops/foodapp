@@ -224,19 +224,38 @@ Do not continue to Batch 02 automatically.
 Status:
 
 ```text
-TODO
+REVIEW
 ```
 
 Screens:
 
 ```text
-5. Phone Verification
-6. Email Verification
-7. Forgot Password
-8. Reset Password
+5. Phone Verification   REVIEW   src/app/verify-phone.tsx
+6. Email Verification   REVIEW   src/app/verify-email.tsx
+7. Forgot Password      REVIEW   src/app/forgot-password.tsx
+8. Reset Password       REVIEW   src/app/reset-password.tsx
 ```
 
 Implement only after Batch 01 has been reviewed/approved.
+
+Open design/spec decisions from Batch 02 (awaiting project-owner review):
+
+* Email verification and password reset use the backend's single-use opaque tokens (API_SPEC
+  §22, §24), not the 4-digit code shown in Stitch. They open from a link
+  (`quickbite-customer://verify-email?token=…`, `…/reset-password?token=…`) or are pasted. The
+  link format the email/SMS providers will send is not yet specified.
+* No "Resend email" or "Change email address": the API has no endpoints for them. Email
+  verification does not gate ordering, so the screen offers "I'll do this later".
+* Phone verification has no expiry / resend countdowns (TTL and rate limits are backend
+  configuration and are not returned by the API); "Verify via WhatsApp", "Call me instead" and
+  "Edit phone number" are not in any specification and are not implemented.
+* Reset Password shows only the length hint and a match check; the Stitch uppercase /
+  number-or-symbol rules are not backend rules (AUTH_AUTHORIZATION §9).
+* Forgot Password omits "one-tap OTP login" and "Contact Support" (not specified / later batch).
+* The Stitch "end-to-end encryption" claim is reworded to "encrypted connections" (the API uses
+  HTTPS, not end-to-end encryption). Other marketing copy is in `src/content/marketing-copy.ts`.
+* Login, sign-up and app start route `PENDING_VERIFICATION` accounts to Phone Verification
+  (the backend rejects them elsewhere with `AUTH_PHONE_NOT_VERIFIED`).
 
 ### Goals
 

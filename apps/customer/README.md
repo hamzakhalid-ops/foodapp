@@ -143,6 +143,7 @@ Never implement future screens, even if they are easy. Only the user marks a scr
 ```text
 Foundation:  DONE    — project structure, providers, API client wiring, lint/typecheck/test/build
 Batch 01:    REVIEW  — Splash, Welcome, Login, Create Account (SCREEN_PLAN.md §5)
+Batch 02:    REVIEW  — Phone Verification, Email Verification, Forgot Password, Reset Password (§6)
 ```
 
 Batch 01 added:
@@ -151,6 +152,8 @@ Batch 01 added:
 - `src/components/ui.tsx` — shared building blocks for the Stitch screens (buttons, text field, icons, brand marks).
 - `src/lib/auth/` — session handling: refresh token in `expo-secure-store` only, access token in memory, serialized refresh; API error → user message mapping.
 - `src/content/marketing-copy.ts` — Stitch marketing copy, **pending project-owner approval** before release.
-- `src/app/signed-in.tsx` — a clearly-marked **boundary placeholder** (not a product screen) reached after sign-in/sign-up until Batch 02 (phone verification) and Batch 03 (Home) are implemented.
+- `src/app/signed-in.tsx` — a clearly-marked **boundary placeholder** (not a product screen) reached by verified accounts after sign-in until Batch 03 (Home) is implemented.
+
+Batch 02 added `src/components/auth-ui.tsx` (header, step bar, code boxes, notices), `src/lib/phone.ts` (+92 / E.164 helpers), `src/lib/auth/routes.ts` (status-based routing: unverified accounts go to phone verification) and `src/lib/auth/recovery.ts` (in-memory Forgot → Reset hand-off).
 
 Next batch for this app: see `SCREEN_PLAN.md` (App order: Customer → Restaurant → Rider → Admin, `CLAUDE.md` §24).

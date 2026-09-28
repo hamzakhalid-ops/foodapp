@@ -36,3 +36,25 @@ export const loginCopy = {
   perkTitle: 'Instant crave protection',
   perkBody: 'Average doorstep dispatch in 24 mins',
 } as const;
+
+// ----- Batch 02 -----------------------------------------------------------------------------
+
+export const verifyPhoneCopy = {
+  perkTitle: 'Your hot meal is waiting',
+  perkBody: 'Verify now to unlock instant $0 delivery perk',
+  /**
+   * Stitch reads "…with end-to-end encryption". The API uses encrypted connections (HTTPS), not
+   * end-to-end encryption, so the claim is reworded to stay accurate (security over UI copy).
+   */
+  security: 'QuickBite protects your account with encrypted connections.',
+  badges: ['FAST SETUP', 'INSTANT ORDER', '100% SECURE'],
+} as const;
+
+export const verifyEmailCopy = {
+  footer: 'Secured with QuickBite Instant Delivery Pass',
+} as const;
+
+export const forgotPasswordCopy = {
+  hungryTitle: 'Hungry right now?',
+  hungryBody: 'Password resets take less than 60 seconds.',
+} as const;

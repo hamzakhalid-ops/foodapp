@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type LoginRequest, loginRequestSchema } from '@quickbite/validation';
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Notice } from '../components/auth-ui';
 import {
   BackButton,
   FormError,
@@ -25,6 +26,7 @@ import {
 } from '../components/ui';
 import { loginCopy } from '../content/marketing-copy';
 import { toAuthErrorMessage } from '../lib/auth/auth-errors';
+import { routeAfterSignIn } from '../lib/auth/routes';
 import { session } from '../lib/api';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
@@ -36,6 +38,7 @@ export const EMPTY_FIELDS_MESSAGE = 'Please fill in both your email/phone and pa
 /** Screen 3 — Login (Batch 01). API_SPEC §17: email or phone identifier + password. */
 export default function LoginScreen() {
   const router = useRouter();
+  const { reset } = useLocalSearchParams<{ reset?: string }>();
   const passwordRef = useRef<TextInput>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { control, handleSubmit, watch, formState } = useForm<LoginRequest>({
@@ -45,8 +48,8 @@ export default function LoginScreen() {
 
   const login = useMutation({
     mutationFn: (values: LoginRequest) => session.login(values),
-    onSuccess: () => {
-      router.replace('/signed-in');
+    onSuccess: (user) => {
+      router.replace(routeAfterSignIn(user));
     },
   });
 
@@ -145,13 +148,16 @@ export default function LoginScreen() {
                   onSubmitEditing={() => void submit()}
                   testID="login-password"
                   labelTrailing={
-                    // Forgot Password is Batch 02 (SCREEN_PLAN §6); the link is presented only.
-                    <Text
-                      style={[typography.labelSm, styles.forgot]}
-                      accessibilityHint="Password reset is not available yet"
+                    <Pressable
+                      accessibilityRole="link"
+                      hitSlop={8}
+                      onPress={() => {
+                        router.push('/forgot-password');
+                      }}
+                      testID="login-forgot"
                     >
-                      Forgot Password?
-                    </Text>
+                      <Text style={[typography.labelSm, styles.forgot]}>Forgot Password?</Text>
+                    </Pressable>
                   }
                   trailing={
                     <VisibilityToggle
@@ -165,6 +171,13 @@ export default function LoginScreen() {
               )}
             />
 
+            {reset === 'done' && !login.isError ? (
+              <Notice
+                icon="check-circle"
+                tone="success"
+                message="Your password was updated. Sign in with your new password."
+              />
+            ) : null}
             {hasEmptyFields ? <FormError message={EMPTY_FIELDS_MESSAGE} /> : null}
             {failure ? <FormError message={failure.message} requestId={failure.requestId} /> : null}
 
