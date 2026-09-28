@@ -487,6 +487,17 @@ REVIEW_REPORT_INVALID
 Added in Phase 20 (reviews slice) from REVIEW_RULES §44. Other review cases use the existing codes:
 `REVIEW_NOT_FOUND`, `ORDER_NOT_FOUND` (not the caller's order), `VALIDATION_ERROR` (rating/content).
 
+## MFA
+
+```text
+AUTH_MFA_REQUIRED
+AUTH_MFA_INVALID
+```
+
+Added in Phase 20 (admin slice) for AUTH_AUTHORIZATION §36–38 (`MFA_REQUIRED` / `MFA_INVALID`
+there, prefixed like the other authentication codes). `AUTH_MFA_REQUIRED` carries
+`details.reason`: `MFA_NOT_ENROLLED`, `MFA_NOT_VERIFIED` or `STEP_UP_REQUIRED`.
+
 ## Financial
 
 ```text

@@ -513,6 +513,14 @@ invoices                      + currency; invoice_number QB-INV-000001 (sequence
                               UNIQUE settlement_id; append-only trigger
 ```
 
+Slice 16 (admin MFA, AUTH_AUTHORIZATION §34–38):
+
+```text
+user_sessions.mfa_verified_at   last MFA verification on the session (admin access, step-up)
+user_mfa_factors                new table: user_id UNIQUE, secret_encrypted (AES-256-GCM),
+                                confirmed_at, last_used_step (replay protection)
+```
+
 Constraints added: non-negative order amounts, `discount_amount <= subtotal`,
 `total_amount = subtotal − discount_amount + delivery_fee + tax_amount + service_fee`, positive
 quantities, `payments.amount >= 0`, UNIQUE `(payments.provider, payments.provider_payment_id)`,

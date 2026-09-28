@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  type AdminOrderListQuery,
   type CustomerOrderListQuery,
   type Order,
   type OrderStatusView,
@@ -188,6 +189,20 @@ export class OrdersService {
   /** GET /customer/orders — newest first, cursor pagination (API_SPEC §10, §40). */
   listForCustomer(customerId: string, query: CustomerOrderListQuery) {
     return this.listPage({ customerId }, query);
+  }
+
+  /** GET /admin/orders (API_SPEC §100). */
+  adminList(query: AdminOrderListQuery) {
+    return this.listPage(
+      {
+        ...(query.customerId ? { customerId: query.customerId } : {}),
+        ...(query.restaurantId ? { restaurantId: query.restaurantId } : {}),
+        ...(query.riderId ? { delivery: { riderId: query.riderId } } : {}),
+        ...(query.paymentStatus ? { paymentStatus: query.paymentStatus } : {}),
+        ...(query.search ? { orderNumber: { contains: query.search, mode: 'insensitive' } } : {}),
+      },
+      query,
+    );
   }
 
   /** Newest-first cursor page over `scope` with the common status/date filters. */

@@ -562,3 +562,40 @@ Not implemented (no rules defined): refund allocation to restaurant/rider earnin
 adjustments), COD cash remittance by riders, payout destination (bank account) management,
 invoice PDF rendering (`fileUrl` is null), effective-dated rates, financial exports.
 
+---
+
+## Slice 16 — Admin operations and admin MFA (§93–95, §100, §107–108, ADR-0014 §8)
+
+**MFA (TOTP, RFC 6238).** Every route restricted to `ADMIN`/`SUPER_ADMIN` requires a session on
+which MFA was verified; otherwise `403 AUTH_MFA_REQUIRED` (`details.reason = MFA_NOT_VERIFIED`).
+On shared routes (e.g. order detail) an unverified admin session acts without its admin roles, and
+admin realtime channels are refused. Sensitive actions additionally require a verification within
+`MFA_RECENT_AUTH_WINDOW_SECONDS` (default 300): `403 AUTH_MFA_REQUIRED` with
+`details.reason = STEP_UP_REQUIRED`. Step-up applies to configuration and dispatch-settings changes,
+refunds and refund decisions, settlement approve/process, financial adjustments, risk-rule changes
+and MFA resets. Secrets are AES-256-GCM encrypted with `MFA_ENCRYPTION_KEY`; codes are single-use
+(±1 step drift); verification is rate limited (`RATE_LIMIT_MFA_VERIFY`).
+
+| Endpoint | Access | Notes |
+|----------|--------|-------|
+| `GET /auth/mfa` | admin (before MFA) | {enrolled, verifiedAt (this session)} |
+| `POST /auth/mfa/totp/setup` | admin (before MFA) | `201` {secret, otpauthUrl} — shown once; `409` when already enrolled |
+| `POST /auth/mfa/totp/confirm` | admin (before MFA) | {code}; enables MFA and verifies the session; `401 AUTH_MFA_INVALID` |
+| `POST /auth/mfa/verify` | admin (before MFA) | {code}; after login and for step-up |
+| `POST /admin/users/{userId}/mfa/reset` | super admin + step-up | `204`; removes the authenticator (lost device); audited `MFA_DISABLED` |
+| `GET /admin/dashboard` | admin | counts and today's money totals (business timezone) |
+| `GET /admin/customers`, `/{id}` | admin | query status?, search? (email, phone, name); detail adds order counts and active risk restrictions |
+| `GET /admin/orders`, `/{id}` | admin | query status?, from?, to?, customerId?, restaurantId?, riderId?, paymentStatus?, search? (order number) |
+| `GET /admin/audit-logs`, `/{id}` | admin | query actorUserId?, action?, entityType?, entityId?, from?, to? |
+| `GET /admin/configuration`, `/{key}` | admin | registered settings with value (null = unset), updatedAt, updatedBy |
+| `PATCH /admin/configuration/{key}` | super admin + step-up | {value, reason}; validated per key; audited `CONFIGURATION_CHANGED` |
+| `GET /admin/dispatch-settings` | admin | `404` until configured |
+| `PUT /admin/dispatch-settings` | super admin + step-up | full settings + reason; audited `DISPATCH_SETTINGS_CHANGED` |
+
+Gap fills (not in API_SPEC): the MFA endpoints, the MFA reset and the dispatch-settings route
+(API_SPEC §107 asks for dedicated configuration tables). Not implemented: customer
+`PATCH`/`restrict`/`restore` (§95 "possible" actions) — account and ordering restrictions are the
+risk restrictions under `/admin/risk/restrictions`, which the backend enforces; a `RESTRICTED` user
+status has no defined behaviour. WebAuthn, IP/device controls and shorter admin session lifetimes
+are not implemented.
+

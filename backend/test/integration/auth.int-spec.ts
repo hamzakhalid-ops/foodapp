@@ -307,6 +307,17 @@ describe('Slice 1 — Authentication', () => {
       expect(errorCode(denied.body)).toBe('AUTHZ_INSUFFICIENT_PERMISSION');
 
       await h.prisma.userRole.create({ data: { userId, role: 'ADMIN' } });
+      // The new role is seen immediately; admin routes then also require MFA (ADR-0014 §8).
+      const mfa = await h
+        .http()
+        .get('/api/v1/__test__/admin')
+        .set('Authorization', auth)
+        .expect(403);
+      expect(errorCode(mfa.body)).toBe('AUTH_MFA_REQUIRED');
+      await h.prisma.userSession.updateMany({
+        where: { userId },
+        data: { mfaVerifiedAt: new Date() },
+      });
       await h.http().get('/api/v1/__test__/admin').set('Authorization', auth).expect(200);
     });
 

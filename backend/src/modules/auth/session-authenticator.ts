@@ -48,6 +48,7 @@ export class SessionAuthenticator {
       sessionId: session.id,
       roles: user.roles.map((entry) => entry.role),
       status: user.status,
+      mfaVerifiedAt: session.mfaVerifiedAt,
     };
   }
 

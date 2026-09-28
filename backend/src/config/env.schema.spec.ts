@@ -5,6 +5,7 @@ const valid = {
   REDIS_URL: 'redis://localhost:6379',
   JWT_ACCESS_SECRET: 'x'.repeat(32),
   AUTH_SECRET_HASH_KEY: 'y'.repeat(32),
+  MFA_ENCRYPTION_KEY: 'z'.repeat(32),
 };
 
 describe('validateEnv', () => {

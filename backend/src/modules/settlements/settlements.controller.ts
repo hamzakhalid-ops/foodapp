@@ -29,7 +29,13 @@ import {
   settlementListQuerySchema,
 } from '@quickbite/validation';
 import { type z } from 'zod';
-import { AdminOnly, type AuthContext, CurrentAuth, Roles } from '../../common/auth/auth.decorators';
+import {
+  AdminOnly,
+  type AuthContext,
+  CurrentAuth,
+  RecentMfa,
+  Roles,
+} from '../../common/auth/auth.decorators';
 import { type ApiPage } from '../../common/http/api-response.interceptor';
 import { cursorPage } from '../../common/http/pagination';
 import { ReqMeta, type RequestMeta } from '../../common/http/request-meta';
@@ -165,6 +171,7 @@ export class AdminSettlementsController {
 
   @Post('settlements/:settlementId/approve')
   @Roles('SUPER_ADMIN')
+  @RecentMfa()
   @HttpCode(HttpStatus.OK)
   approve(
     @CurrentAuth() auth: AuthContext,
@@ -176,6 +183,7 @@ export class AdminSettlementsController {
 
   @Post('settlements/:settlementId/process')
   @Roles('SUPER_ADMIN')
+  @RecentMfa()
   @HttpCode(HttpStatus.OK)
   @Idempotent()
   process(
@@ -196,6 +204,7 @@ export class AdminSettlementsController {
 
   @Post('financial-adjustments')
   @Roles('SUPER_ADMIN')
+  @RecentMfa()
   @Idempotent()
   adjust(
     @CurrentAuth() auth: AuthContext,

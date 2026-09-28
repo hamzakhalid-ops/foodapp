@@ -143,6 +143,13 @@ export async function createHarness(): Promise<Harness> {
       requestId: null,
       correlationId: null,
     });
+    if (roles.includes('ADMIN') || roles.includes('SUPER_ADMIN')) {
+      // Fixture shortcut: admin actors start MFA-verified; mfa.int-spec exercises the real flow.
+      await prisma.userSession.updateMany({
+        where: { userId: user.id },
+        data: { mfaVerifiedAt: new Date() },
+      });
+    }
     return { userId: user.id, token, auth: `Bearer ${token}` };
   };
 

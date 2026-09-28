@@ -4,7 +4,8 @@ import { ScheduledTasks } from '../../infrastructure/scheduler/scheduler';
 import { DeliveriesModule } from '../deliveries/deliveries.module';
 import { RidersModule } from '../riders/riders.module';
 import { RiskModule } from '../risk/risk.module';
-import { DispatchOffersController } from './dispatch.controller';
+import { AdminDispatchSettingsController, DispatchOffersController } from './dispatch.controller';
+import { DispatchSettingsService } from './dispatch-settings.service';
 import { DispatchService } from './dispatch.service';
 
 /**
@@ -15,8 +16,8 @@ import { DispatchService } from './dispatch.service';
  */
 @Module({
   imports: [DeliveriesModule, RidersModule, RiskModule],
-  controllers: [DispatchOffersController],
-  providers: [DispatchService],
+  controllers: [DispatchOffersController, AdminDispatchSettingsController],
+  providers: [DispatchService, DispatchSettingsService],
   exports: [DispatchService],
 })
 export class DispatchModule implements OnModuleInit {

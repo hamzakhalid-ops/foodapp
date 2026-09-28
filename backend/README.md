@@ -90,10 +90,11 @@ Security model:
 - **Verification delivery:** `VerificationSender` interface. Only a development/test **log** adapter
   exists (approved interim); staging/production refuse to start until real SMS/email providers are added.
 
-Local development needs `JWT_ACCESS_SECRET` and `AUTH_SECRET_HASH_KEY` (≥ 32 chars) in `.env`:
+Local development needs `JWT_ACCESS_SECRET`, `AUTH_SECRET_HASH_KEY` and `MFA_ENCRYPTION_KEY`
+(≥ 32 chars) in `.env`:
 
 ```bash
-openssl rand -base64 48   # run twice, once per secret
+openssl rand -base64 48   # run once per secret
 ```
 
 ## Commands

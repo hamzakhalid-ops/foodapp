@@ -109,6 +109,10 @@ export const envSchema = z.object({
   SESSION_MAX_LIFETIME_SECONDS: seconds.default(90 * 24 * 3600),
   /** HMAC key for low-entropy secrets (phone OTP codes). */
   AUTH_SECRET_HASH_KEY: secret('AUTH_SECRET_HASH_KEY'),
+  /** Encrypts TOTP secrets at rest (AUTH_AUTHORIZATION §77). Rotating it invalidates enrollments. */
+  MFA_ENCRYPTION_KEY: secret('MFA_ENCRYPTION_KEY'),
+  /** Step-up freshness for sensitive admin actions (AUTH_AUTHORIZATION §38, MFA_RECENT_AUTH_WINDOW). */
+  MFA_RECENT_AUTH_WINDOW_SECONDS: seconds.default(300),
 
   AUTH_PASSWORD_MIN_LENGTH: z.coerce.number().int().min(8).default(8),
   AUTH_PASSWORD_MAX_LENGTH: z.coerce.number().int().max(1024).default(128),
@@ -130,6 +134,7 @@ export const envSchema = z.object({
   RATE_LIMIT_REFRESH: rateLimitRule.prefault('60/300'),
   RATE_LIMIT_OTP_SEND: rateLimitRule.prefault('3/900'),
   RATE_LIMIT_OTP_VERIFY: rateLimitRule.prefault('10/900'),
+  RATE_LIMIT_MFA_VERIFY: rateLimitRule.prefault('5/300'),
   RATE_LIMIT_EMAIL_VERIFY: rateLimitRule.prefault('20/3600'),
   RATE_LIMIT_PASSWORD_RESET: rateLimitRule.prefault('5/3600'),
 });

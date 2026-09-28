@@ -34,6 +34,7 @@ import {
   type AuthContext,
   CurrentAuth,
   Public,
+  RecentMfa,
   Roles,
 } from '../../common/auth/auth.decorators';
 import { type ApiPage } from '../../common/http/api-response.interceptor';
@@ -88,6 +89,7 @@ export class PaymentsController {
 
   @Post('payments/:paymentId/refund')
   @AdminOnly()
+  @RecentMfa()
   @Idempotent()
   refund(
     @CurrentAuth() auth: AuthContext,
@@ -155,6 +157,7 @@ export class AdminPaymentsController {
   }
 
   @Post('orders/:orderId/refund-decision')
+  @RecentMfa()
   @HttpCode(HttpStatus.OK)
   @Idempotent()
   decide(

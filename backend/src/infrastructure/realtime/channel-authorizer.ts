@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { withoutUnverifiedAdmin } from '../../modules/auth/mfa.guard';
 import { type AuthContext } from '../../common/auth/auth.decorators';
 import { DeliveriesService } from '../../modules/deliveries/deliveries.service';
 import { OrdersService } from '../../modules/orders/orders.service';
@@ -30,7 +31,8 @@ export class ChannelAuthorizer {
     private readonly support: SupportService,
   ) {}
 
-  async canSubscribe(auth: AuthContext, channel: string): Promise<boolean> {
+  async canSubscribe(context: AuthContext, channel: string): Promise<boolean> {
+    const auth = withoutUnverifiedAdmin(context);
     const match = (pattern: RegExp) => pattern.exec(channel)?.[1];
     const userId = match(PATTERNS.user);
     if (userId) return userId === auth.userId;

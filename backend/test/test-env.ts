@@ -11,4 +11,5 @@ export const OFFLINE_TEST_ENV: Record<string, string> = {
   SENTRY_DSN: '',
   JWT_ACCESS_SECRET: 'test-only-jwt-secret-000000000000000000000000',
   AUTH_SECRET_HASH_KEY: 'test-only-hash-key-0000000000000000000000000',
+  MFA_ENCRYPTION_KEY: 'test-only-mfa-key-00000000000000000000000000',
 };

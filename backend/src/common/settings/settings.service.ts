@@ -4,6 +4,14 @@ import { type Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { SETTINGS, type SettingKey, type SettingValue } from './settings.registry';
 
+export interface SettingEntry {
+  key: SettingKey;
+  description: string;
+  value: unknown;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
 /** Typed access to admin-managed platform settings (DATABASE.md §60). */
 @Injectable()
 export class SettingsService {
@@ -62,5 +70,23 @@ export class SettingsService {
       update: { value: parsed, valueType: typeof parsed, updatedBy },
     });
     return { previous: existing?.value ?? null };
+  }
+
+  /** Every registered setting with its current value (unset = null). */
+  async list(): Promise<SettingEntry[]> {
+    const rows = await this.prisma.systemSetting.findMany({
+      where: { key: { in: Object.keys(SETTINGS) } },
+    });
+    const byKey = new Map(rows.map((row) => [row.key, row]));
+    return (Object.keys(SETTINGS) as SettingKey[]).map((key) => {
+      const row = byKey.get(key);
+      return {
+        key,
+        description: SETTINGS[key].description,
+        value: row?.value ?? null,
+        updatedAt: row?.updatedAt.toISOString() ?? null,
+        updatedBy: row?.updatedBy ?? null,
+      };
+    });
   }
 }

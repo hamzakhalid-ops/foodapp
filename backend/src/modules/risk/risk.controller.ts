@@ -29,7 +29,12 @@ import {
   type UpdateRiskRuleRequest,
   updateRiskRuleRequestSchema,
 } from '@quickbite/validation';
-import { AdminOnly, type AuthContext, CurrentAuth } from '../../common/auth/auth.decorators';
+import {
+  AdminOnly,
+  type AuthContext,
+  CurrentAuth,
+  RecentMfa,
+} from '../../common/auth/auth.decorators';
 import { type ApiPage } from '../../common/http/api-response.interceptor';
 import { cursorPage } from '../../common/http/pagination';
 import { ReqMeta, type RequestMeta } from '../../common/http/request-meta';
@@ -67,6 +72,7 @@ export class RiskAdminController {
   }
 
   @Post('rules')
+  @RecentMfa()
   createRule(
     @CurrentAuth() auth: AuthContext,
     @Body(new ZodValidationPipe(createRiskRuleRequestSchema)) body: CreateRiskRuleRequest,
@@ -76,6 +82,7 @@ export class RiskAdminController {
   }
 
   @Patch('rules/:ruleId')
+  @RecentMfa()
   updateRule(
     @CurrentAuth() auth: AuthContext,
     @Param('ruleId', ParseUUIDPipe) ruleId: string,
