@@ -27,7 +27,7 @@ HTTP API.
 
 ## APIs
 
-* 239 routes under `/api/v1`, all with Zod validation and the standard envelopes and error codes
+* 247 routes under `/api/v1`, all with Zod validation and the standard envelopes and error codes
   (API_SPEC §8–13, with new code groups documented in §13).
 * Shared Zod schemas live in `@quickbite/validation` and typed clients in `@quickbite/api-client`.
 * The `Idempotency-Key` header is required for orders, payments, refunds, settlement processing and
@@ -101,9 +101,14 @@ HTTP API.
 * Explicit signed adjustments are supported.
 * Cross-layer reconciliation runs as an hourly alert and as an admin report.
 
+## Restaurant analytics
+
+* Overview, daily sales, orders by status, popular items, ratings and cancellations (API_SPEC §61),
+  owner-only, over orders released to the restaurant.
+
 ## Admin
 
-* Dashboard and customer/order views.
+* Dashboard and customer/order views; customer restrict/restore through risk restrictions.
 * Configuration: validated, audited, step-up protected.
 * Dispatch settings.
 * Audit-log viewer.
@@ -116,7 +121,7 @@ HTTP API.
 |-------|--------|
 | Unit (backend) | 63 passed |
 | API (Supertest, no services) | 12 passed |
-| Integration (real PostgreSQL + Redis, 18 suites) | 182 passed |
+| Integration (real PostgreSQL + Redis, 19 suites) | 184 passed |
 | E2E — golden flow through the HTTP API (`test:e2e`) | passed (included in integration) |
 | Lint / typecheck (packages + backend) | clean |
 | Build (packages, backend, 4 apps) | 24/24 tasks successful |
@@ -149,8 +154,8 @@ implementation notes.
    settlements are generated. When a recipient's net is ≤ 0, the records carry forward.
 5. **Invoices and rates.** Invoice PDF rendering and effective-dated commission rates are not
    implemented.
-6. **Customer restrictions.** Customer restrict/restore and the `RESTRICTED` user status have no
-   defined behaviour. Risk restrictions are what the backend enforces.
+6. **Customer edits.** `PATCH /admin/customers/{id}` has no defined editable fields. Restrict and
+   restore are implemented through `ACCOUNT_RESTRICTED` risk restrictions (ADMIN_SPEC §7).
 7. **Support.** SLA targets, escalation and a reopen window are not defined. The support status
    vocabulary follows SUPPORT_RULES rather than DATABASE §57.
 8. **Reviews.** Moderation of restaurant responses to reviews is not defined.

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OrdersModule } from '../orders/orders.module';
 import { RestaurantsModule } from '../restaurants/restaurants.module';
+import { RiskModule } from '../risk/risk.module';
 import { AdminConfigurationService } from './admin-configuration.service';
 import { AdminReadService } from './admin-read.service';
 import { AdminRestaurantsController } from './admin-restaurants.controller';
@@ -13,7 +14,7 @@ import { AdminController } from './admin.controller';
  * Owns tables: system_settings.
  */
 @Module({
-  imports: [RestaurantsModule, OrdersModule],
+  imports: [RestaurantsModule, OrdersModule, RiskModule],
   controllers: [AdminRestaurantsController, AdminController],
   providers: [AdminReadService, AdminConfigurationService],
 })

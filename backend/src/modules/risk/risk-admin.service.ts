@@ -297,6 +297,25 @@ export class RiskAdminService {
     });
   }
 
+  /** Removes every active restriction of one type on a subject (admin "restore", ADMIN_SPEC §7). */
+  async removeActiveOfType(
+    subjectType: 'CUSTOMER' | 'RESTAURANT' | 'RIDER',
+    subjectId: string,
+    restrictionType: 'ACCOUNT_RESTRICTED',
+    reason: string,
+    adminId: string,
+    meta: RequestMeta,
+  ) {
+    const active = await this.prisma.riskRestriction.findMany({
+      where: { subjectType, subjectId, restrictionType, status: 'ACTIVE' },
+      select: { id: true },
+    });
+    if (active.length === 0) {
+      throw conflict('INVALID_REQUEST', 'The account has no active restriction.');
+    }
+    return Promise.all(active.map((row) => this.removeRestriction(row.id, reason, adminId, meta)));
+  }
+
   async removeRestriction(
     restrictionId: string,
     reason: string,

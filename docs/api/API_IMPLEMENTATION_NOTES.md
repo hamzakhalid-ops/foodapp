@@ -593,9 +593,40 @@ and MFA resets. Secrets are AES-256-GCM encrypted with `MFA_ENCRYPTION_KEY`; cod
 | `PUT /admin/dispatch-settings` | super admin + step-up | full settings + reason; audited `DISPATCH_SETTINGS_CHANGED` |
 
 Gap fills (not in API_SPEC): the MFA endpoints, the MFA reset and the dispatch-settings route
-(API_SPEC §107 asks for dedicated configuration tables). Not implemented: customer
-`PATCH`/`restrict`/`restore` (§95 "possible" actions) — account and ordering restrictions are the
-risk restrictions under `/admin/risk/restrictions`, which the backend enforces; a `RESTRICTED` user
-status has no defined behaviour. WebAuthn, IP/device controls and shorter admin session lifetimes
+(API_SPEC §107 asks for dedicated configuration tables). Customer `restrict`/`restore` (§95) go
+through the risk mechanism as ADMIN_SPEC §7 requires (see the gap-closure section below). Not
+implemented: customer `PATCH` (§95 "possible" action; no editable fields are defined and ADMIN_RULES
+§8 forbids modifying private information without authorization). WebAuthn, IP/device controls and shorter admin session lifetimes
 are not implemented.
+
+---
+
+## Gap closure — restaurant analytics and customer restrictions (§61, §95)
+
+An audit of every endpoint in API_SPEC against the implemented routes found these missing; all are
+now implemented. `GET /orders` in §10 is only a pagination example (customers use
+`GET /customer/orders`).
+
+| Endpoint | Access | Notes |
+|----------|--------|-------|
+| `GET /restaurant/analytics/overview` | owner | orderCount, deliveredCount, cancelledCount, salesAmount, averageOrderValue, averageRating, reviewCount |
+| `GET /restaurant/analytics/sales` | owner | per business-timezone date: deliveredCount, salesAmount |
+| `GET /restaurant/analytics/orders` | owner | total and counts by status |
+| `GET /restaurant/analytics/popular-items` | owner | top items by quantity from delivered orders; query `limit` (1–50, default 10) |
+| `GET /restaurant/analytics/ratings` | owner | published-review summary for reviews created in the range |
+| `GET /restaurant/analytics/cancellations` | owner | total, by cancellation status and by reason code |
+| `POST /admin/customers/{id}/restrict` | admin | {reason, expiresAt?} → `201 RiskRestriction` (`ACCOUNT_RESTRICTED`); `409` when already restricted |
+| `POST /admin/customers/{id}/restore` | admin | {reason} → removes active `ACCOUNT_RESTRICTED` restrictions; `409` when none |
+
+Analytics definitions:
+* All analytics take an optional `from`/`to` range and cover only orders released to the restaurant
+  (unpaid online orders are excluded).
+* Order counts are by `placedAt`; sales, daily series and popular items are by `deliveredAt`.
+* Sales = `subtotal − discount` (the restaurant's gross, ADR-0014 §2); delivery fee, service fee and
+  tax are excluded.
+* Analytics are owner-only because they expose sales amounts (FINANCIAL_SPEC §41).
+
+Restrict and restore reuse the risk restriction service, which audits both actions
+(`RISK_RESTRICTION_CREATED` / `RISK_RESTRICTION_RESOLVED`); checkout already enforces
+`ACCOUNT_RESTRICTED`.
 

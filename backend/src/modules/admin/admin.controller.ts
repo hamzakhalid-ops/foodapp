@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   type AdminCustomer,
   type AdminCustomerDetail,
@@ -13,6 +24,10 @@ import {
   type ConfigurationEntry,
   type Order,
   type OrderSummary,
+  reasonRequestSchema,
+  type RestrictCustomerRequest,
+  restrictCustomerRequestSchema,
+  type RiskRestriction,
   type UpdateConfigurationRequest,
   updateConfigurationRequestSchema,
 } from '@quickbite/validation';
@@ -30,6 +45,7 @@ import { ReqMeta, type RequestMeta } from '../../common/http/request-meta';
 import { ZodValidationPipe } from '../../common/http/zod-validation.pipe';
 import { AuditService } from '../audit/audit.service';
 import { OrdersService } from '../orders/orders.service';
+import { RiskAdminService } from '../risk/risk-admin.service';
 import { AdminConfigurationService } from './admin-configuration.service';
 import { AdminReadService } from './admin-read.service';
 
@@ -42,6 +58,7 @@ export class AdminController {
     private readonly orders: OrdersService,
     private readonly audit: AuditService,
     private readonly configuration: AdminConfigurationService,
+    private readonly risk: RiskAdminService,
   ) {}
 
   @Get('dashboard')
@@ -59,6 +76,51 @@ export class AdminController {
 
   @Get('customers/:customerId')
   customer(@Param('customerId', ParseUUIDPipe) customerId: string): Promise<AdminCustomerDetail> {
+    return this.read.customer(customerId);
+  }
+
+  /**
+   * ADMIN_SPEC §7: account restriction goes through the risk mechanism — an ACCOUNT_RESTRICTED
+   * risk restriction, which checkout enforces. Audited by the risk service.
+   */
+  @Post('customers/:customerId/restrict')
+  async restrict(
+    @CurrentAuth() auth: AuthContext,
+    @Param('customerId', ParseUUIDPipe) customerId: string,
+    @Body(new ZodValidationPipe(restrictCustomerRequestSchema)) body: RestrictCustomerRequest,
+    @ReqMeta() meta: RequestMeta,
+  ): Promise<RiskRestriction> {
+    await this.read.customer(customerId);
+    return this.risk.createRestriction(
+      {
+        subjectType: 'CUSTOMER',
+        subjectId: customerId,
+        restrictionType: 'ACCOUNT_RESTRICTED',
+        reason: body.reason,
+        ...(body.expiresAt ? { expiresAt: body.expiresAt } : {}),
+      },
+      auth.userId,
+      meta,
+    );
+  }
+
+  @Post('customers/:customerId/restore')
+  @HttpCode(HttpStatus.OK)
+  async restore(
+    @CurrentAuth() auth: AuthContext,
+    @Param('customerId', ParseUUIDPipe) customerId: string,
+    @Body(new ZodValidationPipe(reasonRequestSchema)) body: { reason: string },
+    @ReqMeta() meta: RequestMeta,
+  ): Promise<AdminCustomerDetail> {
+    await this.read.customer(customerId);
+    await this.risk.removeActiveOfType(
+      'CUSTOMER',
+      customerId,
+      'ACCOUNT_RESTRICTED',
+      body.reason,
+      auth.userId,
+      meta,
+    );
     return this.read.customer(customerId);
   }
 
