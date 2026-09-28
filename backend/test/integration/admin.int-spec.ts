@@ -113,6 +113,49 @@ describe('Slice 16 — admin operations and MFA', () => {
     });
   });
 
+  describe('customer restrictions', () => {
+    it('restricts and restores a customer through the risk mechanism (ADMIN_SPEC §7)', async () => {
+      const admin = await h.actor('ADMIN');
+      const customer = await h.actor('CUSTOMER');
+      const url = `/admin/customers/${customer.userId}`;
+      await post(admin, `${url}/restore`, { reason: 'x' }).expect(409);
+      const restricted = await post(admin, `${url}/restrict`, {
+        reason: 'Chargeback fraud',
+      }).expect(201);
+      expect(data(restricted.body)).toMatchObject({
+        subjectType: 'CUSTOMER',
+        subjectId: customer.userId,
+        restrictionType: 'ACCOUNT_RESTRICTED',
+        status: 'ACTIVE',
+      });
+      await post(admin, `${url}/restrict`, { reason: 'again' }).expect(409);
+
+      // Checkout enforces the restriction.
+      await f.configurePricing();
+      const restaurant = await h.restaurant();
+      await post(customer, '/cart/items', {
+        restaurantId: restaurant.restaurantId,
+        menuItemId: await f.menuItem(restaurant),
+        quantity: 1,
+      }).expect(201);
+      const blocked = await post(customer, '/checkout/preview', {
+        addressId: await f.address(customer),
+        paymentMethod: 'CASH_ON_DELIVERY',
+      });
+      expect(error(blocked.body)).toBe('ACCOUNT_RESTRICTED');
+
+      const restored = await post(admin, `${url}/restore`, { reason: 'Resolved' }).expect(200);
+      expect(data(restored.body)).toMatchObject({ activeRiskRestrictions: [] });
+      await post(admin, `/admin/customers/${admin.userId}/restrict`, { reason: 'x' }).expect(404);
+      await post(customer, `${url}/restrict`, { reason: 'x' }).expect(403);
+      expect(
+        await h.prisma.auditLog.count({
+          where: { action: { in: ['RISK_RESTRICTION_CREATED', 'RISK_RESTRICTION_RESOLVED'] } },
+        }),
+      ).toBe(2);
+    });
+  });
+
   describe('configuration', () => {
     it('lists settings and lets only a super admin change them, validated and audited', async () => {
       const admin = await h.actor('ADMIN');

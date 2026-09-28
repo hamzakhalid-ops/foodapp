@@ -13,7 +13,7 @@ import { RiskService } from './risk.service';
 @Module({
   controllers: [RiskAdminController],
   providers: [RiskService, RiskAdminService],
-  exports: [RiskService],
+  exports: [RiskService, RiskAdminService],
 })
 export class RiskModule implements OnModuleInit {
   constructor(

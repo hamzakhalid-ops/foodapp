@@ -22,6 +22,9 @@ import {
   orderSchema,
   type OrderSummary,
   orderSummarySchema,
+  type RestrictCustomerRequest,
+  type RiskRestriction,
+  riskRestrictionSchema,
   type UpdateConfigurationRequest,
   type UpdateDispatchSettingsRequest,
 } from '@quickbite/validation';
@@ -90,6 +93,28 @@ export function createAdminApi(client: ApiClient) {
         await client.request({
           method: 'GET',
           path: `/admin/customers/${id(customerId)}`,
+          schema: adminCustomerDetailSchema,
+        })
+      ).data,
+    /** ADMIN_SPEC §7: adds an ACCOUNT_RESTRICTED risk restriction. */
+    restrictCustomer: async (
+      customerId: string,
+      body: RestrictCustomerRequest,
+    ): Promise<RiskRestriction> =>
+      (
+        await client.request({
+          method: 'POST',
+          path: `/admin/customers/${id(customerId)}/restrict`,
+          body,
+          schema: riskRestrictionSchema,
+        })
+      ).data,
+    restoreCustomer: async (customerId: string, reason: string): Promise<AdminCustomerDetail> =>
+      (
+        await client.request({
+          method: 'POST',
+          path: `/admin/customers/${id(customerId)}/restore`,
+          body: { reason },
           schema: adminCustomerDetailSchema,
         })
       ).data,

@@ -234,12 +234,19 @@ export class ReviewsService {
   }
 
   /** Aggregates over PUBLISHED reviews only (REVIEW_RULES §22–23). */
-  async ratingSummaries(restaurantIds: string[]): Promise<Map<string, RatingSummary>> {
+  async ratingSummaries(
+    restaurantIds: string[],
+    createdAt?: Prisma.DateTimeFilter,
+  ): Promise<Map<string, RatingSummary>> {
     const result = new Map<string, RatingSummary>();
     if (restaurantIds.length === 0) return result;
     const groups = await this.prisma.review.groupBy({
       by: ['restaurantId', 'rating'],
-      where: { restaurantId: { in: restaurantIds }, status: 'PUBLISHED' },
+      where: {
+        restaurantId: { in: restaurantIds },
+        status: 'PUBLISHED',
+        ...(createdAt ? { createdAt } : {}),
+      },
       _count: { _all: true },
     });
     for (const group of groups) {

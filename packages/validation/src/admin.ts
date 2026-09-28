@@ -42,6 +42,15 @@ export const adminCustomerDetailSchema = adminCustomerSchema.extend({
   activeRiskRestrictions: z.array(z.object({ id: z.uuid(), restrictionType: z.string() })),
 });
 
+/** ADMIN_SPEC §7 restrict: reason plus optional expiry of the ACCOUNT_RESTRICTED restriction. */
+export const restrictCustomerRequestSchema = z
+  .object({ reason: requiredText(500), expiresAt: instant.optional() })
+  .strict()
+  .refine((value) => !value.expiresAt || new Date(value.expiresAt) > new Date(), {
+    message: 'expiresAt must be in the future',
+    path: ['expiresAt'],
+  });
+
 // ------------------------------------------------------------------ configuration (API_SPEC §107)
 
 export const configurationEntrySchema = z.object({
@@ -137,6 +146,7 @@ export type AdminOrderListQuery = z.infer<typeof adminOrderListQuerySchema>;
 export type AdminCustomerListQuery = z.infer<typeof adminCustomerListQuerySchema>;
 export type AdminCustomer = z.infer<typeof adminCustomerSchema>;
 export type AdminCustomerDetail = z.infer<typeof adminCustomerDetailSchema>;
+export type RestrictCustomerRequest = z.infer<typeof restrictCustomerRequestSchema>;
 export type ConfigurationEntry = z.infer<typeof configurationEntrySchema>;
 export type UpdateConfigurationRequest = z.infer<typeof updateConfigurationRequestSchema>;
 export type DispatchSettings = z.infer<typeof dispatchSettingsSchema>;
