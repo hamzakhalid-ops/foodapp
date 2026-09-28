@@ -1,6 +1,6 @@
 import {
   type AcceptOrderRequest,
-  type AddCartItemRequest,
+  type AddCartItemInput,
   type AdminCancelRequest,
   type Cart,
   cartSchema,
@@ -32,7 +32,7 @@ export function createOrderApi(client: ApiClient) {
   return {
     getCart: async (): Promise<Cart> =>
       (await client.request({ method: 'GET', path: '/cart', schema: cartSchema })).data,
-    addCartItem: async (body: AddCartItemRequest): Promise<Cart> =>
+    addCartItem: async (body: AddCartItemInput): Promise<Cart> =>
       (await client.request({ method: 'POST', path: '/cart/items', body, schema: cartSchema }))
         .data,
     updateCartItem: async (cartItemId: string, quantity: number): Promise<Cart> =>

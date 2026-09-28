@@ -309,6 +309,14 @@ describe('Slice 15 — earnings, settlements and payouts', () => {
       ).body,
     );
     expect(retried.payouts.map((payout) => payout.status)).toEqual(['FAILED', 'PROCESSING']);
+    // At-least-once delivery: the first payout's failure event arrives again during the retry.
+    // It must not fail the settlement that is now paying out through the second attempt.
+    await h.prisma.outboxEvent.updateMany({
+      where: { eventType: 'payout.status_changed' },
+      data: { status: 'PENDING', availableAt: new Date() },
+    });
+    await drain();
+    expect((await settlementOf(restaurantId)).status).toBe('PROCESSING');
     await h
       .http()
       .post(`/api/v1/sandbox/payouts/${retried.payouts[1]?.providerReference ?? ''}/outcome`)

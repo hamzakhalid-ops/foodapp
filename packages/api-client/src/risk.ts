@@ -1,7 +1,7 @@
 import {
-  type CreateRiskEventRequest,
+  type CreateRiskEventInput,
   type CreateRiskRestrictionRequest,
-  type CreateRiskRuleRequest,
+  type CreateRiskRuleInput,
   type RiskEvent,
   riskEventSchema,
   type RiskFlag,
@@ -25,7 +25,7 @@ export function createAdminRiskApi(client: ApiClient) {
   const list = <T extends z.ZodType>(path: string, schema: T, query: Partial<RiskListQuery>) =>
     client.request({ method: 'GET', path: `${base}${path}`, schema: z.array(schema), query });
   return {
-    recordEvent: async (body: CreateRiskEventRequest): Promise<void> => {
+    recordEvent: async (body: CreateRiskEventInput): Promise<void> => {
       await client.request({ method: 'POST', path: `${base}/events`, body, schema: z.unknown() });
     },
     listEvents: (query: Partial<RiskListQuery> = {}): Promise<ApiResult<RiskEvent[]>> =>
@@ -38,7 +38,7 @@ export function createAdminRiskApi(client: ApiClient) {
           schema: z.array(riskRuleSchema),
         })
       ).data,
-    createRule: async (body: CreateRiskRuleRequest): Promise<RiskRule> =>
+    createRule: async (body: CreateRiskRuleInput): Promise<RiskRule> =>
       (
         await client.request({
           method: 'POST',

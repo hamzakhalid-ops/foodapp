@@ -177,6 +177,8 @@ export const customerOrderListQuerySchema = cursorQuerySchema
   });
 
 export type AddCartItemRequest = z.infer<typeof addCartItemRequestSchema>;
+/** What a client sends: fields with server defaults may be omitted (`z.input`). */
+export type AddCartItemInput = z.input<typeof addCartItemRequestSchema>;
 export type UpdateCartItemRequest = z.infer<typeof updateCartItemRequestSchema>;
 export type CartIssue = z.infer<typeof cartIssueSchema>;
 export type CartLine = z.infer<typeof cartLineSchema>;
