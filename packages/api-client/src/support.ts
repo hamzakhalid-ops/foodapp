@@ -1,8 +1,8 @@
 import {
-  type AdminSupportMessageRequest,
+  type AdminSupportMessageInput,
   type AdminSupportTicketListQuery,
   type AdminUpdateSupportTicketRequest,
-  type CreateSupportTicketRequest,
+  type CreateSupportTicketInput,
   type SupportTicket,
   type SupportTicketDetail,
   supportTicketDetailSchema,
@@ -20,7 +20,7 @@ const id = (value: string) => encodeURIComponent(value);
  */
 export function createSupportApi(client: ApiClient) {
   return {
-    create: async (body: CreateSupportTicketRequest): Promise<SupportTicketDetail> =>
+    create: async (body: CreateSupportTicketInput): Promise<SupportTicketDetail> =>
       (
         await client.request({
           method: 'POST',
@@ -110,7 +110,7 @@ export function createAdminSupportApi(client: ApiClient) {
           schema: adminDetailSchema,
         })
       ).data,
-    sendMessage: async (ticketId: string, body: AdminSupportMessageRequest) =>
+    sendMessage: async (ticketId: string, body: AdminSupportMessageInput) =>
       (
         await client.request({
           method: 'POST',

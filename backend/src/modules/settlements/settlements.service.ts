@@ -338,7 +338,13 @@ export class SettlementsService {
     await this.prisma.$transaction(async (tx) => {
       const settlement = await this.lock(tx, payload.settlementId);
       if (settlement.status !== 'PROCESSING') return;
-      const payout = await tx.payout.findUniqueOrThrow({ where: { id: payload.payoutId } });
+      // Events are delivered at least once: only the settlement's latest payout attempt decides
+      // its outcome, so a redelivered event from an earlier failed attempt is ignored.
+      const payout = await tx.payout.findFirstOrThrow({
+        where: { settlementId: settlement.id },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (payout.id !== payload.payoutId) return;
       if (payout.status === 'FAILED') {
         await tx.settlement.update({ where: { id: settlement.id }, data: { status: 'FAILED' } });
         await this.audit.record(

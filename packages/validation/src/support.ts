@@ -165,6 +165,9 @@ export const supportTicketDetailSchema = supportTicketSchema.extend({
 export type CreateSupportTicketRequest = z.infer<typeof createSupportTicketRequestSchema>;
 export type SupportMessageRequest = z.infer<typeof supportMessageRequestSchema>;
 export type AdminSupportMessageRequest = z.infer<typeof adminSupportMessageRequestSchema>;
+/** What a client sends: fields with server defaults may be omitted (`z.input`). */
+export type CreateSupportTicketInput = z.input<typeof createSupportTicketRequestSchema>;
+export type AdminSupportMessageInput = z.input<typeof adminSupportMessageRequestSchema>;
 export type AdminUpdateSupportTicketRequest = z.infer<typeof adminUpdateSupportTicketRequestSchema>;
 export type AssignSupportTicketRequest = z.infer<typeof assignSupportTicketRequestSchema>;
 export type ResolveSupportTicketRequest = z.infer<typeof resolveSupportTicketRequestSchema>;

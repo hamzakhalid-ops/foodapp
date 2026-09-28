@@ -147,6 +147,9 @@ export const riskRestrictionSchema = z.object({
 
 export type CreateRiskEventRequest = z.infer<typeof createRiskEventRequestSchema>;
 export type CreateRiskRuleRequest = z.infer<typeof createRiskRuleRequestSchema>;
+/** What a client sends: fields with server defaults may be omitted (`z.input`). */
+export type CreateRiskEventInput = z.input<typeof createRiskEventRequestSchema>;
+export type CreateRiskRuleInput = z.input<typeof createRiskRuleRequestSchema>;
 export type UpdateRiskRuleRequest = z.infer<typeof updateRiskRuleRequestSchema>;
 export type CreateRiskRestrictionRequest = z.infer<typeof createRiskRestrictionRequestSchema>;
 export type UpdateRiskRestrictionRequest = z.infer<typeof updateRiskRestrictionRequestSchema>;

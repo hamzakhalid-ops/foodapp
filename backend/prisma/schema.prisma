@@ -1711,6 +1711,7 @@ model RestaurantEarning {
 
   @@index([restaurantId, createdAt])
   @@index([status, createdAt])
+  @@index([settlementId])
   @@map("restaurant_earnings")
 }
 
@@ -1735,6 +1736,7 @@ model RiderEarning {
 
   @@index([riderId, createdAt])
   @@index([status, createdAt])
+  @@index([settlementId])
   @@map("rider_earnings")
 }
 
@@ -1759,6 +1761,7 @@ model FinancialAdjustment {
 
   @@index([recipientType, recipientId, createdAt])
   @@index([status, createdAt])
+  @@index([settlementId])
   @@map("financial_adjustments")
 }
 
@@ -1835,6 +1838,7 @@ model Payout {
   settlement Settlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
 
   @@index([status, createdAt])
+  @@index([settlementId])
   @@index([recipientType, recipientId, createdAt])
   @@map("payouts")
 }
