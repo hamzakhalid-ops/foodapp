@@ -184,7 +184,7 @@ cannot silently fake success.
 
 ## 10. Test Results
 
-Commands are the repository's own (`package.json` / `backend/package.json`), run against real
+Commands are the repository's own (root and backend package scripts), run against real
 PostgreSQL 16 and Redis. Results after the fixes:
 
 | Check | Command | Result |
