@@ -13,7 +13,7 @@ and `screen.png` are not renamed, edited or converted.
   follow the closest candidate scope and must be confirmed before each batch starts
   (`SCREEN_PLAN.md` §7–§20).
 * **Design status:** `PROVIDED` means `code.html` and `screen.png` are both present.
-* **Implementation status:** every screen is `TODO`, because no screens are implemented yet.
+* **Implementation status:** mirrors `SCREEN_PLAN.md` (`TODO`, `IN_PROGRESS`, `REVIEW`, `APPROVED`, `BLOCKED`).
 
 Inventory taken 2026-09-28: 84 screens, 4 image assets, 1 design system file.
 
@@ -27,10 +27,10 @@ Inventory taken 2026-09-28: 84 screens, 4 image assets, 1 design system file.
 
 | #   | Screen                              | Folder                                 | Files                   | Plan batch                   | Design   | Impl |
 | --- | ----------------------------------- | -------------------------------------- | ----------------------- | ---------------------------- | -------- | ---- |
-| 1   | Splash                              | `1._splash_screen`                     | code.html, screen.png   | 01 — Authentication          | PROVIDED | TODO |
-| 2   | Welcome                             | `2._welcome_screen`                    | code.html, screen.png   | 01 — Authentication          | PROVIDED | TODO |
-| 3   | Login                               | `3._login_screen`                      | code.html, screen.png   | 01 — Authentication          | PROVIDED | TODO |
-| 4   | Create Account                      | `4._create_account_screen`             | code.html, screen.png   | 01 — Authentication          | PROVIDED | TODO |
+| 1   | Splash                              | `1._splash_screen`                     | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
+| 2   | Welcome                             | `2._welcome_screen`                    | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
+| 3   | Login                               | `3._login_screen`                      | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
+| 4   | Create Account                      | `4._create_account_screen`             | code.html, screen.png   | 01 — Authentication          | PROVIDED | REVIEW |
 | 5   | Phone Verification                  | `1._phone_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
 | 6   | Email Verification                  | `2._email_verification_screen`         | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |
 | 7   | Forgot Password                     | `3._forgot_password_screen`            | code.html, screen.png   | 02 — Account Verification    | PROVIDED | TODO |

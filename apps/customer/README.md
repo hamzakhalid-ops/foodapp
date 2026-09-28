@@ -141,10 +141,16 @@ Never implement future screens, even if they are easy. Only the user marks a scr
 ## Current implementation status
 
 ```text
-Foundation:  DONE   — project structure, providers, API client wiring, lint/typecheck/test/build
-Screens:     NONE   — no product screens implemented
+Foundation:  DONE    — project structure, providers, API client wiring, lint/typecheck/test/build
+Batch 01:    REVIEW  — Splash, Welcome, Login, Create Account (SCREEN_PLAN.md §5)
 ```
 
-`src/app/index.tsx` is a clearly-marked **foundation placeholder** (not a product screen) that exists only so the router can build. It is replaced by the first approved batch.
+Batch 01 added:
+
+- `src/theme/tokens.ts` — Stitch "Warm Kinetic" tokens (colors, type scale, spacing, shadows); Plus Jakarta Sans loaded in `src/app/_layout.tsx`.
+- `src/components/ui.tsx` — shared building blocks for the Stitch screens (buttons, text field, icons, brand marks).
+- `src/lib/auth/` — session handling: refresh token in `expo-secure-store` only, access token in memory, serialized refresh; API error → user message mapping.
+- `src/content/marketing-copy.ts` — Stitch marketing copy, **pending project-owner approval** before release.
+- `src/app/signed-in.tsx` — a clearly-marked **boundary placeholder** (not a product screen) reached after sign-in/sign-up until Batch 02 (phone verification) and Batch 03 (Home) are implemented.
 
 Next batch for this app: see `SCREEN_PLAN.md` (App order: Customer → Restaurant → Rider → Admin, `CLAUDE.md` §24).

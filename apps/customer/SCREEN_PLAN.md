@@ -139,19 +139,34 @@ when necessary.
 Status:
 
 ```text
-TODO
+REVIEW
 ```
 
 Screens:
 
 ```text
-1. Splash
-2. Welcome
-3. Login
-4. Create Account
+1. Splash          REVIEW   src/app/index.tsx
+2. Welcome         REVIEW   src/app/welcome.tsx
+3. Login           REVIEW   src/app/login.tsx
+4. Create Account  REVIEW   src/app/create-account.tsx
 ```
 
 Claude may implement ONLY these four screens during Batch 01.
+
+Open design/spec decisions from Batch 01 (awaiting project-owner review):
+
+* Google / Apple sign-up and Face ID / Touch ID are shown in Stitch but are not in any
+  specification; they are not implemented.
+* "Full Name" is split into First Name / Last Name (API_SPEC §16.1 requires both).
+* Phone dial code is fixed to +92 (launch market open — REPOSITORY_CONSISTENCY_REPORT H5);
+  Stitch shows a +1 country picker.
+* Password hint reads "At least 8 characters"; the Stitch "including a number" rule is not a
+  backend rule (AUTH_AUTHORIZATION §9).
+* Marketing claims (delivery time, rating, "$0 first delivery") are kept verbatim in
+  `src/content/marketing-copy.ts` and need approval before release.
+* Terms / Privacy / Forgot Password links are shown without navigation (later batches).
+* After sign-in / sign-up the app lands on a clearly marked boundary placeholder
+  (`src/app/signed-in.tsx`) until Batch 02 (phone verification) and Batch 03 (Home) exist.
 
 Do not implement:
 
