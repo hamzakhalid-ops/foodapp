@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline": "#8e7164", "primary-fixed-dim": "#ffb693", "on-error": "#ffffff", "surface-variant": "#e0e3e5", "secondary-container": "#fd7714", "surface-container-highest": "#e0e3e5", "surface-container-high": "#e6e8ea", "on-secondary-fixed": "#331200", "on-tertiary": "#ffffff", "surface-container-low": "#f2f4f6", "on-primary-fixed": "#351000", "inverse-surface": "#2d3133", "on-secondary-container": "#5b2500", "tertiary-fixed": "#dae2fd", "on-surface-variant": "#5a4136", "on-tertiary-container": "#293045", "tertiary-fixed-dim": "#bec6e0", "surface-container-lowest": "#ffffff", "on-surface": "#191c1e", "on-primary-fixed-variant": "#7a3000", "surface": "#ffffff", "on-tertiary-fixed-variant": "#3f465c", "secondary-fixed-dim": "#ffb68e", "secondary": "#9c4500", "on-secondary": "#ffffff", "surface-tint": "#a04100", "tertiary-container": "#9198b1", "outline-variant": "#e2bfb0", "surface-dim": "#d8dadc", "on-primary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#ffdbcc", "surface-container": "#eceef0", "secondary-fixed": "#ffdbca", "primary-container": "#ff6b00", "on-background": "#191c1e", "tertiary": "#565e74", "on-primary-container": "#572000", "inverse-on-surface": "#eff1f3", "error": "#ba1a1a", "on-secondary-fixed-variant": "#773300", "inverse-primary": "#ffb693", "background": "#ffffff", "error-container": "#ffdad6", "on-tertiary-fixed": "#131b2e", "surface-bright": "#ffffff", "primary": "#a04100" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "margin-mobile": "1.25rem", "space-md": "1rem", "gutter-mobile": "0.75rem", "margin": "1.5rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "space-xs": "0.25rem" }, "fontFamily": { "body-sm": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"] }, "fontSize": { "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-lg": ["16px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:text-primary-container transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-md text-headline-md tracking-tight text-on-surface">Verification Settings</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Help or Information" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary-container transition-colors"><span class="material-symbols-outlined text-[22px]">info</span></button></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full pb-8">
+<div class="px-margin-mobile pt-3 pb-5 flex flex-col gap-space-sm">
+<div class="inline-flex items-center gap-1.5 self-start px-3 py-1 rounded-full bg-primary-fixed/60 text-on-primary-fixed">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-bold text-primary">Security Center</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Two-Factor &amp; Contact Verification</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+      Verified contact methods protect your account during login, order disputes, and high-value payments.
+    </p>
+<div class="mt-2 bg-surface-container-lowest rounded-xl p-4 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">health_and_safety</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Account Protection Level</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Strong • 2 of 2 methods authenticated</p>
+</div>
+</div>
+<div class="relative w-11 h-11 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-high" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-label-sm text-label-sm font-bold text-on-surface">100%</span>
+</div>
+</div>
+</div>
+<div class="px-margin-mobile flex flex-col gap-space-md">
+<div class="flex items-center justify-between pt-2">
+<h3 class="font-label-sm text-label-sm tracking-wider text-on-surface-variant uppercase font-bold">Primary Contact Verification</h3>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">info</span> Real-Time Sync
+      </span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-3 transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-bold">Mobile Phone</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="font-label-sm text-[10px] leading-tight font-bold">Verified</span>
+</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-on-surface tracking-tight mt-0.5">(512) •••-0194</p>
+</div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Receives courier delivery alerts, order updates, and SMS 2-step verification codes.
+      </p>
+<div class="pt-2 flex items-center justify-between bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-primary">security</span>
+<span class="font-label-sm text-[11px] font-semibold text-on-surface">Default for SMS 2FA</span>
+</div>
+<button class="font-label-md text-label-md text-primary font-bold hover:text-on-primary-fixed-variant transition-colors flex items-center gap-0.5" onclick="alert('Phone update verification initiated. A secure OTP will be sent.')" type="button">
+          Change Number
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-3 transition-all duration-200">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-start gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[22px]" style="font-variation-settings: 'FILL' 1;">mark_email_read</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface font-bold">Email Address</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="font-label-sm text-[10px] leading-tight font-bold">Verified</span>
+</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-semibold truncate mt-0.5">a•••••••••••n@example.com</p>
+</div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Receives digital order receipts, refund notifications, and critical security warnings.
+      </p>
+<div class="pt-2 flex items-center justify-end bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<button class="font-label-md text-label-md text-primary font-bold hover:text-on-primary-fixed-variant transition-colors flex items-center gap-0.5" onclick="alert('Secure email modification link sent to verified address.')" type="button">
+          Change Email
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="px-margin-mobile flex flex-col gap-space-md mt-6">
+<div class="flex items-center justify-between">
+<h3 class="font-label-sm text-label-sm tracking-wider text-on-surface-variant uppercase font-bold">Login Challenge Rules</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Enhanced Security</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col gap-4">
+<div class="flex items-center justify-between gap-3">
+<div class="flex flex-col pr-2">
+<p class="font-label-md text-label-md text-on-surface font-bold">Require 2-step for new devices</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Mandate an authorization passcode when logging in on unrecognized hardware.</p>
+</div>
+<button aria-checked="true" class="w-12 h-7 rounded-full bg-primary-container p-0.5 flex items-center justify-end transition-colors relative shrink-0" id="toggle-new-device" onclick="toggleSwitch(this)" role="switch" type="button">
+<span class="w-6 h-6 rounded-full bg-on-primary shadow-sm transform transition-transform"></span>
+</button>
+</div>
+<div class="h-[1px] bg-surface-container-low w-full"></div>
+<div class="flex items-center justify-between gap-3">
+<div class="flex flex-col pr-2">
+<p class="font-label-md text-label-md text-on-surface font-bold">Require code for orders over $100</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Prevent accidental or unauthorized high-value checkout charges.</p>
+</div>
+<button aria-checked="true" class="w-12 h-7 rounded-full bg-primary-container p-0.5 flex items-center justify-end transition-colors relative shrink-0" id="toggle-order-val" onclick="toggleSwitch(this)" role="switch" type="button">
+<span class="w-6 h-6 rounded-full bg-on-primary shadow-sm transform transition-transform"></span>
+</button>
+</div>
+<div class="h-[1px] bg-surface-container-low w-full"></div>
+<div class="flex flex-col gap-2.5">
+<label class="font-label-md text-label-md text-on-surface font-bold">Primary 2FA Delivery Method</label>
+<div class="grid grid-cols-2 gap-2" role="radiogroup">
+<button class="flex flex-col items-start gap-1 p-3 rounded-lg bg-surface-container-high transition-all text-left group" id="method-sms" onclick="select2FAMethod('sms')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">sms</span>
+<span class="material-symbols-outlined text-[18px] text-primary" id="sms-check">check_circle</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface mt-1">SMS Code</span>
+<span class="font-body-sm text-[11px] text-primary font-semibold">Recommended</span>
+</button>
+<button class="flex flex-col items-start gap-1 p-3 rounded-lg bg-surface-container-low transition-all text-left group opacity-80" id="method-email" onclick="select2FAMethod('email')" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">mail</span>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest hidden" id="email-check">check_circle</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface mt-1">Email Code</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Secondary route</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="px-margin-mobile mt-5">
+<div class="bg-primary-fixed/30 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<p class="font-label-md text-label-md text-on-primary-fixed font-bold">QuickBite Security Guarantee</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          We will never call or message you asking for your verification code or password. Never share OTP codes with couriers or third parties.
+        </p>
+</div>
+</div>
+</div>
+<div class="px-margin-mobile mt-6 mb-2">
+<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg font-bold shadow-md hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2" id="save-btn" onclick="saveSettings()" type="button">
+<span class="material-symbols-outlined text-[20px]">save</span>
+<span>Save Preferences</span>
+</button>
+<div class="hidden mt-3 p-3 rounded-lg bg-emerald-50 text-emerald-800 text-center font-label-md text-label-md flex items-center justify-center gap-2" id="save-toast">
+<span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+      Verification rules successfully updated!
+    </div>
+</div>
+</div>
+<script>
+  function toggleSwitch(btn) {
+    const isChecked = btn.getAttribute('aria-checked') === 'true';
+    const thumb = btn.firstElementChild;
+    if (isChecked) {
+      btn.setAttribute('aria-checked', 'false');
+      btn.classList.remove('bg-primary-container', 'justify-end');
+      btn.classList.add('bg-surface-container-highest', 'justify-start');
+    } else {
+      btn.setAttribute('aria-checked', 'true');
+      btn.classList.remove('bg-surface-container-highest', 'justify-start');
+      btn.classList.add('bg-primary-container', 'justify-end');
+    }
+  }
+
+  function select2FAMethod(method) {
+    const smsBtn = document.getElementById('method-sms');
+    const emailBtn = document.getElementById('method-email');
+    const smsCheck = document.getElementById('sms-check');
+    const emailCheck = document.getElementById('email-check');
+
+    if (method === 'sms') {
+      smsBtn.classList.remove('bg-surface-container-low', 'opacity-80');
+      smsBtn.classList.add('bg-surface-container-high');
+      smsCheck.classList.remove('hidden');
+      
+      emailBtn.classList.remove('bg-surface-container-high');
+      emailBtn.classList.add('bg-surface-container-low', 'opacity-80');
+      emailCheck.classList.add('hidden');
+    } else {
+      emailBtn.classList.remove('bg-surface-container-low', 'opacity-80');
+      emailBtn.classList.add('bg-surface-container-high');
+      emailCheck.classList.remove('hidden');
+      
+      smsBtn.classList.remove('bg-surface-container-high');
+      smsBtn.classList.add('bg-surface-container-low', 'opacity-80');
+      smsCheck.classList.add('hidden');
+    }
+  }
+
+  function saveSettings() {
+    const btn = document.getElementById('save-btn');
+    const toast = document.getElementById('save-toast');
+    const originalText = btn.innerHTML;
+
+    btn.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span> Saving...`;
+    btn.disabled = true;
+
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3500);
+    }, 600);
+  }
+</script></main></body></html>

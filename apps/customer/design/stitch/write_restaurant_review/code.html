@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-tertiary-container": "#293045", "on-primary-fixed": "#351000", "on-error-container": "#93000a", "surface-bright": "#f7f9fb", "on-secondary-fixed": "#331200", "surface-container": "#eceef0", "outline-variant": "#e2bfb0", "on-tertiary-fixed-variant": "#3f465c", "surface-tint": "#a04100", "on-secondary-fixed-variant": "#773300", "on-primary": "#ffffff", "error": "#ba1a1a", "on-secondary-container": "#5b2500", "inverse-on-surface": "#eff1f3", "primary": "#a04100", "surface-container-highest": "#e0e3e5", "on-surface-variant": "#5a4136", "on-primary-container": "#572000", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#7a3000", "surface-dim": "#d8dadc", "surface-container-low": "#f2f4f6", "primary-fixed-dim": "#ffb693", "surface-container-high": "#e6e8ea", "on-secondary": "#ffffff", "primary-container": "#ff6b00", "outline": "#8e7164", "on-surface": "#191c1e", "on-tertiary-fixed": "#131b2e", "surface": "#f7f9fb", "surface-variant": "#e0e3e5", "error-container": "#ffdad6", "on-background": "#191c1e", "tertiary-fixed-dim": "#bec6e0", "secondary-fixed": "#ffdbca", "tertiary": "#565e74", "secondary": "#9c4500", "inverse-surface": "#2d3133", "secondary-fixed-dim": "#ffb68e", "inverse-primary": "#ffb693", "secondary-container": "#fd7714", "primary-fixed": "#ffdbcc", "on-error": "#ffffff", "tertiary-container": "#9198b1", "surface-container-lowest": "#ffffff", "tertiary-fixed": "#dae2fd", "background": "#f7f9fb" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "space-md": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "gutter-mobile": "0.75rem", "space-sm": "0.5rem", "margin": "1.5rem", "margin-mobile": "1.25rem", "space-lg": "1.5rem" }, fontFamily: { "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"] }, fontSize: { "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "800" }], "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "label-md": ["14px", { lineHeight: "18px", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "headline-lg-mobile": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Write Restaurant Review</h1></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-safe">
+<!-- Content Container with Ergonomic Mobile Spacing -->
+<div class="flex flex-col px-margin-mobile pt-space-md gap-space-lg max-w-lg mx-auto w-full">
+<!-- Order Recap Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>Verified Order #QB-8942-TX</span>
+</div>
+<span class="text-on-surface-variant font-body-sm text-body-sm">Delivered Sep 28, 12:47 PM</span>
+</div>
+<div class="flex items-center gap-space-md pt-space-xs">
+<div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Gourmet artisan cheeseburger with golden toasted brioche bun, melty cheddar cheese draped over seared smashed beef patties, fresh crisp lettuce, and thick cut herb salted fries on a dark slate board in a warm gastro pub setting with soft atmospheric lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6TD8vp86l7KNDq0wqy9VxfcN7xpOHrYGSuk7IysRrF90Kpw7pjtpvcWTb3J5l5cIJsGziBzI6BpiGG7yb6eDnCnHruB2nI19Eq7Y_fXv1yl44uK7qu2hYqYonZmrN2sBXv5ld0rwZilahyvj8vwKtYowvFD4wmWqdnOinkqWu_VieHlVaCzH3AvIvbewFolYx-wFtH4yyw25-kJa-_O9ChfrodIP8LpgSK5nn_fN8oAzbLUjxkwyL"/>
+</div>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">The Burger Forge</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+            Double Bacon Smash, Truffle Brioche Burger, Truffle Herb Fries
+          </p>
+</div>
+</div>
+</div>
+<!-- Overall 5-Star Rating Section -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col items-center text-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-primary tracking-wide uppercase">Your Experience</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+        How was your food from The Burger Forge?
+      </h3>
+<!-- Interactive Golden Stars -->
+<div class="flex items-center justify-center gap-space-xs py-space-xs" id="star-rating-container">
+<button class="star-btn p-1 text-primary-container active:scale-90 transition-transform" data-val="1" type="button">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn p-1 text-primary-container active:scale-90 transition-transform" data-val="2" type="button">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn p-1 text-primary-container active:scale-90 transition-transform" data-val="3" type="button">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn p-1 text-primary-container active:scale-90 transition-transform" data-val="4" type="button">
+<span class="material-symbols-outlined text-[36px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn p-1 text-surface-container-highest active:scale-90 transition-transform" data-val="5" type="button">
+<span class="material-symbols-outlined text-[36px]">star</span>
+</button>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+<span id="star-feedback-label">Very Good! 4.0</span>
+</div>
+</div>
+<!-- Quick Tap Tags / Structured Feedback -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">What went well?</h4>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tap to tag</span>
+</div>
+<div class="flex flex-wrap gap-space-xs" id="quick-tags-container">
+<!-- Pre-selected tags -->
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-primary-container text-on-primary" type="button">
+          🔥 Arrived Steaming Hot
+        </button>
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-primary-container text-on-primary" type="button">
+          🍔 Perfect Doneness
+        </button>
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-primary-container text-on-primary" type="button">
+          📦 Secure Packaging
+        </button>
+<!-- Unselected tags -->
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-surface-container text-on-surface" type="button">
+          🌱 Fresh Ingredients
+        </button>
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-surface-container text-on-surface" type="button">
+          🍟 Crispy Fries
+        </button>
+<button class="tag-pill px-3.5 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 bg-surface-container text-on-surface" type="button">
+          ⚡ Fast Delivery
+        </button>
+</div>
+</div>
+<!-- Dish Rating Spotlight -->
+<div class="flex flex-col gap-space-sm">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Rate individual dishes</h4>
+<div class="flex flex-col gap-space-xs">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0 pr-2">
+<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Double bacon smash burger with caramelized crust, melted cheddar cheese dripping over savory bacon strips on a warm toasted sesame bun." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGs2vMIO82R5DvjsurTkYAJkC1-lqx_pa8_-TJSJvqdbi2MYNDcC6F_TgdLbhE5qjIzl3rJF-RiyUXBGq-FxEU1wErSpUV0LuHQN6t2gG8a0-mCPUo_MmlClj4DbOdR_Avqq_Xo681bSA0Fhe_TrdDxpuryaj-HWS5aZqylwUDf1QZu3HFQGesjw-U4LvlUVSxfsEvc3tGrdUan93mN6TEAus9b1izUsz0ohtiqNFww3sCA-eZHk25"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">Double Bacon Smash</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<button aria-label="Thumbs up Double Bacon Smash" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-primary-container text-on-primary shadow-sm active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+</button>
+<button aria-label="Thumbs down Double Bacon Smash" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_down</span>
+</button>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0 pr-2">
+<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Truffle brioche gourmet burger with creamy white truffle aioli, sauteed mushrooms, and baby arugula presented in upscale burger styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKet0O6fTLX__DiVaZcNvNclqxMpLaTCPlZS1WYSJv4aSWnIPJ7y-p-B5WxQ23cHdDhQDhcOlvqWxpRBJNjusp81edxxsOLJ6uMIB7JtGz_SYeSgWlbC54lv6jHW0gcGfWoKxCv1rxELf9gwIDoT1SGQmqgsZ03yNrmCHV_--YgQkHs6zLNPpyegbnYu_6XgRiwot25y1VN6mXh2Trid3Bto950HOmDTCgxHy154iLu4q8Xws4Kpfn"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">Truffle Brioche Burger</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<button aria-label="Thumbs up Truffle Brioche Burger" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-primary-container text-on-primary shadow-sm active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+</button>
+<button aria-label="Thumbs down Truffle Brioche Burger" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_down</span>
+</button>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0 pr-2">
+<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Crispy golden skin-on fries tossed in rosemary herb salt and parmesan flakes served in a rustic ceramic cup." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrx466VfEugRu1BC1BfyfqLtFc4C5oZc6eKyPRdrhl5y_5u8At5x_v6BMQQmLXcVmlbY5Elcg9L8iD5q39buubl__LWr_U0roBX79zUFEpJYas1OdXpPop61ZtYdEjDxY9X2ZQ29ID5ailXW1nX85bFGv-hwkoyZKPU-nfeu2KBATmlohduZc1MOxY7jzBo4AGiTubIh-HVuYYksysHbpRaxqhZO5SYduc6VTczjuTNYfxJnN2C_b8"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface truncate">Truffle Herb Fries</span>
+</div>
+<div class="flex items-center gap-1.5 shrink-0">
+<button aria-label="Thumbs up Truffle Herb Fries" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span>
+</button>
+<button aria-label="Thumbs down Truffle Herb Fries" class="w-9 h-9 rounded-full flex items-center justify-center transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_down</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Written Feedback / Textarea -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-on-surface" for="review-textarea">Share your dining experience <span class="font-body-sm text-body-sm text-on-surface-variant">(Optional)</span></label>
+<span class="font-body-sm text-body-sm text-on-surface-variant" id="char-counter">143 / 500</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm focus-within:ring-2 focus-within:ring-primary-container/40 transition-all">
+<textarea class="w-full bg-transparent resize-none text-on-surface font-body-md text-body-md outline-none placeholder:text-on-surface-variant/60" id="review-textarea" maxlength="500" placeholder="Tell other food lovers what stood out..." rows="4">The smash burger patties were super crispy on the edges and packed with smoky flavor! Truffle aioli is incredible. Everything arrived hot and safely sealed.</textarea>
+</div>
+</div>
+<!-- Photo Upload Section -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Add photos of your meal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1 of 3 uploaded</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<!-- Uploaded Photo Thumbnail -->
+<div class="relative w-20 h-20 rounded-xl overflow-hidden shadow-sm shrink-0 bg-surface-container group">
+<img class="w-full h-full object-cover" data-alt="Top down food smartphone snapshot of unpackaged hot burgers in takeout kraft paper boxes and golden french fries on a kitchen table." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBb5FvGKAMyFfgPelRQXaPifdg1APxpu6lQDtryfQspfaRrR_RJwi95cJE9VH0HWZFHELuF5HT5WqBkAaDTiGUcwSSUlJicaSVcksIGlzErfobaykKNVaAnefjQlEX6KwWeovy6vm66zREJ79qbb1yrZwxZVpemCT9DckbMGfVMZSN7FFFMOvhssE_tf8EnW7sNZG7ycPwi6m4elZBVeIU1I3evF4iNdl8d6qhoLMVIr4XSYX2pBgV"/>
+<button aria-label="Remove photo" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-inverse-surface/80 text-inverse-on-surface flex items-center justify-center backdrop-blur-sm active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[14px]">close</span>
+</button>
+</div>
+<!-- Add Photo Box -->
+<label class="w-20 h-20 rounded-xl bg-surface-container-low hover:bg-surface-container flex flex-col items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0">
+<span class="material-symbols-outlined text-primary text-[24px]">add_a_photo</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">+ Add</span>
+<input accept="image/*" class="hidden" type="file"/>
+</label>
+</div>
+</div>
+<!-- Public Display & Anonymous Toggle -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-label-md text-label-md">
+          AM
+        </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Post publicly as Alex M.</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Your first name and initial appear on the review</span>
+</div>
+</div>
+<!-- Interactive Toggle -->
+<button aria-checked="true" class="w-12 h-7 bg-primary-container rounded-full p-0.5 transition-colors relative flex items-center" id="anon-toggle" role="switch" type="button">
+<div class="w-6 h-6 bg-surface-container-lowest rounded-full shadow-md transform translate-x-5 transition-transform" id="toggle-knob"></div>
+</button>
+</div>
+<!-- Bottom Sticky Action Slot -->
+<div class="flex flex-col gap-space-xs pt-space-xs pb-space-lg">
+<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-[0_8px_16px_-2px_rgba(255,107,0,0.3)] active:scale-[0.98] transition-all hover:brightness-105" id="submit-review-btn" type="button">
+<span>Submit Review</span>
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center px-space-xs">
+        Your verified purchase review helps fellow foodies and supports local kitchens. QuickBite Review Guidelines apply.
+      </p>
+</div>
+</div>
+</div>
+<script>
+  // Character counter interactive micro-behavior
+  const textarea = document.getElementById('review-textarea');
+  const counter = document.getElementById('char-counter');
+  if (textarea && counter) {
+    const updateCount = () => {
+      counter.textContent = `${textarea.value.length} / 500`;
+    };
+    textarea.addEventListener('input', updateCount);
+    updateCount();
+  }
+
+  // Star Rating Micro-interaction
+  const starContainer = document.getElementById('star-rating-container');
+  const starLabel = document.getElementById('star-feedback-label');
+  const starLabels = {
+    1: 'Needs Work 1.0',
+    2: 'Fair 2.0',
+    3: 'Good 3.0',
+    4: 'Very Good! 4.0',
+    5: 'Spectacular! 5.0'
+  };
+
+  if (starContainer && starLabel) {
+    const stars = starContainer.querySelectorAll('.star-btn');
+    stars.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseInt(btn.getAttribute('data-val'), 10);
+        starLabel.textContent = starLabels[val] || `${val}.0`;
+        stars.forEach(s => {
+          const sVal = parseInt(s.getAttribute('data-val'), 10);
+          const icon = s.querySelector('.material-symbols-outlined');
+          if (sVal <= val) {
+            s.className = 'star-btn p-1 text-primary-container active:scale-90 transition-transform';
+            icon.style.fontVariationSettings = "'FILL' 1";
+          } else {
+            s.className = 'star-btn p-1 text-surface-container-highest active:scale-90 transition-transform';
+            icon.style.fontVariationSettings = "'FILL' 0";
+          }
+        });
+      });
+    });
+  }
+
+  // Quick Tags Pill Toggle
+  const tagsContainer = document.getElementById('quick-tags-container');
+  if (tagsContainer) {
+    tagsContainer.querySelectorAll('.tag-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const isSelected = pill.classList.contains('bg-primary-container');
+        if (isSelected) {
+          pill.classList.remove('bg-primary-container', 'text-on-primary');
+          pill.classList.add('bg-surface-container', 'text-on-surface');
+        } else {
+          pill.classList.remove('bg-surface-container', 'text-on-surface');
+          pill.classList.add('bg-primary-container', 'text-on-primary');
+        }
+      });
+    });
+  }
+
+  // Anonymous / Public Toggle
+  const anonToggle = document.getElementById('anon-toggle');
+  const toggleKnob = document.getElementById('toggle-knob');
+  if (anonToggle && toggleKnob) {
+    anonToggle.addEventListener('click', () => {
+      const isChecked = anonToggle.getAttribute('aria-checked') === 'true';
+      if (isChecked) {
+        anonToggle.setAttribute('aria-checked', 'false');
+        anonToggle.classList.remove('bg-primary-container');
+        anonToggle.classList.add('bg-surface-container-high');
+        toggleKnob.classList.remove('translate-x-5');
+        toggleKnob.classList.add('translate-x-0');
+      } else {
+        anonToggle.setAttribute('aria-checked', 'true');
+        anonToggle.classList.remove('bg-surface-container-high');
+        anonToggle.classList.add('bg-primary-container');
+        toggleKnob.classList.remove('translate-x-0');
+        toggleKnob.classList.add('translate-x-5');
+      }
+    });
+  }
+
+  // Submit Feedback Visual Ripple
+  const submitBtn = document.getElementById('submit-review-btn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => {
+      submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span><span>Submitting...</span>`;
+      setTimeout(() => {
+        submitBtn.className = "w-full h-[52px] bg-secondary text-on-secondary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-space-xs transition-all";
+        submitBtn.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span><span>Review Submitted!</span>`;
+      }, 700);
+    });
+  }
+</script></main></body></html>

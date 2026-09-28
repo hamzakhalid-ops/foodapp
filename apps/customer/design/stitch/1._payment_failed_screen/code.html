@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "inverse-primary": "#ffb693", "primary-fixed": "#ffdbcc", "tertiary-fixed-dim": "#bec6e0", "surface": "#f7f9fb", "tertiary-fixed": "#dae2fd", "on-primary": "#ffffff", "on-tertiary-fixed-variant": "#3f465c", "on-secondary-container": "#5b2500", "surface-container": "#eceef0", "surface-bright": "#f7f9fb", "on-surface": "#191c1e", "on-error-container": "#93000a", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#131b2e", "on-secondary-fixed": "#331200", "secondary-fixed": "#ffdbca", "surface-container-high": "#e6e8ea", "surface-container-highest": "#e0e3e5", "background": "#f7f9fb", "on-error": "#ffffff", "surface-variant": "#e0e3e5", "on-surface-variant": "#5a4136", "error": "#ba1a1a", "surface-dim": "#d8dadc", "surface-container-low": "#f2f4f6", "on-primary-fixed": "#351000", "inverse-surface": "#2d3133", "secondary": "#9c4500", "on-secondary-fixed-variant": "#773300", "outline-variant": "#e2bfb0", "tertiary-container": "#9198b1", "on-primary-fixed-variant": "#7a3000", "surface-tint": "#a04100", "secondary-fixed-dim": "#ffb68e", "primary-container": "#ff6b00", "tertiary": "#565e74", "surface-container-lowest": "#ffffff", "secondary-container": "#fd7714", "on-tertiary-container": "#293045", "inverse-on-surface": "#eff1f3", "on-secondary": "#ffffff", "primary": "#a04100", "error-container": "#ffdad6", "on-primary-container": "#572000", "on-background": "#191c1e", "outline": "#8e7164", "primary-fixed-dim": "#ffb693" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-lg": "1.5rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "space-xl": "2rem", "gutter-mobile": "0.75rem", "margin": "1.5rem", "space-md": "1rem", "gutter": "1rem", "margin-mobile": "1.25rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-md": ["14px", { lineHeight: "18px", fontWeight: "600" }], "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "headline-lg-mobile": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "800" }], "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "800" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Go back" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex items-center gap-space-xs truncate"><span class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center text-on-primary flex-shrink-0 shadow-[0_4px_12px_rgba(255,107,0,0.3)]"><span class="material-symbols-outlined text-[18px]">lunch_dining</span></span><div class="flex flex-col truncate"><span class="font-label-sm text-label-sm text-primary uppercase tracking-wider leading-none">QuickBite</span><h1 class="font-headline-sm text-headline-sm text-on-surface truncate leading-tight">Payment Failed Screen</h1></div></div></div><div class="flex items-center gap-space-xs flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-container/20" src="https://lh3.googleusercontent.com/aida/AEtjO1Wy9Y3p03UgXg-1qorTj9i_31CztGkTMHGy_vy3ZvdW_kmi6IfFxusu31bnRa4vvXm77rxNMXlz3NP9J_iEl3OKt1ACc796SdMxeVIlhPodPMj5QnklREnxtvBfcH0kRXTKeJYwSzon18oP2xx5mFVazs0rbajpV5VmYyovr_p7CcB5qqliFI_XFZjkdIakaCfq6c7zkqBDSvr5RA97yg-Bez2l2ziQ-rO5uGDSHHsMr6B4cjkoQD7gmkVPrCbDvZgf07Ac4BrAIw"/></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 bg-surface pb-safe"><div class="flex flex-col w-full px-margin-mobile pb-space-xl">
+<!-- Status Feedback Banner / Hero Section -->
+<div class="flex flex-col items-center text-center pt-space-md pb-space-lg">
+<div class="relative flex items-center justify-center w-20 h-20 rounded-full bg-error-container mb-space-md shadow-sm">
+<span class="material-symbols-outlined text-[40px] text-error">credit_card_off</span>
+<div class="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-error flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-on-error text-[18px]">priority_high</span>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-space-xs">
+      Payment Unsuccessful
+    </h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs mb-space-sm leading-relaxed">
+      Your bank declined the transaction. No funds were charged, and order <span class="font-label-md text-on-surface">#QB-8942-TX</span> remains reserved.
+    </p>
+<!-- Error Code Chip -->
+<div class="inline-flex items-center gap-space-xs px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-label-sm text-label-sm tracking-wide">AUTH_FAILED_04 : CARD_DECLINED</span>
+</div>
+</div>
+<!-- Attempted Order & Decline Details Card -->
+<div class="flex flex-col w-full bg-surface-container-lowest rounded-xl p-space-md mb-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A gourmet smash burger loaded with melted cheddar cheese, fresh crisp lettuce, juicy tomato, and secret sauce beside a rustic cup of golden french fries on a dark slate board." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6UNSDUyE_hkzyWvIoEaRREerdVQxjn519C5z_MxmQs54A0BoeWceabYrza205Fym4I0RIiv1qZZhO2ooH1faYFM86qYGC8qALl-c3zjjiKLx86xPY6LE-AqatB1oLZ4USosirUD0Jb_VyiTRJ5R4w7Lw0CytEhfqU3sC_g2XG544Kg0r4IWm7sU2XDM9cra-Jbd8sxYeIRlAgg29Lq3DIRwTVUP794eZQvfdctYPbWriU-xE5QuJx"/>
+</div>
+<div class="flex flex-col truncate">
+<span class="font-label-lg text-label-lg text-on-surface truncate">The Burger Forge</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">2 items • 15–25 min prep reserved</span>
+</div>
+</div>
+<div class="text-right flex-shrink-0">
+<span class="font-headline-sm text-headline-sm text-on-surface">$38.91</span>
+</div>
+</div>
+<!-- Attempted Method Info Pill Container -->
+<div class="mt-space-xs p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-tertiary">contactless</span>
+<span class="font-label-md text-label-md text-on-surface">Apple Pay</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">• Card ending 4242</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-error font-label-sm text-label-sm">
+          Declined
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+        Reason from issuer: Insufficient balance or temporary per-transaction security limit exceeded.
+      </p>
+</div>
+</div>
+<!-- Quick Switch / Suggested Alternative Methods -->
+<div class="flex flex-col w-full mb-space-lg">
+<div class="flex items-center justify-between mb-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Switch Payment Method</h3>
+<span class="font-label-sm text-label-sm text-primary">Cart held for 09:48</span>
+</div>
+<div class="flex flex-col gap-space-xs" id="payment-options">
+<!-- Option 1: QuickBite Wallet (Selected) -->
+<label class="payment-method-card flex items-center justify-between p-space-md bg-surface-container-lowest rounded-xl shadow-sm cursor-pointer transition-all active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+</div>
+<div class="flex flex-col truncate">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface truncate">QuickBite Wallet</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">Fastest</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Available balance: $15.50 (Split remainder)</span>
+</div>
+</div>
+<input checked="" class="w-5 h-5 accent-primary cursor-pointer flex-shrink-0" name="payment-method" type="radio" value="wallet"/>
+</label>
+<!-- Option 2: Saved Credit Card -->
+<label class="payment-method-card flex items-center justify-between p-space-md bg-surface-container-lowest rounded-xl shadow-sm cursor-pointer transition-all active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">credit_card</span>
+</div>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-label-md text-on-surface truncate">Chase Sapphire Preferred</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Visa ending in 8901 (Exp 08/27)</span>
+</div>
+</div>
+<input class="w-5 h-5 accent-primary cursor-pointer flex-shrink-0" name="payment-method" type="radio" value="visa"/>
+</label>
+<!-- Option 3: Google Pay -->
+<label class="payment-method-card flex items-center justify-between p-space-md bg-surface-container-lowest rounded-xl shadow-sm cursor-pointer transition-all active:scale-[0.99]">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">account_balance</span>
+</div>
+<div class="flex flex-col truncate">
+<span class="font-label-md text-label-md text-on-surface truncate">Google Pay / Instant Bank</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Direct checkout verification</span>
+</div>
+</div>
+<input class="w-5 h-5 accent-primary cursor-pointer flex-shrink-0" name="payment-method" type="radio" value="gpay"/>
+</label>
+<!-- Option 4: Add New Card Trigger -->
+<button class="flex items-center justify-center gap-space-xs p-space-md bg-surface-container-low rounded-xl text-primary hover:bg-surface-container transition-colors mt-space-xs" type="button">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span class="font-label-md text-label-md">Enter a New Debit or Credit Card</span>
+</button>
+</div>
+</div>
+<!-- Educational Reassurance Card -->
+<div class="flex items-start gap-space-sm p-space-md bg-surface-container-low rounded-xl mb-space-lg">
+<span class="material-symbols-outlined text-primary text-[22px] flex-shrink-0 mt-0.5">verified_user</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Your Food is Safe</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+        The kitchen at The Burger Forge is notified to hold your kitchen queue for 10 minutes while you resolve this transaction.
+      </p>
+</div>
+</div>
+<!-- Primary Sticky/Action Group -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<button class="w-full h-13 py-3.5 px-space-lg rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-md active:scale-[0.98] transition-transform" id="retry-primary-btn">
+<span class="material-symbols-outlined text-[22px]">refresh</span>
+<span>Pay with Selected Method ($38.91)</span>
+</button>
+<button class="w-full h-12 py-3 px-space-lg rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md flex items-center justify-center shadow-sm active:scale-[0.98] transition-transform" onclick="history.back()">
+      Review Items &amp; Delivery Address
+    </button>
+<button class="w-full py-2.5 text-center text-on-surface-variant font-label-sm text-label-sm hover:text-on-surface transition-colors mt-space-xs">
+      Cancel Order &amp; Keep Items in Cart
+    </button>
+</div>
+<!-- Bank-grade Security Guarantee Badge -->
+<div class="flex items-center justify-center gap-space-xs text-center pt-space-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">lock</span>
+<span class="font-body-sm text-body-sm text-tertiary">
+      256-Bit Encrypted • PCI-DSS Compliant • Zero Liability
+    </span>
+</div>
+</div>
+<script>
+  (function() {
+    const radioInputs = document.querySelectorAll('input[name="payment-method"]');
+    const primaryBtn = document.getElementById('retry-primary-btn');
+
+    radioInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        if (this.value === 'wallet') {
+          primaryBtn.querySelector('span:last-child').textContent = 'Use Wallet + Remainder ($38.91)';
+        } else if (this.value === 'visa') {
+          primaryBtn.querySelector('span:last-child').textContent = 'Charge Chase Card ($38.91)';
+        } else {
+          primaryBtn.querySelector('span:last-child').textContent = 'Continue to Google Pay ($38.91)';
+        }
+      });
+    });
+
+    primaryBtn.addEventListener('click', function() {
+      const origText = primaryBtn.querySelector('span:last-child').textContent;
+      primaryBtn.disabled = true;
+      primaryBtn.style.opacity = '0.7';
+      primaryBtn.querySelector('span:last-child').textContent = 'Contacting Payment Gateway...';
+      
+      setTimeout(() => {
+        primaryBtn.disabled = false;
+        primaryBtn.style.opacity = '1';
+        primaryBtn.querySelector('span:last-child').textContent = origText;
+      }, 1500);
+    });
+  })();
+</script></main></body></html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "outline": "#8e7164", "primary-fixed-dim": "#ffb693", "on-error": "#ffffff", "surface-variant": "#e0e3e5", "secondary-container": "#fd7714", "surface-container-highest": "#e0e3e5", "surface-container-high": "#e6e8ea", "on-secondary-fixed": "#331200", "on-tertiary": "#ffffff", "surface-container-low": "#f2f4f6", "on-primary-fixed": "#351000", "inverse-surface": "#2d3133", "on-secondary-container": "#5b2500", "tertiary-fixed": "#dae2fd", "on-surface-variant": "#5a4136", "on-tertiary-container": "#293045", "tertiary-fixed-dim": "#bec6e0", "surface-container-lowest": "#ffffff", "on-surface": "#191c1e", "on-primary-fixed-variant": "#7a3000", "surface": "#f7f9fb", "on-tertiary-fixed-variant": "#3f465c", "secondary-fixed-dim": "#ffb68e", "secondary": "#9c4500", "on-secondary": "#ffffff", "surface-tint": "#a04100", "tertiary-container": "#9198b1", "outline-variant": "#e2bfb0", "surface-dim": "#d8dadc", "on-primary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#ffdbcc", "surface-container": "#eceef0", "secondary-fixed": "#ffdbca", "primary-container": "#ff6b00", "on-background": "#191c1e", "tertiary": "#565e74", "on-primary-container": "#572000", "inverse-on-surface": "#eff1f3", "error": "#ba1a1a", "on-secondary-fixed-variant": "#773300", "inverse-primary": "#ffb693", "background": "#f7f9fb", "error-container": "#ffdad6", "on-tertiary-fixed": "#131b2e", "surface-bright": "#f7f9fb", "primary": "#a04100" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1rem", "margin-mobile": "1.25rem", "space-md": "1rem", "gutter-mobile": "0.75rem", "margin": "1.5rem", "space-xl": "2rem", "space-sm": "0.5rem", "space-lg": "1.5rem", "space-xs": "0.25rem" }, "fontFamily": { "body-sm": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"] }, "fontSize": { "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-lg": ["16px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:text-primary-container transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-md text-headline-md tracking-tight text-on-surface">Address Details</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Action" class="h-11 px-space-md flex items-center justify-center rounded-xl font-label-md text-label-md text-primary-container hover:bg-surface-container-high transition-colors" id="header-action-btn"><span class="material-symbols-outlined text-[22px]">more_horiz</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover ml-space-xs" src="https://lh3.googleusercontent.com/aida/AEtjO1Wy9Y3p03UgXg-1qorTj9i_31CztGkTMHGy_vy3ZvdW_kmi6IfFxusu31bnRa4vvXm77rxNMXlz3NP9J_iEl3OKt1ACc796SdMxeVIlhPodPMj5QnklREnxtvBfcH0kRXTKeJYwSzon18oP2xx5mFVazs0rbajpV5VmYyovr_p7CcB5qqliFI_XFZjkdIakaCfq6c7zkqBDSvr5RA97yg-Bez2l2ziQ-rO5uGDSHHsMr6B4cjkoQD7gmkVPrCbDvZgf07Ac4BrAIw"/></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full pb-10">
+<!-- Interactive Mini Map Preview -->
+<div class="relative w-full px-margin-mobile pt-space-sm">
+<div class="relative w-full h-52 rounded-xl overflow-hidden shadow-sm bg-surface-container">
+<div class="w-full h-full bg-cover bg-center" data-location="742 Evergreen Terrace, Springfield, OR 97477" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBtcdXHedTb4dQWDPE9HUzGC17ZaBDjVAn9EPalXhrN-9zVNeDpc3pc6yq3uVKPKeRUUjaI8Lo-vyBsLDuZr97jU3c8kvDe8MfKI1tv4cVAIA8xyhU7dt-COsq495_DtTgvSLIuRISebXSuShHOVaYxIFpqHtCkaZNk3WQgXxbFMdqkuJjtbrrespGQe7qi0LlCvaBCPyfNDchNQ_dJBPjcFzcSfazD2gfm3xNu6paBSFU06YE1d0y0')">
+</div>
+<!-- Gradient Ambient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/40 via-transparent to-transparent pointer-events-none"></div>
+<!-- QuickBite Delivery Radius Indicator (Ambient Circle) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-primary-container/15 animate-ping pointer-events-none"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full bg-primary-container/20 pointer-events-none flex items-center justify-center">
+<!-- Center Pinned Marker -->
+<div class="relative -top-2 flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-lg transform transition-transform hover:scale-110 active:scale-95 cursor-pointer">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<div class="w-2.5 h-1 bg-on-surface/40 rounded-full blur-[1px] mt-1"></div>
+</div>
+</div>
+<!-- Adjust Pin Button Overlay -->
+<button class="absolute bottom-3 right-3 px-space-md py-2 bg-surface-container-lowest/95 backdrop-blur-md rounded-full shadow-md flex items-center gap-1.5 text-on-surface hover:bg-surface-container-lowest active:scale-95 transition-all" onclick="triggerPinFeedback(this)" type="button">
+<span class="material-symbols-outlined text-primary-container text-[18px]">edit_location_alt</span>
+<span class="font-label-sm text-label-sm">Adjust Pin</span>
+</button>
+<!-- Accurate Coverage Badge -->
+<div class="absolute top-3 left-3 px-space-sm py-1 bg-surface-container-lowest/90 backdrop-blur-md rounded-full shadow-sm flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="font-label-sm text-label-sm text-on-surface">Deliverable Zone</span>
+</div>
+</div>
+</div>
+<!-- Content Container -->
+<div class="flex flex-col px-margin-mobile pt-space-lg gap-space-lg">
+<!-- Address Tag Selector & Core Street Address -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<!-- Tag Selector Chips -->
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">LOCATION LABEL</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold">Primary Default</span>
+</div>
+<div class="flex items-center gap-space-xs" id="label-pill-group">
+<button class="h-9 px-space-md rounded-full bg-on-surface text-surface-container-lowest font-label-md text-label-md flex items-center gap-1.5 shadow-sm transition-transform active:scale-95" onclick="selectPill(this)" type="button">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">home</span>
+          Home
+        </button>
+<button class="h-9 px-space-md rounded-full bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 hover:bg-surface-container transition-all active:scale-95" onclick="selectPill(this)" type="button">
+<span class="material-symbols-outlined text-[16px]">work</span>
+          Work
+        </button>
+<button class="h-9 px-space-md rounded-full bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 hover:bg-surface-container transition-all active:scale-95" onclick="selectPill(this)" type="button">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+          Other
+        </button>
+</div>
+<div class="pt-space-xs flex flex-col">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">742 Evergreen Terrace</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Springfield, OR 97477</p>
+<div class="mt-2 inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-surface-container-low text-on-surface w-fit">
+<span class="material-symbols-outlined text-primary-container text-[18px]">villa</span>
+<span class="font-label-sm text-label-sm">Single Family Residence (Front Porch)</span>
+</div>
+</div>
+</div>
+<!-- Delivery Instructions & Access Card Module -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">assignment</span>
+          Courier Delivery Directive
+        </h3>
+</div>
+<!-- Directive Highlight -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 text-on-primary-fixed mt-0.5">
+<span class="material-symbols-outlined text-[18px]">door_front</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">DROP-OFF INSTRUCTION</span>
+<p class="font-body-md text-body-md text-on-surface font-medium mt-0.5">Leave at front door porch chair</p>
+</div>
+</div>
+<!-- Access Code & Pet Notice Grid -->
+<div class="grid grid-cols-1 gap-space-sm">
+<!-- Gate Access Code -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[18px]">pin</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">GATE ACCESS</span>
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-wider font-bold">#4412</span>
+</div>
+</div>
+<button class="h-8 px-3 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center gap-1 active:scale-95" onclick="copyAccessCode('#4412', this)" type="button">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+<!-- Friendly Dog Notice -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center shrink-0 text-on-primary-fixed mt-0.5">
+<span class="material-symbols-outlined text-[18px]">pets</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">PET / PROPERTY ALERT</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Watch out for friendly golden retriever in front yard.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Contact & Recipient Details -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">person_pin</span>
+        Recipient Contact
+      </h3>
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface font-headline-sm">
+            AM
+          </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">Alex Morgan</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+              (512) 555-0194
+              <span class="inline-flex items-center text-[10px] font-semibold text-secondary px-1.5 py-0.5 rounded bg-secondary-fixed">Masked</span>
+</span>
+</div>
+</div>
+<a class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" href="tel:5125550194">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</a>
+</div>
+</div>
+<!-- Default Address Toggle Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex items-center justify-between gap-space-md">
+<div class="flex flex-col pr-space-xs">
+<span class="font-label-lg text-label-lg text-on-surface">Set as Default Delivery Address</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">This address will be automatically selected for future checkouts.</span>
+</div>
+<!-- Interactive Toggle -->
+<button aria-checked="true" class="w-12 h-7 bg-primary-container rounded-full p-1 transition-colors relative focus:outline-none shrink-0 cursor-pointer" onclick="toggleSwitch(this)" role="switch" type="button">
+<div class="w-5 h-5 bg-surface-container-lowest rounded-full shadow-md transform translate-x-5 transition-transform"></div>
+</button>
+</div>
+<!-- CTA & Action Stack -->
+<div class="flex flex-col gap-space-sm pt-space-sm">
+<!-- Primary Edit CTA -->
+<button class="w-full h-[52px] bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl shadow-md hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+        Edit Address Information
+      </button>
+<!-- Secondary Order Use Button -->
+<button class="w-full h-[52px] bg-surface-container-lowest text-on-surface font-label-lg text-label-lg rounded-xl shadow-sm hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-primary-container text-[20px]">shopping_bag</span>
+        Use This Address for Current Order
+      </button>
+<!-- Destructive Delete Option -->
+<div class="flex flex-col items-center pt-space-xs gap-1">
+<button class="h-10 px-space-md text-error hover:bg-error-container/20 rounded-lg font-label-md text-label-md flex items-center gap-1.5 transition-colors active:scale-95" onclick="handleDeleteAttempt()" type="button">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+          Delete Address
+        </button>
+<span class="font-body-sm text-body-sm text-outline text-center px-space-md">
+          Cannot delete primary default address while active orders exist.
+        </span>
+</div>
+</div>
+</div>
+<!-- Toast Notification Template -->
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-inverse-surface text-inverse-on-surface px-space-md py-2.5 rounded-full shadow-xl font-label-sm text-label-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-2" id="toast">
+<span class="material-symbols-outlined text-[18px] text-primary-container" id="toast-icon">check_circle</span>
+<span id="toast-text">Code copied to clipboard</span>
+</div>
+</div>
+<script>
+  function selectPill(targetBtn) {
+    const group = document.getElementById('label-pill-group');
+    if (!group) return;
+    const buttons = group.querySelectorAll('button');
+    
+    buttons.forEach(btn => {
+      btn.className = "h-9 px-space-md rounded-full bg-surface-container-low text-on-surface font-label-md text-label-md flex items-center gap-1.5 hover:bg-surface-container transition-all active:scale-95";
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+    });
+
+    targetBtn.className = "h-9 px-space-md rounded-full bg-on-surface text-surface-container-lowest font-label-md text-label-md flex items-center gap-1.5 shadow-sm transition-transform active:scale-95";
+    const activeIcon = targetBtn.querySelector('.material-symbols-outlined');
+    if (activeIcon) activeIcon.style.fontVariationSettings = "'FILL' 1";
+    
+    showToast('Saved label updated', 'label');
+  }
+
+  function toggleSwitch(btn) {
+    const isChecked = btn.getAttribute('aria-checked') === 'true';
+    const indicator = btn.firstElementChild;
+    if (isChecked) {
+      btn.setAttribute('aria-checked', 'false');
+      btn.className = "w-12 h-7 bg-surface-container-highest rounded-full p-1 transition-colors relative focus:outline-none shrink-0 cursor-pointer";
+      indicator.className = "w-5 h-5 bg-surface-container-lowest rounded-full shadow-md transform translate-x-0 transition-transform";
+      showToast('Removed as primary address', 'info');
+    } else {
+      btn.setAttribute('aria-checked', 'true');
+      btn.className = "w-12 h-7 bg-primary-container rounded-full p-1 transition-colors relative focus:outline-none shrink-0 cursor-pointer";
+      indicator.className = "w-5 h-5 bg-surface-container-lowest rounded-full shadow-md transform translate-x-5 transition-transform";
+      showToast('Set as default address', 'check_circle');
+    }
+  }
+
+  function copyAccessCode(text, btn) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
+    showToast(`Gate code ${text} copied!`, 'content_copy');
+  }
+
+  function triggerPinFeedback(btn) {
+    showToast('Opening satellite pin repositioning...', 'location_searching');
+  }
+
+  function handleDeleteAttempt() {
+    showToast('Primary address protected during active order', 'warning');
+  }
+
+  function showToast(message, iconName = 'check_circle') {
+    const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toast-text');
+    const toastIcon = document.getElementById('toast-icon');
+    if (!toast || !toastText) return;
+
+    toastText.innerText = message;
+    if (toastIcon) toastIcon.innerText = iconName;
+
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+
+    clearTimeout(window.__toastTimeout);
+    window.__toastTimeout = setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 2400);
+  }
+</script></main></body></html>

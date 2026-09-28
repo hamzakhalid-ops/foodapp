@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-tertiary-container": "#293045", "on-primary-fixed": "#351000", "on-error-container": "#93000a", "surface-bright": "#f7f9fb", "on-secondary-fixed": "#331200", "surface-container": "#eceef0", "outline-variant": "#e2bfb0", "on-tertiary-fixed-variant": "#3f465c", "surface-tint": "#a04100", "on-secondary-fixed-variant": "#773300", "on-primary": "#ffffff", "error": "#ba1a1a", "on-secondary-container": "#5b2500", "inverse-on-surface": "#eff1f3", "primary": "#a04100", "surface-container-highest": "#e0e3e5", "on-surface-variant": "#5a4136", "on-primary-container": "#572000", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#7a3000", "surface-dim": "#d8dadc", "surface-container-low": "#f2f4f6", "primary-fixed-dim": "#ffb693", "surface-container-high": "#e6e8ea", "on-secondary": "#ffffff", "primary-container": "#ff6b00", "outline": "#8e7164", "on-surface": "#191c1e", "on-tertiary-fixed": "#131b2e", "surface": "#f7f9fb", "surface-variant": "#e0e3e5", "error-container": "#ffdad6", "on-background": "#191c1e", "tertiary-fixed-dim": "#bec6e0", "secondary-fixed": "#ffdbca", "tertiary": "#565e74", "secondary": "#9c4500", "inverse-surface": "#2d3133", "secondary-fixed-dim": "#ffb68e", "inverse-primary": "#ffb693", "secondary-container": "#fd7714", "primary-fixed": "#ffdbcc", "on-error": "#ffffff", "tertiary-container": "#9198b1", "surface-container-lowest": "#ffffff", "tertiary-fixed": "#dae2fd", "background": "#f7f9fb" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "space-md": "1rem", "space-xl": "2rem", "space-xs": "0.25rem", "gutter-mobile": "0.75rem", "space-sm": "0.5rem", "margin": "1.5rem", "margin-mobile": "1.25rem", "space-lg": "1.5rem" }, fontFamily: { "label-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"] }, fontSize: { "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "600" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "800" }], "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "label-md": ["14px", { lineHeight: "18px", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "headline-lg-mobile": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go Back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Reorder Review &amp; Availability</h1></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-8">
+<!-- Restaurant Identity & Order Context Card -->
+<div class="px-margin-mobile pt-3 pb-2">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-start gap-space-md">
+<img class="w-16 h-16 rounded-xl object-cover shrink-0 shadow-sm" data-alt="Close up artisanal bowl of spicy tonkotsu ramen with glistening chashu pork slices, soft boiled ajitsuke tamago egg, scallions, nori seaweed and rich broth in a rustic ceramic bowl on a dark wooden table in an atmospheric Japanese noodle bar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKivy2EDf70Z6fEoTXA4Wx4PMFzze2DVKt9Bdgqq--PHw6EE4ZgMZQmdQDhswaBk4uSpJpZgQfoO1bO3Fdgm2ovAxbDG22nR4BKusXX-PlwAtwga1rfOgX_FB9oJjN7DrvMVV_s_RJxNc0wSJhaCrs2MNecO6hqdfNJVzSjwxA6yLgR9IJ6CJTKhacsLL7Rq-fR51Voboh90lszdbn5OgXjYs608cPa20QIFLt-1CQHAvpqZQTgtUZ"/>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Momofuku Bistro</span>
+<span class="flex items-center gap-0.5 bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full font-label-sm text-label-sm shrink-0">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            4.9
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+<span>Open now</span>
+<span>•</span>
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>20–30 min delivery</span>
+</p>
+<div class="mt-2 inline-flex items-center gap-1 bg-surface-container px-2 py-1 rounded font-label-sm text-label-sm text-on-surface-variant w-fit">
+<span class="material-symbols-outlined text-[15px] text-primary">history</span>
+<span>Reordering past order <strong>#QB-7812-TX</strong></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Availability & Real-Time Price Audit Banner -->
+<div class="px-margin-mobile py-2">
+<div class="bg-secondary-fixed/50 rounded-xl p-space-md flex items-start gap-space-sm shadow-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">sync_saved_locally</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-secondary-fixed">Item Availability &amp; Price Check</span>
+<p class="font-body-md text-body-md text-on-secondary-fixed-variant mt-0.5">
+<strong class="font-label-md text-primary">2 of 3 items</strong> are ready for reorder. 1 item is currently unavailable in today’s kitchen service.
+        </p>
+</div>
+</div>
+</div>
+<!-- Ready to Reorder Items Section -->
+<div class="px-margin-mobile pt-3 pb-2 flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface">Available In-Stock Items (2)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tap to deselect</span>
+</div>
+<!-- Item 1: Spicy Pork Ramen -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-start gap-space-sm">
+<label class="relative flex items-center cursor-pointer pt-1">
+<input checked="" class="peer sr-only" id="item-ramen" onchange="toggleItem('ramen', 27.00)" type="checkbox"/>
+<div class="w-5 h-5 rounded-lg bg-surface-container flex items-center justify-center peer-checked:bg-primary-container text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+</label>
+<img class="w-14 h-14 rounded-lg object-cover shrink-0 shadow-sm" data-alt="Steaming bowl of spicy tonkotsu ramen with thick curly noodles, tender pork chashu slices, seasoned soft boiled egg cut in half, fresh chopped scallions, and chili oil in warm cinematic restaurant lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_kIXlbJv-jX01TT3Nji0Gn_leI9ZSIJgbKf3A8pqIO9fgIeFF3-vC4jn386qhrWCfz7s7MjMjenwnNXC0qhUZb-UHloBs_1LaeVG3AlxGCxPT2Cbr0varBhvhX-kjLUtEzFjZA7lwHiuAscsfRoyrpb1Guu9RDVQBrsU386XAEYGAPepTPz7tRGTugRrwgL4Ag_QNKozAPlUSaFKcI_Yb41QG1ZSYKvyZ-mhwHYva8nqYJonBf6rc"/>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-start justify-between gap-1">
+<span class="font-label-lg text-label-lg text-on-surface leading-tight">2× Spicy Pork Ramen</span>
+<div class="flex flex-col items-end">
+<span class="font-headline-sm text-headline-sm text-on-surface">$27.00</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">$13.50 ea</span>
+</div>
+</div>
+<div class="mt-1 flex items-center gap-1.5 flex-wrap">
+<span class="bg-primary-fixed-dim/40 text-on-primary-container font-label-sm text-label-sm px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">trending_up</span>
+              Price updated +$0.50 (was $13.00)
+            </span>
+</div>
+</div>
+</div>
+<!-- Add-on pills -->
+<div class="flex flex-wrap gap-1.5 pt-1 pl-7">
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary">add_circle</span>
+          Soft Boiled Egg (+$1.50)
+        </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-error">local_fire_department</span>
+          Spicy Level 2
+        </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full">
+          Standard Broth
+        </span>
+</div>
+</div>
+<!-- Item 2: Thai Iced Tea -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-start gap-space-sm">
+<label class="relative flex items-center cursor-pointer pt-1">
+<input checked="" class="peer sr-only" id="item-tea" onchange="toggleItem('tea', 4.00)" type="checkbox"/>
+<div class="w-5 h-5 rounded-lg bg-surface-container flex items-center justify-center peer-checked:bg-primary-container text-on-primary transition-all">
+<span class="material-symbols-outlined text-[16px] font-bold">check</span>
+</div>
+</label>
+<img class="w-14 h-14 rounded-lg object-cover shrink-0 shadow-sm" data-alt="Tall clear plastic cup of authentic layered bright orange Thai iced tea topped with sweet condensed evaporated milk, served over crushed ice with condensation droplets in modern food hall setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb5GK9Qi93cwhibYuoA91-DSZFdaD_LgqLtixWSSxC91dWNMgND7X7BFjGhwQ5PPHIcf0j2SBestlWBTaqXj047FFTP1nlHia7ybJfWFZXOV7Zw8dPjLx5xyCqjb1WWtd-dg0dm68prg-zh4SYLBJqSyfx5XCe6KNf-ALQo0gbnugA9wBAKsRImq4haTbaVpNJ525Nynr57Mbse2TH4_aZpsGenV5UChFvffw4MUk6AQ2ytxK3y3D0"/>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-start justify-between gap-1">
+<span class="font-label-lg text-label-lg text-on-surface leading-tight">1× Thai Iced Tea</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">$4.00</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Price unchanged from original order</span>
+</div>
+</div>
+<!-- Drink specs -->
+<div class="flex flex-wrap gap-1.5 pt-1 pl-7">
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">water_drop</span>
+          Sweetness: 50%
+        </span>
+<span class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm px-2.5 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">ac_unit</span>
+          Crushed Ice
+        </span>
+</div>
+</div>
+</div>
+<!-- Unavailable Items Alert Card -->
+<div class="px-margin-mobile pt-2 pb-2">
+<div class="bg-surface-container-low rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm opacity-95">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-error">cancel</span>
+          Unavailable Item (1)
+        </span>
+<span class="bg-error-container text-on-error-container font-label-sm text-label-sm px-2.5 py-0.5 rounded-full font-semibold">
+          Sold Out Today
+        </span>
+</div>
+<div class="flex items-start gap-space-sm opacity-70">
+<div class="w-5 h-5 rounded-lg bg-surface-container-highest flex items-center justify-center cursor-not-allowed shrink-0 mt-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant/40">block</span>
+</div>
+<img class="w-14 h-14 rounded-lg object-cover shrink-0 grayscale" data-alt="Two fluffy white steamed Asian bao buns filled with glazed braised pork belly, fresh cucumber ribbons, cilantro and crushed roasted peanuts on a wooden platter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuPbr5ieox9Xc2dYHRLv-7GeYwB2u1Fd2hH6GTxJJ-AxOrVbW5myFwqqfGJpuZT_Le4ycUkdGNtEhCVTr1st7SpAfZqlvxPRhzwximqgrvrvge1SNqe8jM99BYcEWHeKZUEXU50nE3NeXJxkSeJkrAArDrsZ-7pG_wWAYU4X1_5Emm-7OQKYglLdOW_rP_IVnxYkFAF704A_hKPt3IUCCjv1Xqmfx4sA-pbdVnYmyDlBGTjE3cfeaV"/>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-start justify-between gap-1">
+<span class="font-label-lg text-label-lg text-on-surface line-through">1× Steamed Pork Bao Buns</span>
+<span class="font-body-md text-body-md text-on-surface-variant line-through">$7.50</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-snug">
+            Kitchen prep finished for lunch service. Available again tomorrow at 11:00 AM.
+          </p>
+</div>
+</div>
+<!-- Suggested Swap Mini-Card -->
+<div class="mt-1 bg-surface-container-lowest rounded-xl p-space-sm flex items-center justify-between gap-space-sm shadow-sm" id="swap-banner">
+<div class="flex items-center gap-space-sm min-w-0">
+<img class="w-12 h-12 rounded-lg object-cover shrink-0" data-alt="Crispy pan-fried Japanese gyoza dumplings with golden lattice crust, scallion garnish and sesame dipping sauce in a small ramekin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACkRUQN2X-jUS6_P0eWrjFyn_HJ3y4GcNtEjvY_9hkLa_n3QwUie5eA7_3bl2xMK0eVg57hZaIWbllCGG0Oo_a-QkKC5AwDuxsmPvH10MIPFEQI7SOPbn_SmbsVlf1aNm0V_5Y-DKRLV7cB1bzI15wwXHt022Youg0VaKlFqL1nFZ2ET9V4fmFfHWsKWwbj11M5XWb5Xf9F9Ii-hD3q5ZSTJyinYQLCt1FfIp9oO9Uric_WwM5aIZS"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+              Recommended in-stock swap
+            </span>
+<span class="font-label-md text-label-md text-on-surface truncate">Crispy Gyoza (5 pcs)</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">$6.95</span>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary hover:opacity-90 active:scale-95 transition-all px-3 py-2 rounded-xl font-label-sm text-label-sm shrink-0 flex items-center gap-1 shadow-sm" id="swap-btn" onclick="toggleSwap(6.95)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Swap Item</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Cart Subtotal & Calculation Breakdown Card -->
+<div class="px-margin-mobile pt-2 pb-2">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<span class="font-label-lg text-label-lg text-on-surface">Order Summary Comparison</span>
+<div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Original Order Subtotal (#QB-7812)</span>
+<span class="line-through">$37.50</span>
+</div>
+<div class="flex items-center justify-between font-body-md text-body-md text-on-surface">
+<span class="flex items-center gap-1">
+<span>Active Selection Subtotal</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.2 rounded-full text-on-surface-variant" id="active-item-count">2 items</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface" id="display-subtotal">$31.00</span>
+</div>
+<div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Taxes &amp; Estimated Regulatory Fees</span>
+<span id="display-tax">$4.12</span>
+</div>
+<div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant">
+<span>Estimated Courier Delivery</span>
+<span>$1.99</span>
+</div>
+<div class="h-[1px] bg-surface-container my-0.5"></div>
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface">Updated Cart Total</span>
+<span class="font-headline-md text-headline-md text-primary" id="display-total">$37.11</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-2 flex items-start gap-2 mt-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">info</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+          Past coupon discounts do not automatically carry over. You can apply new promotional codes during Checkout.
+        </p>
+</div>
+</div>
+</div>
+<!-- Bottom CTA Actions & Safety Disclaimer -->
+<div class="px-margin-mobile pt-3 flex flex-col gap-space-sm">
+<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-98 shadow-md hover:brightness-105 transition-all" id="primary-transfer-btn" onclick="triggerCartTransfer()">
+<span class="material-symbols-outlined text-[20px]">shopping_cart_checkout</span>
+<span id="cta-button-text">Transfer 2 Items to Cart ($31.00) →</span>
+</button>
+<button class="w-full h-11 bg-surface-container-lowest text-on-surface rounded-xl font-label-md text-label-md flex items-center justify-center gap-1.5 active:bg-surface-container transition-all" onclick="window.location.hash = '#momofuku-full-menu'">
+<span class="material-symbols-outlined text-[18px]">restaurant_menu</span>
+<span>View Full Momofuku Bistro Menu</span>
+</button>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center px-4 leading-tight">
+      Selected items will be transferred directly to your active order bag. Your card will not be charged until final review.
+    </p>
+</div>
+</div>
+<script>
+  let state = {
+    ramen: true,
+    tea: true,
+    swap: false,
+    prices: {
+      ramen: 27.00,
+      tea: 4.00,
+      swap: 6.95
+    }
+  };
+
+  function updateTotals() {
+    let subtotal = 0;
+    let count = 0;
+
+    if (state.ramen) {
+      subtotal += state.prices.ramen;
+      count += 2;
+    }
+    if (state.tea) {
+      subtotal += state.prices.tea;
+      count += 1;
+    }
+    if (state.swap) {
+      subtotal += state.prices.swap;
+      count += 1;
+    }
+
+    const tax = subtotal > 0 ? (subtotal * 0.133) : 0;
+    const delivery = subtotal > 0 ? 1.99 : 0;
+    const total = subtotal + tax + delivery;
+
+    document.getElementById('active-item-count').textContent = count + ' items';
+    document.getElementById('display-subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('display-tax').textContent = '$' + tax.toFixed(2);
+    document.getElementById('display-total').textContent = '$' + total.toFixed(2);
+    
+    const ctaBtn = document.getElementById('primary-transfer-btn');
+    const ctaText = document.getElementById('cta-button-text');
+
+    if (count === 0) {
+      ctaText.textContent = 'Select at least 1 item';
+      ctaBtn.disabled = true;
+      ctaBtn.classList.add('opacity-50', 'pointer-events-none');
+    } else {
+      ctaBtn.disabled = false;
+      ctaBtn.classList.remove('opacity-50', 'pointer-events-none');
+      ctaText.innerHTML = 'Transfer ' + count + ' Items to Cart ($' + subtotal.toFixed(2) + ') &rarr;';
+    }
+  }
+
+  function toggleItem(itemKey) {
+    state[itemKey] = !state[itemKey];
+    updateTotals();
+  }
+
+  function toggleSwap() {
+    state.swap = !state.swap;
+    const btn = document.getElementById('swap-btn');
+    const banner = document.getElementById('swap-banner');
+
+    if (state.swap) {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span><span>Added</span>';
+      btn.classList.remove('bg-primary-container', 'text-on-primary');
+      btn.classList.add('bg-surface-container-highest', 'text-on-surface');
+      banner.classList.add('bg-secondary-fixed/40');
+    } else {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">add</span><span>Swap Item</span>';
+      btn.classList.add('bg-primary-container', 'text-on-primary');
+      btn.classList.remove('bg-surface-container-highest', 'text-on-surface');
+      banner.classList.remove('bg-secondary-fixed/40');
+    }
+    updateTotals();
+  }
+
+  function triggerCartTransfer() {
+    const btn = document.getElementById('primary-transfer-btn');
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span><span>Updating your cart...</span>';
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Cart Ready! Proceeding...</span>';
+      btn.classList.add('bg-emerald-600');
+    }, 700);
+  }
+</script></main></body></html>

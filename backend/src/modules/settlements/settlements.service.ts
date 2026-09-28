@@ -141,7 +141,8 @@ export class SettlementsService {
       const net = gross.sub(fees).add(adjustments);
       // ponytail: a zero or negative net is not settled; its records stay AVAILABLE and roll into
       // the next period. Add carried-forward debt records if negative balances must be invoiced.
-      if (!net.isPositive()) return false;
+      // Decimal#isPositive() is true for zero, so compare explicitly.
+      if (!net.greaterThan(0)) return false;
 
       const settlement = await tx.settlement.create({
         data: {

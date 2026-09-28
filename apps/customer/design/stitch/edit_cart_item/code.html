@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#e0e3e5", "on-secondary-container": "#5b2500", "background": "#f7f9fb", "on-primary-fixed-variant": "#7a3000", "surface-container-high": "#e6e8ea", "outline": "#8e7164", "tertiary-fixed-dim": "#bec6e0", "surface-bright": "#f7f9fb", "on-background": "#191c1e", "surface-container-highest": "#e0e3e5", "inverse-surface": "#2d3133", "surface": "#f7f9fb", "inverse-primary": "#ffb693", "tertiary": "#565e74", "on-tertiary-fixed-variant": "#3f465c", "on-secondary": "#ffffff", "tertiary-container": "#9198b1", "on-error": "#ffffff", "primary-fixed-dim": "#ffb693", "secondary-container": "#fd7714", "inverse-on-surface": "#eff1f3", "on-error-container": "#93000a", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#131b2e", "primary-container": "#ff6b00", "surface-tint": "#a04100", "secondary-fixed-dim": "#ffb68e", "on-surface-variant": "#5a4136", "surface-container-lowest": "#ffffff", "on-primary-container": "#572000", "outline-variant": "#e2bfb0", "primary-fixed": "#ffdbcc", "on-tertiary-container": "#293045", "tertiary-fixed": "#dae2fd", "on-surface": "#191c1e", "surface-container-low": "#f2f4f6", "error-container": "#ffdad6", "on-secondary-fixed": "#331200", "primary": "#a04100", "on-secondary-fixed-variant": "#773300", "secondary-fixed": "#ffdbca", "error": "#ba1a1a", "secondary": "#9c4500", "on-primary": "#ffffff", "surface-container": "#eceef0", "on-primary-fixed": "#351000", "surface-dim": "#d8dadc" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-md": "1rem", "gutter-mobile": "0.75rem", "space-lg": "1.5rem", "margin-mobile": "1.25rem", "gutter": "1rem", "space-xs": "0.25rem", "margin": "1.5rem", "space-sm": "0.5rem", "space-xl": "2rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"] }, fontSize: { "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "800" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0 flex-1"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex flex-col min-w-0 justify-center"><h1 class="font-headline-sm text-headline-sm text-on-surface truncate leading-tight">Edit Cart Item Screen</h1><span class="font-body-sm text-body-sm text-on-surface-variant truncate">The Burger Forge</span></div></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="Clear cart action" class="h-11 px-space-sm flex items-center justify-center rounded-xl text-primary font-label-md text-label-md hover:bg-primary-fixed/20 transition-colors active:scale-95" type="button"><span class="material-symbols-outlined text-[20px] mr-1">delete_sweep</span><span>Clear</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1Wy9Y3p03UgXg-1qorTj9i_31CztGkTMHGy_vy3ZvdW_kmi6IfFxusu31bnRa4vvXm77rxNMXlz3NP9J_iEl3OKt1ACc796SdMxeVIlhPodPMj5QnklREnxtvBfcH0kRXTKeJYwSzon18oP2xx5mFVazs0rbajpV5VmYyovr_p7CcB5qqliFI_XFZjkdIakaCfq6c7zkqBDSvr5RA97yg-Bez2l2ziQ-rO5uGDSHHsMr6B4cjkoQD7gmkVPrCbDvZgf07Ac4BrAIw"/></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface pb-safe flex-1"><div class="flex flex-col w-full">
+<!-- Subtle Kitchen Context Alert Bar -->
+<div class="px-margin-mobile pt-space-sm pb-space-xs">
+<div class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl bg-primary-fixed/40 text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">restaurant_menu</span>
+<p class="font-label-sm text-label-sm tracking-wide">Editing item from <span class="font-bold text-on-primary-fixed">The Burger Forge</span></p>
+</div>
+</div>
+<div class="px-margin-mobile flex flex-col gap-space-lg pb-32">
+<!-- Hero Item Presentation Card -->
+<div class="relative mt-space-sm rounded-2xl bg-surface-container-lowest overflow-hidden shadow-sm">
+<div class="relative w-full aspect-[16/9] overflow-hidden bg-surface-container">
+<img alt="Double Bacon Smash Burger" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1VOCS-QSuombOl13PY_ACg9YCUuiFF5kZjmxM4E2TQJfirrhjXYhMRsnI50jjxNAcjdufzmEL7byEshRW4n1I97Lo4LEEI6PWoFojX9DU4OvQ-_Rp6AL1SanX1RW72faB7rfu3LnKJVqSmvDC4IUtYbDcEFHKypagvKWf74U_Z8enS6mHXeFiNbTIzH0uFzBBS5ZiWjzaLRT3QK2n13J5aKbd6ce944zt1Kleus7iO-r2tZcLDoSuswdZs"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-on-surface font-label-sm text-label-sm shadow-sm">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+            Currently in Cart (Qty: <span id="summary-qty-badge">1</span>)
+          </span>
+<span class="px-3 py-1 rounded-full bg-primary-container text-on-secondary font-headline-sm text-headline-sm shadow-md">
+            $13.99
+          </span>
+</div>
+</div>
+<div class="p-space-md flex flex-col gap-1">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Double Bacon Smash Burger</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Two seared grass-fed patties, caramelized crisp crust, aged American melted cheddar, and house smoky mayo.
+        </p>
+</div>
+</div>
+<!-- Section 1: Bun Choice (Single Select Radio) -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-baseline justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Choose Bun</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Select 1 option</p>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm uppercase tracking-wider">
+          Required
+        </span>
+</div>
+<div class="flex flex-col gap-2 rounded-2xl bg-surface-container-lowest p-space-sm shadow-sm">
+<!-- Option 1: Selected -->
+<label class="group relative flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all bg-surface-container-low" data-bun-radio="">
+<div class="flex items-center gap-3">
+<div class="bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-primary-container shadow-sm transition-colors">
+<div class="bun-radio-dot w-2 h-2 rounded-full bg-on-secondary"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Standard Toasted Brioche</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$0.00</span>
+<input checked="" class="sr-only" name="bun" type="radio" value="0.00"/>
+</label>
+<!-- Option 2 -->
+<label class="group relative flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-bun-radio="">
+<div class="flex items-center gap-3">
+<div class="bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-surface-container-highest transition-colors">
+<div class="bun-radio-dot w-2 h-2 rounded-full bg-transparent"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Sesame Seed Bun</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$0.00</span>
+<input class="sr-only" name="bun" type="radio" value="0.00"/>
+</label>
+<!-- Option 3 -->
+<label class="group relative flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-bun-radio="">
+<div class="flex items-center gap-3">
+<div class="bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-surface-container-highest transition-colors">
+<div class="bun-radio-dot w-2 h-2 rounded-full bg-transparent"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Gluten-Free Brioche</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-secondary-container">+$1.50</span>
+<input class="sr-only" name="bun" type="radio" value="1.50"/>
+</label>
+<!-- Option 4 -->
+<label class="group relative flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-bun-radio="">
+<div class="flex items-center gap-3">
+<div class="bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-surface-container-highest transition-colors">
+<div class="bun-radio-dot w-2 h-2 rounded-full bg-transparent"></div>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Lettuce Wrap (Keto)</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$0.00</span>
+<input class="sr-only" name="bun" type="radio" value="0.00"/>
+</label>
+</div>
+</section>
+<!-- Section 2: Extra Toppings (Multi-select Checkboxes) -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-baseline justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Extra Toppings</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Customize your stack</p>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+          Optional
+        </span>
+</div>
+<div class="flex flex-col gap-2 rounded-2xl bg-surface-container-lowest p-space-sm shadow-sm">
+<!-- Topping 1: Checked -->
+<label class="flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all bg-surface-container-low" data-topping-label="">
+<div class="flex items-center gap-3">
+<div class="topping-box w-5 h-5 rounded-md bg-primary-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-secondary font-bold">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Extra Applewood Bacon</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">+$2.50</span>
+<input checked="" class="sr-only" data-name="Bacon" name="topping" type="checkbox" value="2.50"/>
+</label>
+<!-- Topping 2: Checked -->
+<label class="flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all bg-surface-container-low" data-topping-label="">
+<div class="flex items-center gap-3">
+<div class="topping-box w-5 h-5 rounded-md bg-primary-container flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-on-secondary font-bold">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Fried Farm Egg</span>
+</div>
+<span class="font-label-sm text-label-sm font-semibold text-on-surface">+$1.75</span>
+<input checked="" class="sr-only" data-name="Egg" name="topping" type="checkbox" value="1.75"/>
+</label>
+<!-- Topping 3: Unchecked -->
+<label class="flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-topping-label="">
+<div class="flex items-center gap-3">
+<div class="topping-box w-5 h-5 rounded-md bg-surface-container-highest flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-transparent font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Grilled Jalapeños</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$0.75</span>
+<input class="sr-only" data-name="Jalapeños" name="topping" type="checkbox" value="0.75"/>
+</label>
+<!-- Topping 4: Unchecked -->
+<label class="flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-topping-label="">
+<div class="flex items-center gap-3">
+<div class="topping-box w-5 h-5 rounded-md bg-surface-container-highest flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-transparent font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Extra Melted Cheddar</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$1.25</span>
+<input class="sr-only" data-name="Cheddar" name="topping" type="checkbox" value="1.25"/>
+</label>
+<!-- Topping 5: Unchecked -->
+<label class="flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all hover:bg-surface-container-low" data-topping-label="">
+<div class="flex items-center gap-3">
+<div class="topping-box w-5 h-5 rounded-md bg-surface-container-highest flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px] text-transparent font-bold">check</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Sauteed Mushrooms</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">+$1.50</span>
+<input class="sr-only" data-name="Mushrooms" name="topping" type="checkbox" value="1.50"/>
+</label>
+</div>
+</section>
+<!-- Section 3: Special Instructions -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Special Instructions</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="char-count">39 / 150</span>
+</div>
+<div class="relative rounded-2xl bg-surface-container-lowest p-space-sm shadow-sm">
+<textarea class="w-full bg-surface-container-low text-on-surface rounded-xl p-3.5 font-body-md text-body-md resize-none focus:outline-none focus:bg-surface-container-lowest transition-colors" id="special-notes" maxlength="150" placeholder="E.g., Allergy notes, dressing on the side..." rows="3">Sauce on the side, extra crispy fries</textarea>
+<div class="flex items-center justify-between mt-2 px-1">
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">info</span>
+            The kitchen will do its best to honor requests
+          </p>
+</div>
+</div>
+</section>
+<!-- Quantity Stepper & Price Breakdown Card -->
+<div class="flex flex-col gap-3 rounded-2xl bg-surface-container-lowest p-space-md shadow-sm">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Quantity</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">How many burgers?</p>
+</div>
+<div class="flex items-center gap-3 bg-surface-container rounded-full p-1.5 shadow-inner">
+<button aria-label="Decrease quantity" class="w-9 h-9 rounded-full bg-surface-container-lowest text-on-surface flex items-center justify-center hover:bg-surface-container-high transition-transform active:scale-90 shadow-sm" id="qty-decrement" type="button">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<span class="font-headline-sm text-headline-sm text-on-surface min-w-[24px] text-center" id="qty-value">1</span>
+<button aria-label="Increase quantity" class="w-9 h-9 rounded-full bg-primary-container text-on-secondary flex items-center justify-center hover:opacity-95 transition-transform active:scale-90 shadow-sm" id="qty-increment" type="button">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Live Calculation Breakdown Strip -->
+<div class="pt-3 flex flex-col gap-1.5 bg-surface-container-low rounded-xl p-3">
+<div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span>Calculation</span>
+<span class="font-mono text-on-surface text-right truncate pl-2" id="calc-formula">Base $13.99 + Bacon $2.50 + Egg $1.75</span>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md text-on-surface pt-1">
+<span>Single Unit Price</span>
+<span class="text-primary font-bold" id="unit-price">$18.24</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom QuickBite Cart Action Hub -->
+<div class="fixed bottom-0 inset-x-0 z-40 bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.06)] pb-safe">
+<div class="px-margin-mobile py-3 flex flex-col gap-2 max-w-md mx-auto">
+<div class="flex items-center gap-3">
+<!-- Live Total readout -->
+<div class="flex flex-col min-w-[96px]">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Updated Total</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface leading-none font-extrabold tracking-tight" id="bottom-total-price">
+            $18.24
+          </span>
+</div>
+<!-- Primary Action Button -->
+<button class="flex-1 h-[52px] rounded-xl bg-primary-container text-on-secondary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-[0_8px_16px_-2px_rgba(255,107,0,0.3)] active:scale-[0.98] transition-all" id="btn-update-cart" type="button">
+<span class="material-symbols-outlined text-[22px]">check</span>
+<span>Update Cart Item</span>
+</button>
+</div>
+<!-- Discard Link -->
+<button class="w-full py-1 text-center font-label-md text-label-md text-on-surface-variant hover:text-error transition-colors" onclick="history.back()" type="button">
+        Discard Changes
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (() => {
+    let currentQty = 1;
+    const basePrice = 13.99;
+
+    const qtyValEl = document.getElementById('qty-value');
+    const summaryBadgeEl = document.getElementById('summary-qty-badge');
+    const unitPriceEl = document.getElementById('unit-price');
+    const bottomTotalEl = document.getElementById('bottom-total-price');
+    const calcFormulaEl = document.getElementById('calc-formula');
+    const charCountEl = document.getElementById('char-count');
+    const notesInput = document.getElementById('special-notes');
+    const btnUpdate = document.getElementById('btn-update-cart');
+
+    function calculate() {
+      // 1. Bun price
+      const activeBun = document.querySelector('input[name="bun"]:checked');
+      const bunCost = activeBun ? parseFloat(activeBun.value) : 0;
+
+      // 2. Extra toppings
+      const checkedToppings = Array.from(document.querySelectorAll('input[name="topping"]:checked'));
+      const toppingsCost = checkedToppings.reduce((acc, el) => acc + parseFloat(el.value), 0);
+
+      // Single item total
+      const perBurger = basePrice + bunCost + toppingsCost;
+      const grandTotal = perBurger * currentQty;
+
+      // Update unit & bottom total
+      unitPriceEl.textContent = `$${perBurger.toFixed(2)}`;
+      bottomTotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+
+      // Update formula display
+      let parts = [`Base $${basePrice.toFixed(2)}`];
+      if (bunCost > 0) parts.push(`GF Bun $${bunCost.toFixed(2)}`);
+      checkedToppings.forEach(t => {
+        parts.push(`${t.dataset.name} $${parseFloat(t.value).toFixed(2)}`);
+      });
+      calcFormulaEl.textContent = parts.join(' + ') + ` = $${perBurger.toFixed(2)}`;
+    }
+
+    // Radio handling
+    document.querySelectorAll('[data-bun-radio]').forEach(label => {
+      label.addEventListener('click', () => {
+        document.querySelectorAll('[data-bun-radio]').forEach(l => {
+          l.classList.remove('bg-surface-container-low');
+          const indicator = l.querySelector('.bun-radio-indicator');
+          const dot = l.querySelector('.bun-radio-dot');
+          indicator.className = 'bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-surface-container-highest transition-colors';
+          dot.className = 'bun-radio-dot w-2 h-2 rounded-full bg-transparent';
+        });
+
+        label.classList.add('bg-surface-container-low');
+        const activeIndicator = label.querySelector('.bun-radio-indicator');
+        const activeDot = label.querySelector('.bun-radio-dot');
+        activeIndicator.className = 'bun-radio-indicator w-5 h-5 rounded-full flex items-center justify-center bg-primary-container shadow-sm transition-colors';
+        activeDot.className = 'bun-radio-dot w-2 h-2 rounded-full bg-on-secondary';
+        
+        calculate();
+      });
+    });
+
+    // Checkbox handling
+    document.querySelectorAll('[data-topping-label]').forEach(label => {
+      const input = label.querySelector('input[type="checkbox"]');
+      const box = label.querySelector('.topping-box');
+      const icon = box.querySelector('.material-symbols-outlined');
+
+      input.addEventListener('change', () => {
+        if (input.checked) {
+          label.classList.add('bg-surface-container-low');
+          box.className = 'topping-box w-5 h-5 rounded-md bg-primary-container flex items-center justify-center transition-colors';
+          icon.className = 'material-symbols-outlined text-[16px] text-on-secondary font-bold';
+        } else {
+          label.classList.remove('bg-surface-container-low');
+          box.className = 'topping-box w-5 h-5 rounded-md bg-surface-container-highest flex items-center justify-center transition-colors';
+          icon.className = 'material-symbols-outlined text-[16px] text-transparent font-bold';
+        }
+        calculate();
+      });
+    });
+
+    // Stepper
+    document.getElementById('qty-decrement').addEventListener('click', () => {
+      if (currentQty > 1) {
+        currentQty--;
+        qtyValEl.textContent = currentQty;
+        summaryBadgeEl.textContent = currentQty;
+        calculate();
+      }
+    });
+
+    document.getElementById('qty-increment').addEventListener('click', () => {
+      currentQty++;
+      qtyValEl.textContent = currentQty;
+      summaryBadgeEl.textContent = currentQty;
+      calculate();
+    });
+
+    // Special instructions character counter
+    notesInput.addEventListener('input', (e) => {
+      charCountEl.textContent = `${e.target.value.length} / 150`;
+    });
+
+    // Success feedback on update button
+    btnUpdate.addEventListener('click', () => {
+      const originalHtml = btnUpdate.innerHTML;
+      btnUpdate.classList.add('bg-emerald-600');
+      btnUpdate.innerHTML = `<span class="material-symbols-outlined text-[22px]">done_all</span><span>Saved to Cart!</span>`;
+      setTimeout(() => {
+        history.back();
+      }, 700);
+    });
+
+    // Initial calculation
+    calculate();
+  })();
+</script></main></body></html>

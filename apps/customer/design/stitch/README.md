@@ -27,4 +27,8 @@ If a design conflicts with a business, API or security rule: do not invent behav
 
 ## Current status
 
-No approved designs have been added yet.
+The project owner has supplied 84 Customer App screens, 4 food image assets and the
+`warm_kinetic` design system. They are kept as flat Stitch export folders (`<name>/code.html` +
+`screen.png`), not in the `batch-XX/` layout shown above. Do not rename or edit them.
+See [`STITCH_INDEX.md`](STITCH_INDEX.md) for the inventory and the suggested mapping to
+`SCREEN_PLAN.md` batches.

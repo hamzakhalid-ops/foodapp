@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'tertiary': '#565e74', 'tertiary-fixed-dim': '#bec6e0', 'surface-container-low': '#f2f4f6', 'secondary-container': '#fd7714', 'on-tertiary': '#ffffff', 'secondary-fixed': '#ffdbca', 'error-container': '#ffdad6', 'on-secondary-fixed': '#331200', 'primary-fixed': '#ffdbcc', 'surface-container-lowest': '#ffffff', 'background': '#f7f9fb', 'inverse-surface': '#2d3133', 'on-secondary-container': '#5b2500', 'inverse-primary': '#ffb693', 'secondary-fixed-dim': '#ffb68e', 'on-tertiary-fixed-variant': '#3f465c', 'on-primary-container': '#572000', 'surface-container': '#eceef0', 'surface-bright': '#f7f9fb', 'on-surface': '#191c1e', 'on-tertiary-fixed': '#131b2e', 'on-primary-fixed': '#351000', 'surface': '#f7f9fb', 'on-background': '#191c1e', 'surface-container-highest': '#e0e3e5', 'outline': '#8e7164', 'surface-container-high': '#e6e8ea', 'tertiary-container': '#9198b1', 'on-tertiary-container': '#293045', 'on-primary-fixed-variant': '#7a3000', 'surface-variant': '#e0e3e5', 'surface-dim': '#d8dadc', 'primary-fixed-dim': '#ffb693', 'on-surface-variant': '#5a4136', 'secondary': '#9c4500', 'on-primary': '#ffffff', 'surface-tint': '#a04100', 'outline-variant': '#e2bfb0', 'inverse-on-surface': '#eff1f3', 'tertiary-fixed': '#dae2fd', 'on-secondary-fixed-variant': '#773300', 'on-error-container': '#93000a', 'primary-container': '#ff6b00', 'error': '#ba1a1a', 'primary': '#a04100', 'on-secondary': '#ffffff', 'on-error': '#ffffff' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'gutter-mobile': '0.75rem', 'space-xs': '0.25rem', 'space-xl': '2rem', 'margin': '1.5rem', 'gutter': '1rem', 'space-sm': '0.5rem', 'space-md': '1rem', 'margin-mobile': '1.25rem', 'space-lg': '1.5rem' }, fontFamily: { 'headline-sm': ['Plus Jakarta Sans'], 'label-sm': ['Plus Jakarta Sans'], 'body-sm': ['Plus Jakarta Sans'], 'headline-lg-mobile': ['Plus Jakarta Sans'], 'headline-xl-mobile': ['Plus Jakarta Sans'], 'body-lg': ['Plus Jakarta Sans'], 'label-md': ['Plus Jakarta Sans'], 'headline-md': ['Plus Jakarta Sans'], 'headline-xl': ['Plus Jakarta Sans'], 'headline-lg': ['Plus Jakarta Sans'], 'label-lg': ['Plus Jakarta Sans'], 'body-md': ['Plus Jakarta Sans'] }, fontSize: { 'headline-sm': ['18px', { lineHeight: '24px', fontWeight: '600' }], 'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '600' }], 'body-sm': ['12px', { lineHeight: '16px', fontWeight: '400' }], 'headline-lg-mobile': ['22px', { lineHeight: '28px', letterSpacing: '-0.01em', fontWeight: '700' }], 'headline-xl-mobile': ['28px', { lineHeight: '34px', letterSpacing: '-0.02em', fontWeight: '800' }], 'body-lg': ['16px', { lineHeight: '24px', fontWeight: '400' }], 'label-md': ['14px', { lineHeight: '18px', fontWeight: '600' }], 'headline-md': ['20px', { lineHeight: '26px', letterSpacing: '-0.01em', fontWeight: '700' }], 'headline-xl': ['36px', { lineHeight: '44px', letterSpacing: '-0.03em', fontWeight: '800' }], 'headline-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.02em', fontWeight: '700' }], 'label-lg': ['16px', { lineHeight: '20px', letterSpacing: '-0.01em', fontWeight: '600' }], 'body-md': ['14px', { lineHeight: '20px', fontWeight: '400' }] } } } };</script></head><body class="bg-surface-container-lowest text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin-mobile flex items-center justify-between"><div class="flex items-center gap-space-sm"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container-high/40 transition-colors text-on-surface" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate max-w-[200px]">Restaurant Filters</h1></div><div class="flex items-center gap-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wy9Y3p03UgXg-1qorTj9i_31CztGkTMHGy_vy3ZvdW_kmi6IfFxusu31bnRa4vvXm77rxNMXlz3NP9J_iEl3OKt1ACc796SdMxeVIlhPodPMj5QnklREnxtvBfcH0kRXTKeJYwSzon18oP2xx5mFVazs0rbajpV5VmYyovr_p7CcB5qqliFI_XFZjkdIakaCfq6c7zkqBDSvr5RA97yg-Bez2l2ziQ-rO5uGDSHHsMr6B4cjkoQD7gmkVPrCbDvZgf07Ac4BrAIw"/></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 bg-surface-container-lowest"><div class="flex flex-col w-full pb-28">
+<!-- Interactive Match Banner -->
+<div class="px-margin-mobile pt-3 pb-2">
+<div class="bg-surface-container-low rounded-xl px-4 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface">2 filters active</span>
+<span class="text-outline-variant">•</span>
+<span class="font-body-md text-body-md text-on-surface-variant font-medium">38 spots matching</span>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:text-on-primary-container transition-colors py-1 px-2 rounded-lg active:scale-95" id="reset-top-btn" type="button">
+        Reset All
+      </button>
+</div>
+</div>
+<div class="px-margin-mobile flex flex-col gap-space-lg pt-2">
+<!-- 1. Sort By Quick Select -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface">Sort By</label>
+<span class="font-label-sm text-label-sm text-tertiary">Quick select</span>
+</div>
+<div class="grid grid-cols-2 gap-2" id="sort-group">
+<button class="sort-chip flex items-center justify-between px-3.5 py-3 rounded-xl bg-primary text-on-primary shadow-sm transition-all text-left" data-active="true" type="button">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-label-md text-label-md truncate">Recommended</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-primary">check_circle</span>
+</button>
+<button class="sort-chip flex items-center justify-between px-3.5 py-3 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-all text-left" data-active="false" type="button">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[18px] text-tertiary">bolt</span>
+<span class="font-label-md text-label-md truncate">Fastest Delivery</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 text-primary">check_circle</span>
+</button>
+<button class="sort-chip flex items-center justify-between px-3.5 py-3 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-all text-left" data-active="false" type="button">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[18px] text-tertiary">star</span>
+<span class="font-label-md text-label-md truncate">Rating 4.5+</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 text-primary">check_circle</span>
+</button>
+<button class="sort-chip flex items-center justify-between px-3.5 py-3 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-all text-left" data-active="false" type="button">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-[18px] text-tertiary">sell</span>
+<span class="font-label-md text-label-md truncate">Price: Low to High</span>
+</div>
+<span class="material-symbols-outlined text-[18px] opacity-0 text-primary">check_circle</span>
+</button>
+</div>
+</section>
+<!-- 2. Price Range -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface">Price Range</label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Moderate selected</span>
+</div>
+<div class="grid grid-cols-4 gap-2">
+<button class="price-btn py-3 rounded-xl font-label-lg text-label-lg bg-surface-container-low text-on-surface transition-all text-center" type="button">
+          $
+        </button>
+<button class="price-btn py-3 rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary shadow-sm transition-all text-center" type="button">
+          $$
+        </button>
+<button class="price-btn py-3 rounded-xl font-label-lg text-label-lg bg-surface-container-low text-on-surface transition-all text-center" type="button">
+          $$$
+        </button>
+<button class="price-btn py-3 rounded-xl font-label-lg text-label-lg bg-surface-container-low text-on-surface transition-all text-center" type="button">
+          $$$$
+        </button>
+</div>
+</section>
+<!-- Visual Highlight Spot -->
+<div class="rounded-xl overflow-hidden relative shadow-sm h-28 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Vibrant top-down photo of artisanal fresh bowls, farm to table vegetables, crispy falafel, and avocado spread under bright modern cafe lighting with gentle warm tones and orange garnish accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtUSPPV1dTc9r0Ped-zMmxPHS_FYXqpBiZwq0R_7Ci5dO1afKNpFl9gPBGACyXCzC8dgeb_DvZWzOPaP4ZQJRPrpaTLJ9k1f6h9jGOTNIbDtGxEOFZ9FVWEq2na01yNaLFZZuBUVLhP2h2_vuacvB11RkAutfqeEOtQrg6Ln9aF7RfJW34ma45fMwGz2BdUMP6UEN3Aa7VaP4qiW6BSrhuAsgfMWEIJz3yerJxrA28Vd3mHSSLrcga"/>
+<div class="absolute inset-0 bg-gradient-to-r from-on-surface/80 via-on-surface/40 to-transparent flex flex-col justify-center px-4">
+<span class="font-label-sm text-label-sm text-secondary-fixed tracking-wide uppercase">Catering to your palate</span>
+<h2 class="font-headline-sm text-headline-sm text-on-primary">Wholesome &amp; Handpicked</h2>
+</div>
+</div>
+<!-- 3. Dietary & Lifestyle -->
+<section class="flex flex-col gap-2.5">
+<label class="font-label-lg text-label-lg text-on-surface">Dietary &amp; Lifestyle</label>
+<div class="bg-surface-container-lowest rounded-xl flex flex-col shadow-sm overflow-hidden">
+<!-- Option 1 -->
+<label class="flex items-center justify-between p-3.5 bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">spa</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface">Vegetarian Friendly</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-md bg-primary text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<input checked="" class="opacity-0 absolute inset-0 cursor-pointer" type="checkbox"/>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="flex items-center justify-between p-3.5 bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">psychiatry</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface">Vegan Options</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-md bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px] opacity-0 text-on-primary">check</span>
+<input class="opacity-0 absolute inset-0 cursor-pointer" type="checkbox"/>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="flex items-center justify-between p-3.5 bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface">Halal Certified</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-md bg-primary text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<input checked="" class="opacity-0 absolute inset-0 cursor-pointer" type="checkbox"/>
+</div>
+</label>
+<!-- Option 4 -->
+<label class="flex items-center justify-between p-3.5 bg-surface-container-lowest hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">grain</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface">Gluten-Free Available</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-md bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px] opacity-0 text-on-primary">check</span>
+<input class="opacity-0 absolute inset-0 cursor-pointer" type="checkbox"/>
+</div>
+</label>
+<!-- Option 5 -->
+<label class="flex items-center justify-between p-3.5 bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">agriculture</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface">Organic / Farm to Table</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-md bg-surface-container-highest">
+<span class="material-symbols-outlined text-[18px] opacity-0 text-on-primary">check</span>
+<input class="opacity-0 absolute inset-0 cursor-pointer" type="checkbox"/>
+</div>
+</label>
+</div>
+</section>
+<!-- 4. Delivery Speed -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface">Delivery Speed</label>
+<span class="font-label-sm text-label-sm text-tertiary">Estimated ETA</span>
+</div>
+<div class="grid grid-cols-2 gap-2" id="speed-group">
+<button class="speed-pill px-3 py-3 rounded-xl bg-surface-container-low text-on-surface flex items-center justify-between transition-all" type="button">
+<span class="font-label-md text-label-md">Any time</span>
+<span class="w-4 h-4 rounded-full bg-surface-container-highest"></span>
+</button>
+<button class="speed-pill px-3 py-3 rounded-xl bg-surface-container-low text-on-surface flex items-center justify-between transition-all" type="button">
+<span class="font-label-md text-label-md">Under 20 mins</span>
+<span class="w-4 h-4 rounded-full bg-surface-container-highest"></span>
+</button>
+<button class="speed-pill px-3 py-3 rounded-xl bg-primary text-on-primary shadow-sm flex items-center justify-between transition-all" type="button">
+<span class="font-label-md text-label-md font-semibold">Under 30 mins</span>
+<span class="w-4 h-4 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</span>
+</button>
+<button class="speed-pill px-3 py-3 rounded-xl bg-surface-container-low text-on-surface flex items-center justify-between transition-all" type="button">
+<span class="font-label-md text-label-md">Under 45 mins</span>
+<span class="w-4 h-4 rounded-full bg-surface-container-highest"></span>
+</button>
+</div>
+</section>
+<!-- 5. Special Offers & Deals -->
+<section class="flex flex-col gap-2">
+<label class="font-label-lg text-label-lg text-on-surface">Special Offers &amp; Deals</label>
+<div class="bg-surface-container-lowest rounded-xl flex flex-col shadow-sm divide-y-0">
+<!-- Deal 1: Free Delivery (Checked ON) -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container-low/60 rounded-xl mb-2">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">moped</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Free Delivery Only</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Zero delivery surcharge</span>
+</div>
+</div>
+<button class="w-12 h-7 rounded-full bg-primary-container relative flex items-center px-1 transition-colors" data-toggle="true" type="button">
+<span class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-5 transition-transform duration-200"></span>
+</button>
+</div>
+<!-- Deal 2: Promotions (OFF) -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container-low/30 rounded-xl mb-2">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">local_offer</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Special Promotions &amp; Coupons</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Discounted dishes available</span>
+</div>
+</div>
+<button class="w-12 h-7 rounded-full bg-surface-container-highest relative flex items-center px-1 transition-colors" data-toggle="false" type="button">
+<span class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-0 transition-transform duration-200"></span>
+</button>
+</div>
+<!-- Deal 3: TurboPass (OFF) -->
+<div class="flex items-center justify-between p-3.5 bg-surface-container-low/30 rounded-xl">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">stars</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">QuickBite TurboPass Perks</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Exclusive member rewards</span>
+</div>
+</div>
+<button class="w-12 h-7 rounded-full bg-surface-container-highest relative flex items-center px-1 transition-colors" data-toggle="false" type="button">
+<span class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-0 transition-transform duration-200"></span>
+</button>
+</div>
+</div>
+</section>
+<!-- 6. Rating -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-lg text-label-lg text-on-surface">Customer Rating</label>
+<span class="font-label-sm text-label-sm text-tertiary">Verified reviews</span>
+</div>
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+<button class="rating-chip shrink-0 px-3.5 py-2.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface transition-all" type="button">
+          Any
+        </button>
+<button class="rating-chip shrink-0 px-3.5 py-2.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface transition-all" type="button">
+          3.5+ ★
+        </button>
+<button class="rating-chip shrink-0 px-3.5 py-2.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface transition-all" type="button">
+          4.0+ ★
+        </button>
+<button class="rating-chip shrink-0 px-3.5 py-2.5 rounded-full font-label-md text-label-md bg-primary-container text-on-primary shadow-sm transition-all flex items-center gap-1" type="button">
+<span>4.5+</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="rating-chip shrink-0 px-3.5 py-2.5 rounded-full font-label-md text-label-md bg-surface-container-low text-on-surface transition-all" type="button">
+          4.8+ ★
+        </button>
+</div>
+</section>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md px-margin-mobile py-3 pb-safe shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+<div class="max-w-md mx-auto flex items-center gap-3">
+<button class="px-4 py-3.5 rounded-xl font-label-lg text-label-lg text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" id="clear-bottom-btn" type="button">
+        Clear All
+      </button>
+<button class="flex-1 bg-primary-container text-on-primary font-headline-sm text-headline-sm py-3.5 px-5 rounded-[14px] shadow-[0_8px_16px_-2px_rgba(255,107,0,0.3)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2" onclick="history.back()" type="button">
+<span>Apply Filters (38 Places)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interactions for price pills, sorting, and toggles
+  document.querySelectorAll('.price-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.price-btn').forEach(b => {
+        b.className = 'price-btn py-3 rounded-xl font-label-lg text-label-lg bg-surface-container-low text-on-surface transition-all text-center';
+      });
+      btn.className = 'price-btn py-3 rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary shadow-sm transition-all text-center';
+    });
+  });
+
+  document.querySelectorAll('[data-toggle]').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      const isActive = toggle.getAttribute('data-toggle') === 'true';
+      const knob = toggle.querySelector('span');
+      if (isActive) {
+        toggle.setAttribute('data-toggle', 'false');
+        toggle.className = 'w-12 h-7 rounded-full bg-surface-container-highest relative flex items-center px-1 transition-colors';
+        knob.className = 'w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-0 transition-transform duration-200';
+      } else {
+        toggle.setAttribute('data-toggle', 'true');
+        toggle.className = 'w-12 h-7 rounded-full bg-primary-container relative flex items-center px-1 transition-colors';
+        knob.className = 'w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-5 transition-transform duration-200';
+      }
+    });
+  });
+
+  const resetAll = () => {
+    document.querySelectorAll('.price-btn').forEach(b => {
+      b.className = 'price-btn py-3 rounded-xl font-label-lg text-label-lg bg-surface-container-low text-on-surface transition-all text-center';
+    });
+    document.querySelectorAll('[data-toggle]').forEach(toggle => {
+      toggle.setAttribute('data-toggle', 'false');
+      toggle.className = 'w-12 h-7 rounded-full bg-surface-container-highest relative flex items-center px-1 transition-colors';
+      toggle.querySelector('span').className = 'w-5 h-5 rounded-full bg-surface-container-lowest shadow-md translate-x-0 transition-transform duration-200';
+    });
+  };
+
+  document.getElementById('reset-top-btn')?.addEventListener('click', resetAll);
+  document.getElementById('clear-bottom-btn')?.addEventListener('click', resetAll);
+</script></main></body></html>

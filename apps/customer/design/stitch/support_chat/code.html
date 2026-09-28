@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "inverse-surface": "#2d3133", "surface-bright": "#f7f9fb", "secondary-container": "#fd7714", "on-error-container": "#93000a", "on-primary-fixed": "#351000", "secondary-fixed-dim": "#ffb68e", "secondary": "#9c4500", "primary-container": "#ff6b00", "inverse-primary": "#ffb693", "on-primary-container": "#572000", "on-tertiary-fixed": "#131b2e", "surface-container-low": "#f2f4f6", "on-background": "#191c1e", "outline": "#8e7164", "primary": "#a04100", "on-secondary-fixed-variant": "#773300", "tertiary": "#565e74", "surface-tint": "#a04100", "surface-dim": "#d8dadc", "surface-container-highest": "#e0e3e5", "surface": "#f7f9fb", "outline-variant": "#e2bfb0", "tertiary-container": "#9198b1", "background": "#f7f9fb", "inverse-on-surface": "#eff1f3", "on-secondary": "#ffffff", "surface-container": "#eceef0", "on-secondary-fixed": "#331200", "on-primary": "#ffffff", "tertiary-fixed": "#dae2fd", "on-surface": "#191c1e", "on-tertiary-container": "#293045", "primary-fixed": "#ffdbcc", "on-primary-fixed-variant": "#7a3000", "secondary-fixed": "#ffdbca", "primary-fixed-dim": "#ffb693", "surface-container-high": "#e6e8ea", "on-secondary-container": "#5b2500", "on-error": "#ffffff", "error": "#ba1a1a", "on-tertiary": "#ffffff", "on-surface-variant": "#5a4136", "surface-container-lowest": "#ffffff", "surface-variant": "#e0e3e5", "error-container": "#ffdad6", "on-tertiary-fixed-variant": "#3f465c", "tertiary-fixed-dim": "#bec6e0" }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" }, spacing: { gutter: "1rem", "space-lg": "1.5rem", "margin-mobile": "1.25rem", margin: "1.5rem", "gutter-mobile": "0.75rem", "space-md": "1rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-xl": "2rem" }, fontFamily: { "headline-lg-mobile": ["Plus Jakarta Sans"], "headline-xl-mobile": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "label-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"] }, fontSize: { "headline-lg-mobile": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "800" }], "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "700" }], "label-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.01em", fontWeight: "700" }], "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "800" }], "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }], "label-md": ["14px", { lineHeight: "18px", fontWeight: "600" }], "label-lg": ["16px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "600" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }] } } } };</script></head><body class="bg-surface text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate">Support Chat</h1></div><div class="flex items-center gap-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface"><div class="flex flex-col w-full">
+<!-- Sticky Context & Agent Bar Wrapper -->
+<div class="sticky top-0 z-30 flex flex-col bg-surface shadow-sm">
+<!-- Sub-header: Agent Live Status -->
+<div class="px-margin-mobile py-space-sm bg-surface-container-lowest flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="relative flex-shrink-0">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Close-up friendly professional customer support agent Sarah with a soft smile and modern headset, bright clean studio lighting, warm vibrant undertones, premium photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPOtQwa3sDNwoZsSjLgLWRYrG_AXgxGC-1XRXh_avfaCH-1ZFt1fdO8jU3hhocSx2zB41UDL8Z7zyDH3QcmK1HepiICVuIlbX-awZ6laTeY5yYGrihLDu4ZnTiZZEAoyBAAEUwytveh82e_ABSzEZn4BWlaRjCqtEwmkXZfrxbN70rsYR6pqCtvfYm0_uAoO-SL5asg-uMeVDM31SIFqJ2AfXJkLmWBQOV4OQPy2TYgDZuijow5zaw"/>
+</div>
+<!-- Live pulsing status dot -->
+<span class="absolute bottom-0 right-0 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary-container"></span>
+</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Sarah Jenkins</span>
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="truncate">QuickBite Care</span>
+<span>•</span>
+<span class="text-primary font-label-sm text-label-sm">Active now</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<div class="hidden sm:flex flex-col items-end">
+<span class="font-label-sm text-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full">TK-94021</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Urgent</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface hover:bg-surface-container-high transition-all flex items-center gap-1 active:scale-95 shadow-sm" type="button">
+<span class="font-label-sm text-label-sm">Details</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Order Context Accordion Strip -->
+<div class="px-margin-mobile py-2 bg-surface-container-low transition-all" id="orderContextBanner">
+<div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('orderContextDetails').classList.toggle('hidden'); document.getElementById('orderCaret').classList.toggle('rotate-180')">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0">fastfood</span>
+<p class="font-label-sm text-label-sm text-on-surface truncate">
+<span class="font-bold">Order #QB-8942-TX</span> • The Burger Forge <span class="text-primary">($38.91)</span>
+</p>
+</div>
+<div class="flex items-center gap-1.5 flex-shrink-0 pl-2">
+<span class="bg-error-container text-on-error-container font-label-sm text-label-sm px-2 py-0.5 rounded-full">Missing Fries</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200" id="orderCaret">expand_more</span>
+</div>
+</div>
+<!-- Expandable details card -->
+<div class="hidden mt-2 pt-2 bg-surface-container-lowest rounded-xl p-3 shadow-sm" id="orderContextDetails">
+<div class="grid grid-cols-2 gap-2 text-on-surface-variant font-body-sm text-body-sm mb-2">
+<div><span class="text-on-surface font-label-sm">Delivered at:</span> 12:54 PM</div>
+<div><span class="text-on-surface font-label-sm">Courier:</span> Marcus V. (E-Bike)</div>
+<div><span class="text-on-surface font-label-sm">Total items:</span> 3 items</div>
+<div><span class="text-on-surface font-label-sm">Disputed:</span> Truffle Fries ($6.25)</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm pt-2 bg-surface-container-low px-2.5 py-1.5 rounded-lg">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-secondary">receipt_long</span> Payment via Apple Pay (•••• 4242)</span>
+<span class="text-primary font-label-sm">Receipt View</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Scroll Canvas -->
+<div class="flex-1 px-margin-mobile py-space-md flex flex-col gap-space-lg pb-32">
+<!-- Day Timestamp Divider -->
+<div class="flex items-center justify-center my-1">
+<span class="bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-3 py-1 rounded-full shadow-sm">
+        Today, October 24
+      </span>
+</div>
+<!-- Message 1: System Automated Welcome -->
+<div class="flex flex-col items-center">
+<div class="max-w-[92%] sm:max-w-md bg-surface-container-low rounded-xl p-3.5 shadow-sm text-center">
+<div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed mb-2">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface font-medium leading-relaxed">
+          Ticket <span class="font-bold text-primary">#TK-94021</span> created. Thank you for reaching out, Alex. A dedicated QuickBite Care Specialist will review your attachments and respond shortly.
+        </p>
+<span class="inline-block mt-2 font-label-sm text-label-sm text-on-surface-variant">1:05 PM • Automated Bot</span>
+</div>
+</div>
+<!-- Message 2: Customer (Alex Morgan) -->
+<div class="flex flex-col items-end gap-1.5 self-end max-w-[85%] sm:max-w-md">
+<div class="flex items-center gap-1.5 pr-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">You</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1:06 PM</span>
+</div>
+<!-- Customer Chat Bubble -->
+<div class="bg-primary-container text-on-primary p-4 rounded-2xl rounded-tr-sm shadow-md flex flex-col gap-3">
+<p class="font-body-lg text-body-lg text-white leading-relaxed">
+          Hi, our order just arrived from The Burger Forge. The Truffle Herb Fries were missing completely, and the outer tamper seal was torn open. Attaching photos.
+        </p>
+<!-- Media Attachment Mosaic -->
+<div class="grid grid-cols-2 gap-2 pt-1">
+<div class="relative group rounded-xl overflow-hidden bg-black/20 aspect-square shadow-sm">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="A macro close-up of a brown craft delivery paper bag with a torn orange safety seal sticker on a clean white kitchen counter, natural daylight, showing clearly broken tamper-proof tape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBorhfvnzoZojkG67hmfch-hNn_oGc1gtLFduKASPKwYj2_6ZPtzDXdKNXAXWtOTWYaKYD0qPHMkjMEHT5UjduV-zB80uZQBbj-Ct1QuVFDAEXwGWR0OjsL9jt_PJJYEES-bQmGa9bCAvP2bToRYm-btqjbp9Vf5S41EfhubJjO_erfO6ElRV-L-cOuHry6GZCXG86RsPwIlVKx0W0GOTfPnLvUTZUf1z37BaAHgU3e0oFzGzGeY1KS"/>
+<div class="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock_open</span> Torn Seal
+            </div>
+</div>
+<div class="relative group rounded-xl overflow-hidden bg-black/20 aspect-square shadow-sm">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" data-alt="A paper restaurant order receipt from The Burger Forge showing Truffle Herb Fries highlighted with a pen mark, resting on a contemporary wooden dining table with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuPcTnJrBdIjdHKQkTma3RF-wDTXWp3clfyr4UyGcLV4ZXJMUGKJ0NbMN_HuZG3X_VDLUbCDY3jdTq48AptOYxXUzWSTHUe07x8XQvvvQJRbkKmFR6k1M1NVS2YiOZizh9z-OKrHrKKqU2_KVhyJt7BYHFf0rR7sHE_zSpFbleMfuvl5cKAmbn_r_05u2ZvNWUGkhbWN5yyw0QDQ393WwHTiCcUo_WmPRMZiYN1PZSUxpAPpnW_osY"/>
+<div class="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt</span> Receipt
+            </div>
+</div>
+</div>
+</div>
+<!-- Delivery status subtext -->
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm pr-1">
+<span>Delivered</span>
+<span>•</span>
+<span class="text-primary font-medium flex items-center gap-0.5">
+          Read 1:12 PM
+          <span class="material-symbols-outlined text-[14px]">done_all</span>
+</span>
+</div>
+</div>
+<!-- Message 3: Agent (Sarah Jenkins) -->
+<div class="flex items-start gap-2.5 max-w-[88%] sm:max-w-md self-start">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-sm bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Professional avatar portrait of customer service specialist Sarah smiling warmly, clean background, high resolution profile photograph" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj2b9s47iRw5SAeAn2c1ZYQuP2ipT_VPN1MEVOA4FPQ-QPXnydkIR2g7W0DIbnhbAo8CaFMQBMV1SJ9dqh7V7QV8bZ10EzHLiBKNeWqey70kWBRNZcconQO24gGQ-Wj6gP_SrKx1NtS4YA4T0tiCUIxNp_XRs6DUGtmXFthXp3uZZzrkLpSH2H5r0kU3Y1BAfFDkSDkcnzDmPGcAjSAipGRnIZvXcTliFn7FZIyBqk5AqOa99iU8zM"/>
+</div>
+<div class="flex flex-col gap-1.5 min-w-0">
+<div class="flex items-center gap-1.5 pl-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Sarah Jenkins</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1:15 PM</span>
+</div>
+<!-- Agent Bubble -->
+<div class="bg-surface-container-lowest text-on-surface p-4 rounded-2xl rounded-tl-sm shadow-sm leading-relaxed">
+<p class="font-body-lg text-body-lg">
+            Hello Alex, this is Sarah from QuickBite Priority Care. I'm so sorry that happened! A torn seal and missing items are definitely not up to our standards.
+          </p>
+</div>
+</div>
+</div>
+<!-- Message 4: Agent (Sarah Jenkins) - Resolution Offer -->
+<div class="flex items-start gap-2.5 max-w-[92%] sm:max-w-lg self-start">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mt-1 shadow-sm bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Professional avatar portrait of customer service specialist Sarah smiling warmly, clean background, high resolution profile photograph" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF9TPLfiZh4or-V0iZRN16XZxgRzYC5QwfoFb3YNEQa3c9-C23H0C7xIE2YnHeKpLOi2ZdrYK4_oYmtGrBCL2Xu8j1M1WsUtzXEfN7SVE1XWZ-b9iaFAUNXJXW7n6CVHdU9EvoYD8wvdG90geS1zwWG1VHygL1d5oxD__ZqdmdyRiWhYr0fB217pz_kRwdTtBKF7P1BtaVl_aXLqEbtv1EZG3SLO7WiLfgwts_ERXfxJLnd93mD7LQ"/>
+</div>
+<div class="flex flex-col gap-1.5 min-w-0 flex-1">
+<div class="flex items-center gap-1.5 pl-1">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Sarah Jenkins</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1:26 PM</span>
+</div>
+<div class="bg-surface-container-lowest text-on-surface p-4 rounded-2xl rounded-tl-sm shadow-sm flex flex-col gap-3">
+<p class="font-body-lg text-body-lg leading-relaxed">
+            I've contacted The Burger Forge kitchen manager to flag the packaging issue. In the meantime, I've processed an immediate refund of <strong class="text-primary font-semibold">$6.25</strong> for the fries back to your Apple Pay, plus I've credited <strong class="text-secondary font-semibold">$5.00 QuickBite Cash</strong> to your wallet for the inconvenience! 🎉
+          </p>
+<!-- Interactive Action / Transaction Receipt Card inside Chat -->
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[16px]">receipt_long</span> Resolution Summary
+              </span>
+<span class="bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm px-2 py-0.5 rounded-full">
+                Processed Instant
+              </span>
+</div>
+<!-- Refund Item -->
+<div class="flex items-center justify-between bg-surface-container-lowest p-2.5 rounded-lg shadow-sm">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">currency_exchange</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Refund Processed</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Apple Pay •••• 4242</p>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">$6.25</span>
+</div>
+<!-- Apology Wallet Credit -->
+<div class="flex items-center justify-between bg-surface-container-lowest p-2.5 rounded-lg shadow-sm">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">wallet</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Apology Credit</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">QuickBite Cash Added</p>
+</div>
+</div>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">+$5.00</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center pt-1">
+              Funds will reflect on Apple Pay statement in 1-3 business days.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 pl-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[14px]">task_alt</span> Official Resolution Offered
+          </span>
+</div>
+</div>
+</div>
+<!-- Live Real-Time Typing Indicator Bubble -->
+<div class="flex items-center gap-2.5 self-start" id="typingIndicator">
+<div class="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 shadow-sm bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Micro avatar of agent Sarah Jenkins typing live in customer support session" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeGdmQeEQ_PzFsPYtDqn7s-JWTfX_paCqJ_M8cVZfLBdu-yU-crJXOIq3S0zL8gEylypjyZzfrfkqZxOLZmrrUwsm76hhvZZJDGDVM5wsRGYXMmH1dYjHwgBDH5BGJdYRfICmlS8hYljuFIcYBN8ZvaewYLVa8PSTnPghD1edfoDDJniuBojPyx5XQUIZhs2RMY_N35b8hj3DzUx6dkkUArbyBr9aX_4ls0x4drQqVHTPRjmcoIusi"/>
+</div>
+<div class="bg-surface-container-lowest px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sarah is typing</span>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 0ms;"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 150ms;"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style="animation-delay: 300ms;"></span>
+</div>
+</div>
+</div>
+<!-- Quick Suggested Response Chips -->
+<div class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar">
+<button class="whitespace-nowrap px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container text-label-sm font-label-sm shadow-sm transition-all active:scale-95" onclick="fillMessage(this)">
+        🙏 Thank you so much!
+      </button>
+<button class="whitespace-nowrap px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container text-label-sm font-label-sm shadow-sm transition-all active:scale-95" onclick="fillMessage(this)">
+        Will I get an email confirmation?
+      </button>
+<button class="whitespace-nowrap px-3.5 py-1.5 rounded-full bg-surface-container-lowest text-on-surface hover:bg-surface-container text-label-sm font-label-sm shadow-sm transition-all active:scale-95" onclick="fillMessage(this)">
+        All good, close ticket.
+      </button>
+</div>
+</div>
+<!-- Fixed Bottom Message Composer -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl shadow-lg pb-safe">
+<div class="px-margin-mobile py-2.5 flex flex-col gap-1.5 max-w-2xl mx-auto w-full">
+<form class="flex items-center gap-2" id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
+<!-- Attachment Button -->
+<button aria-label="Add photos or documents" class="w-11 h-11 flex-shrink-0 rounded-full bg-surface-container text-on-surface flex items-center justify-center hover:bg-surface-container-high transition-all active:scale-95" onclick="triggerAttachment()" type="button">
+<span class="material-symbols-outlined text-[22px]">add_a_photo</span>
+</button>
+<!-- Message Input Field -->
+<div class="flex-1 relative flex items-center">
+<input class="w-full h-11 pl-4 pr-10 rounded-full bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md focus:outline-none focus:bg-surface shadow-sm transition-all" id="messageInput" placeholder="Type your reply to Sarah..." type="text"/>
+<button aria-label="Insert emoji" class="absolute right-3 text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
+</button>
+</div>
+<!-- Send Button -->
+<button aria-label="Send Message" class="w-11 h-11 flex-shrink-0 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-md active:scale-95 transition-all hover:opacity-90" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</form>
+<!-- Trust & WebSocket Live Microcopy -->
+<div class="flex items-center justify-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm pb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+<span>Realtime WebSocket connected</span>
+<span>•</span>
+<span class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">lock</span> Encrypted Support Channel
+        </span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function fillMessage(button) {
+    const input = document.getElementById('messageInput');
+    input.value = button.innerText.trim();
+    input.focus();
+  }
+
+  function triggerAttachment() {
+    alert("Attachment trigger: Select photos from your library or take a photo of the damaged items.");
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Simulate appending new message to the feed
+    const container = document.querySelector('.flex-1.px-margin-mobile');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    const msgWrapper = document.createElement('div');
+    msgWrapper.className = 'flex flex-col items-end gap-1.5 self-end max-w-[85%] sm:max-w-md animate-fade-in';
+    msgWrapper.innerHTML = `
+      <div class="flex items-center gap-1.5 pr-1">
+        <span class="font-label-sm text-label-sm text-on-surface font-semibold">You</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Just now</span>
+      </div>
+      <div class="bg-primary-container text-on-primary p-4 rounded-2xl rounded-tr-sm shadow-md">
+        <p class="font-body-lg text-body-lg text-white leading-relaxed">\${escapeHtml(text)}</p>
+      </div>
+      <div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm pr-1">
+        <span>Sending...</span>
+      </div>
+    `;
+
+    container.insertBefore(msgWrapper, typingIndicator);
+    input.value = '';
+
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth'
+    });
+
+    // Simulate agent acknowledgment
+    setTimeout(() => {
+      const statusText = msgWrapper.querySelector('div:last-child');
+      if (statusText) {
+        statusText.innerHTML = `<span>Delivered</span> • <span class="text-primary font-medium">Read</span>`;
+      }
+    }, 1200);
+  }
+
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+      }[s];
+    });
+  }
+</script></main></body></html>
